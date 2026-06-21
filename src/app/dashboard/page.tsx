@@ -13,8 +13,11 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Le rôle (depuis `profiles`, soumis aux RLS) sera affiché ici au Lot 1B,
-  // une fois le modèle de données et les types générés.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", user.id)
+    .maybeSingle();
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
@@ -22,7 +25,12 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold text-slate-900">Tableau de bord</h1>
         <p className="text-sm text-slate-600">
           Connecté en tant que{" "}
-          <span className="font-medium">{user.email}</span>
+          <span className="font-medium">
+            {profile?.full_name ?? user.email}
+          </span>
+        </p>
+        <p className="text-sm text-slate-500">
+          Rôle : <span className="font-medium">{profile?.role ?? "—"}</span>
         </p>
       </div>
 

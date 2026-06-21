@@ -18,34 +18,43 @@
 - [ ] **Déploiement Vercel** — BLOQUÉ : pas de token Vercel dans l'env, MCP Vercel ne sait pas créer de projet/env. → setup git-integration côté propriétaire (instructions fournies au checkpoint).
 
 ### Lot 1B — Modèle de données + RLS (migrations versionnées, RLS écrite AVEC chaque table)
-- [ ] Création du **nouveau projet Supabase** via MCP.
-- [ ] Migration `00_extensions_enums` : extensions + types enum (`role`, `gender`, `student_status`, `lesson_phase`, `attendance`, `homework_status`, `quiz_scope`, `quiz_source`, `payment_product`, `payment_plan`, `payment_status`, `booking_type`, `booking_status`, `video_type`, `notification_type`).
-- [ ] Migration `01_helpers` : fonctions `SECURITY DEFINER` anti-récursion RLS — `is_admin()`, `current_teacher_id()`, `current_student_id()` ; trigger générique `set_updated_at()`.
-- [ ] Migration `02_identity` : `profiles`, `teachers`, `students` (+ trigger `handle_new_user` qui crée le `profile` à l'inscription auth) — **RLS deny-by-default + policies** par table.
-- [ ] Migration `03_program` : `lessons`, `audio_assets` (programme partagé entre enseignants) + RLS.
-- [ ] Migration `04_individual_tracking` : `student_progress`, `lesson_records`, `vocabulary`, `grammar_rules`, `homework` + RLS.
-- [ ] Migration `05_evaluations` : `quizzes`, `quiz_questions`, `quiz_attempts` + RLS.
-- [ ] Migration `06_group_product` : `books`, `book_sessions`, `book_enrollments` + RLS (`price` nullable — §10 non câblé).
-- [ ] Migration `07_scheduling` : `teacher_availability`, `bookings` (UTC) + RLS.
-- [ ] Migration `08_videos` : `videos`, `milestone_video_assignments`, `video_views` + RLS.
-- [ ] Migration `09_communication` : `conversations`, `messages`, `notifications` + RLS.
-- [ ] Migration `10_payments` : `payments` + RLS (lecture pour tout teacher = pot commun ; écriture réservée au service role).
-- [ ] Migration `11_private_notes` : `student_profile_notes`, `session_private_notes` + RLS **interdisant toute lecture au rôle student**.
-- [ ] `generate_typescript_types` → `src/lib/supabase/database.types.ts`.
+- [x] Création du **nouveau projet Supabase** via MCP (`takalamu`, ref `xowdsbszhdhigootlhmm`, eu-west-3).
+- [x] `00_extensions_enums` : pgcrypto + 15 types enum + fonction `set_updated_at()`.
+- [x] `01_identity` : `profiles`, `teachers`, `students` + helpers (`is_admin`, `current_teacher_id`, `current_student_id`, `owns_student`) + trigger `handle_new_user` + RLS.
+- [x] `02_program` : `lessons`, `audio_assets` + RLS.
+- [x] `03_individual_tracking` : `student_progress`, `lesson_records`, `vocabulary`, `grammar_rules`, `homework` + RLS.
+- [x] `04_evaluations` : `quizzes`, `quiz_questions` (réponses non lisibles élève), `quiz_attempts` + RLS.
+- [x] `05_group_product` : `books`, `book_sessions`, `book_enrollments` + RLS (`price` nullable).
+- [x] `06_scheduling` : `teacher_availability`, `bookings` (UTC) + RLS.
+- [x] `07_videos` : `videos`, `milestone_video_assignments`, `video_views` + RLS.
+- [x] `08_communication` : `conversations`, `messages`, `notifications` + RLS.
+- [x] `09_payments` : `payments` + RLS (lecture tout teacher = pot commun ; écriture = service_role only).
+- [x] `10_private_notes` : `student_profile_notes`, `session_private_notes` — aucune policy student.
+- [x] `11_security_hardening` : helpers déplacés en schéma `private` (hors API), search_path figé → **advisor sécurité = 0 lint**.
+- [x] `12_fix_owns_student_ref` : correctif référence interne après déplacement de schéma.
+- [x] `generate_typescript_types` → `src/lib/supabase/database.types.ts`.
 
 ### Lot 1C — Seed comptes de test + PREUVE RLS (checkpoint : preuves SQL + identifiants)
-- [ ] Créer via Supabase Auth (service role) des comptes **persistants** :
-  - 1 admin (qui est aussi teacher), 2 teachers (1 m / 1 f), 3-4 students répartis sur les 2 teachers.
-  - Mots de passe connus → fournis au propriétaire.
-- [ ] Seed de données pédagogiques minimales (quelques `lessons`, `vocabulary`, `lesson_records`, `*_private_notes`) pour rendre les tests significatifs.
-- [ ] **Preuves RLS via `execute_sql`** (en simulant chaque rôle via JWT/`request.jwt.claims`) :
-  - (a) élève A **ne voit pas** les données de l'élève B (vocabulary, lesson_records, homework…).
-  - (b) un compte student **ne peut pas lire** `student_profile_notes` ni `session_private_notes` (0 ligne).
-  - (c) teacher 1 **ne voit pas** les élèves de teacher 2 ; voit bien les siens.
-  - (d) deny-by-default : tester une table sans policy applicable → 0 ligne.
-  - (e) tout teacher **lit** `payments` (pot commun) mais ne peut pas l'écrire.
-- [ ] Inclure requêtes + valeurs retournées comme preuve dans la réponse.
-- [ ] Livrer au propriétaire : URL preview Vercel + tableau des identifiants/mots de passe.
+- [x] Comptes **persistants** créés : 1 admin+teacher (Youssef), 1 teacher (Khadija), 4 students (Ali/Omar→Youssef, Fatima/Aisha→Khadija). Mot de passe : `Takalamu2026!`.
+- [x] Seed pédagogique (lessons, lesson_records, vocabulary, grammar_rules, private_notes, payments, quiz).
+- [x] **Preuves RLS via `execute_sql`** (simulation de rôle via `request.jwt.claims`) :
+  - (a) Ali ne voit que ses 2 mots / Omar que le sien → isolation élève↔élève ✔
+  - (b) élève → 0 ligne sur `student_profile_notes` & `session_private_notes` ✔
+  - (c) Khadija ne voit que Fatima/Aisha, jamais Ali/Omar ni leurs notes → isolation teacher↔teacher ✔
+  - (d) anon → vitrine teachers visible, élèves/vocab/paiements/quiz = 0 ✔
+  - (e) tout teacher lit `payments` (=3, pot commun) ; élève bloqué en écriture (`new row violates RLS`) ✔
+  - (f) élève → `quiz_questions`=0, `answers_leaked=null` (réponses protégées) ✔
+- [x] Vérif login : 6 comptes `password_ok=true`, email confirmé, identité présente.
+- [ ] Vercel : import GitHub côté propriétaire (en cours) — projet pas encore visible via MCP.
+
+### Review
+**État au 2026-06-21 — Socle (étape 1) terminé et prouvé.**
+- App Next.js 16 + TS + Tailwind v4 câblée à Supabase (clients browser/server/admin + proxy session). Build & lint verts.
+- 27 tables, RLS deny-by-default sur toutes, helpers RLS isolés en schéma `private`. Advisor sécurité Supabase : **0 lint**.
+- Isolation prouvée empiriquement (élève↔élève, teacher↔teacher, notes privées étanches, verrou paiement, réponses de quiz protégées, pot commun).
+- Comptes de test persistants livrés au propriétaire (voir réponse de session).
+- **Reste à finaliser hors-code** : import du repo sur Vercel + variables d'env (instructions fournies) pour la preview.
+- **Prochaine étape (après feu vert)** : Lot 2 — mode auteur / programme (UI CRUD `lessons`).
 
 ### Hors périmètre de l'étape 1 (étapes suivantes, après feu vert)
 - Mode auteur / programme (UI CRUD lessons), fiche de fin de cours, espaces, planning, paiement, vidéos, chat.

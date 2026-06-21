@@ -1,1 +1,28 @@
 # Lessons
+
+> Décisions, enseignements et pièges. À lire au début de chaque session.
+
+## Session 1 (2026-06-21) — Socle (auth, RLS, modèle de données)
+
+### Décisions d'architecture
+- **Identité** : `profiles.id = auth.users.id`. `teachers` et `students` ont leur propre `id` (uuid) ; toutes les tables métier référencent `teachers.id` / `students.id` (pas `profile_id`).
+- **Helpers RLS en `SECURITY DEFINER`** pour éviter la récursion (une policy sur `profiles` qui relit `profiles`…). Placés dans un schéma **`private`** (non exposé par PostgREST) : `is_admin()`, `current_teacher_id()`, `current_student_id()`, `owns_student(uuid)`.
+- **admin = aussi teacher** : représenté par `profiles.role='admin'` + une ligne dans `teachers`. `is_admin()` ET `current_teacher_id()` renvoient vrai pour ce compte.
+- **Paiements** : aucune policy d'écriture pour les rôles client → seul le `service_role` (webhook Revolut) écrit. Lecture par tout teacher (pot commun). C'est le socle du verrou « pas payé = pas de résa ».
+- **quiz_questions** : pas de policy de lecture élève (contient `correct_answer`). La passation se fera via server action qui masque la réponse.
+- **Comptes de test conservés** (demande propriétaire) avec mot de passe commun `Takalamu2026!`.
+
+### Pièges rencontrés (et corrigés)
+1. **`create-next-app` refuse un dossier non vide** (CLAUDE.md, tasks/). → scaffolder dans un dossier temp puis fusionner.
+2. **Next 16 a renommé `middleware` → `proxy`** : fichier `src/proxy.ts`, fonction exportée `proxy`. Sinon warning de dépréciation au build.
+3. **`.env.example` ignoré par `.env*`** : ajouter l'exception `!.env.example` dans `.gitignore`.
+4. **`ALTER FUNCTION ... SET SCHEMA private`** ne réécrit PAS les références internes par nom : `owns_student` appelait encore `public.current_teacher_id()` → erreur 42883. Corrigé via `CREATE OR REPLACE` pointant `private.current_teacher_id()`. Les **policies** RLS, elles, référencent par OID → survivent au changement de schéma.
+5. **Tests RLS via `execute_sql`** : impersonation avec `set local role authenticated;` + `set_config('request.jwt.claims', '{"sub":"<uuid>"}', true);` dans une transaction. ⚠️ Ne PAS mêler `insert` de seed et `begin;…rollback;` dans le MÊME appel : c'est une seule transaction implicite, le `rollback` annule aussi le seed. Seeder dans un appel séparé (committé).
+6. **Linter Supabase** : helpers `SECURITY DEFINER` exposés en RPC `anon` = WARN. Résolu en les sortant du schéma `public`. `set_updated_at` voulait un `search_path` figé.
+
+### Limites d'environnement
+- **Egress réseau bloqué** vers `*.supabase.co` depuis le sandbox (allowlist) → impossible de tester le login REST en direct ; vérifié via MCP (`crypt()` match) à la place.
+- **Pas de token Vercel** ni login CLI dans le sandbox, et le MCP Vercel ne crée pas de projet / n'écrit pas d'env vars → le déploiement preview passe par l'**intégration Git** côté propriétaire.
+
+### Rappels process
+- Le propriétaire veut **valider le plan avant tout code** et des **checkpoints** (ne pas tout enchaîner). Respecter ce rythme même si CLAUDE.md dit « exécuter sans pause ».
