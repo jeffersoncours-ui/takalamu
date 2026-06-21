@@ -6,16 +6,16 @@
 > Contraintes propriétaire : livraison incrémentale (sous-lots + checkpoints), preview Vercel pour tests, comptes de test **conservés** avec identifiants+mots de passe fournis, nouveau projet Supabase.
 
 ### Lot 1A — Scaffold & câblage (checkpoint : app déployée sur Vercel)
-- [ ] `create-next-app` : Next.js (App Router) + TypeScript + Tailwind CSS, ESLint.
-- [ ] Structure de dossiers : `src/app`, `src/lib/supabase` (client browser + server + middleware session), `src/components`.
-- [ ] Dépendances : `@supabase/supabase-js`, `@supabase/ssr`, `date-fns` + `date-fns-tz` (fuseaux, Principe 7).
-- [ ] `.env.example` (commité) listant **toutes** les variables ; `.env.local` (non commité) renseigné :
-  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - placeholders : `BUNNY_*`, `REVOLUT_*`, `REVOLUT_WEBHOOK_SECRET`, `ZOOM_*`
-- [ ] Page d'accueil minimale + page `/login` (shell, pas la logique métier) pour valider le câblage Supabase Auth.
-- [ ] `middleware.ts` : rafraîchissement de session Supabase.
-- [ ] `.gitignore` correct (`.env*`, `node_modules`, `.next`).
-- [ ] Déploiement Vercel + **URL de preview** fournie au propriétaire.
+- [x] `create-next-app` : Next.js 16 (App Router) + TypeScript + Tailwind v4, ESLint.
+- [x] Structure de dossiers : `src/app`, `src/lib/supabase` (client browser + server + admin + proxy session).
+- [x] Dépendances : `@supabase/supabase-js`, `@supabase/ssr`, `date-fns` + `date-fns-tz` (fuseaux, Principe 7).
+- [x] `.env.example` (commité, exception gitignore) listant **toutes** les variables ; `.env.local` (non commité) renseigné avec URL + anon key.
+- [x] Page d'accueil + page `/login` (server action `signIn`/`signOut`) + `/dashboard` protégé.
+- [x] `proxy.ts` (ex-`middleware`, renommé pour Next 16) : rafraîchissement de session Supabase.
+- [x] `.gitignore` correct (`.env*` sauf `.env.example`, `node_modules`, `.next`).
+- [x] **Projet Supabase créé** (`takalamu`, ref `xowdsbszhdhigootlhmm`, région eu-west-3). *Créé en 1A car l'app a besoin des creds pour tourner.*
+- [x] Build + lint OK ; smoke test local : `/` 200, `/login` 200, `/dashboard` → 307 redirect /login (auth wiring prouvé contre le vrai projet).
+- [ ] **Déploiement Vercel** — BLOQUÉ : pas de token Vercel dans l'env, MCP Vercel ne sait pas créer de projet/env. → setup git-integration côté propriétaire (instructions fournies au checkpoint).
 
 ### Lot 1B — Modèle de données + RLS (migrations versionnées, RLS écrite AVEC chaque table)
 - [ ] Création du **nouveau projet Supabase** via MCP.
