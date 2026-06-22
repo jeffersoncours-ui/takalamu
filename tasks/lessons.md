@@ -39,6 +39,19 @@
 ### Rappels process
 - Le propriétaire veut **valider le plan avant tout code** et des **checkpoints** (ne pas tout enchaîner). Respecter ce rythme même si CLAUDE.md dit « exécuter sans pause ».
 
+## Session 4 (2026-06-22) — Espace élève (Lot 4)
+
+### Décisions
+- **`requireStudent()`** renvoie `{ userId, profile, studentId }`. L'`id` métier de l'élève (`students.id`) est distinct du `profile_id` (`auth.users.id`) — la double résolution est nécessaire pour la passer à d'éventuels composants enfants, même si RLS filtre automatiquement les requêtes Supabase côté serveur.
+- **Onglet actif via `usePathname`** dans un composant client `DashboardTabs` isolé — le layout reste un Server Component, seule la nav est client.
+- **Recherche vocab client-side** : toute la liste est chargée en SSR puis filtrée dans `VocabSearch` (client). Justifié à cette échelle (quelques dizaines de mots). Pas de Supabase full-text.
+- **Arabic `dir="rtl" lang="ar"`** sur les mots arabes pour un rendu correct sur mobile (justification et ligatures).
+- **RLS deny-by-default** : aucun `WHERE` explicite dans les pages — les policies filtrent à la source. Preuve empirique obligatoire avant merge.
+
+### Pièges
+- La jointure `lesson_records → lessons` via Supabase JS renvoie l'objet `lessons` soit comme objet soit comme tableau selon le contexte (résultat de `select("…, lessons(title)")`). Guard `Array.isArray(r.lessons) ? r.lessons[0] : r.lessons` pour éviter un crash TypeScript.
+- `requireStudent()` doit rediriger teacher → `/teacher` (pas `/login`) pour que le compte admin+teacher reste utilisable côté enseignant.
+
 ## Session 3 (2026-06-22) — Fiche de fin de cours (Lot 3)
 
 ### Décisions
