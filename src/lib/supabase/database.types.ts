@@ -1234,7 +1234,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_session_record: {
+        Args: {
+          p_advance_progress?: boolean
+          p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_grammar?: Json
+          p_homework_instructions?: string
+          p_lesson_id?: string
+          p_private_note?: string
+          p_public_recap?: string
+          p_session_date: string
+          p_student_id: string
+          p_vocab?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       attendance_status:

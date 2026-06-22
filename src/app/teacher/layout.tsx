@@ -24,6 +24,12 @@ export default async function TeacherLayout({
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link
+              href="/teacher/session/new"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Fin de cours
+            </Link>
+            <Link
               href="/teacher/program"
               className="font-medium text-slate-700 hover:text-emerald-700"
             >
