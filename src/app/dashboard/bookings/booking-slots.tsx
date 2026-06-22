@@ -55,10 +55,10 @@ export function BookingSlots({ slots }: { slots: Slot[] }) {
                 disabled={pending}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left hover:border-emerald-400 hover:bg-emerald-50 disabled:opacity-50 transition"
               >
-                <p className="font-medium text-slate-900 capitalize">
+                <p className="font-medium text-slate-900 capitalize" suppressHydrationWarning>
                   {dayStr}
                 </p>
-                <p className="text-sm text-slate-500">{timeStr} (heure locale)</p>
+                <p className="text-sm text-slate-500" suppressHydrationWarning>{timeStr} (heure locale)</p>
               </button>
             </form>
           );

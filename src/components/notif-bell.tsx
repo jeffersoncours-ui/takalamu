@@ -132,7 +132,7 @@ export function NotifBell({
                   className={`px-4 py-3 text-sm ${n.read ? "text-slate-500" : "text-slate-900 font-medium"}`}
                 >
                   <p>{TYPE_LABEL[n.type] ?? n.type}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>
                     {new Date(n.created_at).toLocaleString("fr-FR", {
                       day: "numeric",
                       month: "short",

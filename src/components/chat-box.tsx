@@ -115,6 +115,7 @@ export function ChatBox({
                   className={`text-xs mt-1 ${
                     isMine ? "text-emerald-200" : "text-slate-400"
                   }`}
+                  suppressHydrationWarning
                 >
                   {new Date(msg.sent_at).toLocaleTimeString("fr-FR", {
                     hour: "2-digit",

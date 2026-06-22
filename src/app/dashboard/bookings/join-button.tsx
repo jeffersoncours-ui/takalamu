@@ -9,9 +9,11 @@ export function JoinButton({
   scheduledAt: string;
   zoomLink: string | null;
 }) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
+  // Initialize on client only to avoid SSR/hydration mismatch
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
@@ -20,12 +22,27 @@ export function JoinButton({
   const openAt = new Date(courseTime.getTime() - 30 * 60 * 1000);
   const closeAt = new Date(courseTime.getTime() + 5 * 60 * 1000);
 
-  if (now < openAt) {
-    const hh = courseTime.getHours().toString().padStart(2, "0");
-    const mm = courseTime.getMinutes().toString().padStart(2, "0");
+  // Stable placeholder during SSR
+  if (!now) {
+    const timeStr = courseTime.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     return (
       <span className="text-sm text-slate-500">
-        Rejoindre à {hh}:{mm}
+        Rejoindre à {timeStr} (UTC)
+      </span>
+    );
+  }
+
+  if (now < openAt) {
+    const timeStr = courseTime.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return (
+      <span className="text-sm text-slate-500">
+        Rejoindre à {timeStr} (heure locale)
       </span>
     );
   }
