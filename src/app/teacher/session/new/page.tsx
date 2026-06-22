@@ -3,7 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 
 import { SessionForm } from "../session-form";
 
-export default async function NewSessionPage() {
+export default async function NewSessionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ student_id?: string }>;
+}) {
+  const { student_id: defaultStudentId } = await searchParams;
   await requireTeacher();
   const supabase = await createClient();
 
@@ -47,7 +52,7 @@ export default async function NewSessionPage() {
           Aucun élève rattaché pour l&apos;instant.
         </p>
       ) : (
-        <SessionForm students={students} lessons={lessons} />
+        <SessionForm students={students} lessons={lessons} defaultStudentId={defaultStudentId} />
       )}
     </div>
   );

@@ -28,15 +28,21 @@ function nowLocalValue(): string {
 export function SessionForm({
   students,
   lessons,
+  defaultStudentId,
 }: {
   students: Student[];
   lessons: Lesson[];
+  defaultStudentId?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitSession, {});
 
-  const [studentId, setStudentId] = useState(students[0]?.id ?? "");
+  const initialStudent = defaultStudentId
+    ? (students.find((s) => s.id === defaultStudentId) ?? students[0])
+    : students[0];
+
+  const [studentId, setStudentId] = useState(initialStudent?.id ?? "");
   const [lessonId, setLessonId] = useState(
-    students[0]?.currentLessonId ?? "",
+    initialStudent?.currentLessonId ?? "",
   );
   const [dateLocal, setDateLocal] = useState(nowLocalValue());
 

@@ -24,10 +24,22 @@ export default async function TeacherLayout({
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link
+              href="/teacher/students"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Élèves
+            </Link>
+            <Link
+              href="/teacher/homework"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Devoirs
+            </Link>
+            <Link
               href="/teacher/session/new"
               className="font-medium text-slate-700 hover:text-emerald-700"
             >
-              Fin de cours
+              Séance
             </Link>
             <Link
               href="/teacher/program"
@@ -40,7 +52,7 @@ export default async function TeacherLayout({
                 type="submit"
                 className="text-slate-500 hover:text-slate-800"
               >
-                Déconnexion
+                Déco
               </button>
             </form>
           </nav>

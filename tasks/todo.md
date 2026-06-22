@@ -1,5 +1,43 @@
 # Todo
 
+## Étape 5 — Espace enseignant complet (cockpit + élèves + correction)
+
+> **Statut : EN COURS.**
+
+### Lot 5A — Cockpit `/teacher` (refonte)
+- [ ] Devoirs à corriger (count + liste rapide, statut `rendu`)
+- [ ] Élèves suspendus (badge alerte)
+- [ ] Sessions récentes (5 dernières)
+
+### Lot 5B — Liste des élèves `/teacher/students`
+- [ ] Table des élèves (RLS filtre au teacher courant)
+- [ ] Badge statut + nb absences injustifiées
+- [ ] Liens → fiche élève + raccourci « Nouvelle séance »
+
+### Lot 5C — Fiche élève `/teacher/students/[id]`
+- [ ] En-tête : nom, statut, absences
+- [ ] Note de profil privée épinglée (formulaire inline)
+- [ ] Curseur : leçon en cours (`student_progress`)
+- [ ] Historique séances (`lesson_records`, 8 dernières)
+- [ ] Devoirs en attente de correction (statut `rendu`)
+- [ ] Vocab + grammaire récents (aperçu 5/3)
+- [ ] Action : modifier statut (actif / suspendu)
+
+### Lot 5D — File de correction `/teacher/homework`
+- [ ] Tous les `homework` au statut `rendu` (tous élèves)
+- [ ] Formulaire de correction inline (feedback + note)
+- [ ] Server action `correctHomework` → statut `corrige`
+
+### Lot 5E — Migration + pré-sélection élève session
+- [ ] Migration `14_profile_note_unique` : contrainte UNIQUE (student_id, teacher_id)
+- [ ] Session `/teacher/session/new?student_id=…` : pré-sélection depuis fiche élève
+
+### Lot 5F — Preuves & déploiement
+- [ ] Tests MCP : isolation teacher↔teacher (Youssef ne voit pas les élèves de Khadija)
+- [ ] Build + lint verts → push + sync branche Vercel
+
+---
+
 ## Prochaines étapes possibles (après validation preview)
 
 - **Fiche élève enseignant** `/teacher/students/[id]` : position curseur, historique, vocab/grammaire, note de profil épinglée, devoirs à corriger, lien chat.
