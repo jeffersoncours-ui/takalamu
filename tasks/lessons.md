@@ -39,6 +39,19 @@
 ### Rappels process
 - Le propriétaire veut **valider le plan avant tout code** et des **checkpoints** (ne pas tout enchaîner). Respecter ce rythme même si CLAUDE.md dit « exécuter sans pause ».
 
+## Session 5 (2026-06-22) — Déploiement : deux projets Vercel
+
+### Décisions
+- **Branche de référence** : `claude/new-project-setup-1jcgwf` → projet `takalamu.vercel.app` (`prj_2gEiNLgY1rcZ8CEUAInkjc`). C'est la branche à pousser pour que les changements arrivent en preview utilisable.
+- **Autre projet** (`prj_GdgTgn9VKbkk7fkTxwbzl2aZd6Zg`, URL `takalamu-xbih-...vercel.app`) : ISE inexpliquée (build vert, Supabase 200), projet sous compte personnel non accessible via MCP. Ne pas l'utiliser comme référence.
+
+### Pièges
+- **Deux projets Vercel distincts** connectés au même repo. L'un (`takalamu.vercel.app`) fonctionne ; l'autre (preview `takalamu-xbih-...`) lève une ISE à runtime dont la cause n'a pas pu être identifiée (logs inaccessibles, MCP limité au compte équipe).
+- **Branche active de travail** ≠ branche du projet fonctionnel. Pousser sur `claude/takalamu-lesson-completion-0tios8` ne met à jour que le projet cassé. Il faut aussi pousser sur `claude/new-project-setup-1jcgwf` (fast-forward si la branche de travail est en avance).
+- **Commande de sync** : `git push origin claude/takalamu-lesson-completion-0tios8:claude/new-project-setup-1jcgwf`
+- **`__vercel_toolbar_code`** dans une URL preview = token temporaire (Vercel Authentication). Il expire → 403. Toujours utiliser le bouton "Visit" depuis vercel.com pour obtenir un lien frais.
+- **MCP Vercel** : accès limité au compte équipe (`team_p96xUWAJNjEQKceK3ukiU2gK`). Les deux projets Vercel sont sous compte **personnel** → `list_projects`, `list_deployments`, `get_runtime_logs` renvoient 403 ou liste vide. Seul `get_project` avec l'ID exact peut parfois fonctionner.
+
 ## Session 4 (2026-06-22) — Espace élève (Lot 4)
 
 ### Décisions

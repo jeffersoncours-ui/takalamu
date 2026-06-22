@@ -1,5 +1,15 @@
 # Todo
 
+## Prochaines étapes possibles (après validation preview)
+
+- **Fiche élève enseignant** `/teacher/students/[id]` : position curseur, historique, vocab/grammaire, note de profil épinglée, devoirs à corriger, lien chat.
+- **Planning / réservation** : `teacher_availability` + `bookings` (bloqué si `payment.status != paid`).
+- **Paiement Revolut** : webhook + choix d'offre + lien facture.
+- **Vidéos** (Bunny Stream) : lecteur forcé, welcome + milestone.
+- **Messagerie** (Supabase Realtime).
+
+---
+
 ## Étape 4 — Espace élève (`/dashboard`)
 
 > **Statut : TERMINÉ.**
