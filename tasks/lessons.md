@@ -2,6 +2,21 @@
 
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
+## Session 6 (2026-06-22) — Espace enseignant complet (Lot 5)
+
+### Décisions
+- **Cockpit dynamique** : données agrégées en 3 requêtes parallèles (`Promise.all`). Pas de cache distribué (§3 Principe 6).
+- **Fiche élève** : 6 requêtes parallèles. Les counts Supabase (`count: "exact"`) retournent le total même avec `limit()`.
+- **Note de profil** : upsert via `onConflict: "student_id,teacher_id"` après ajout d'une contrainte UNIQUE (migration 14). `teacher_id` dérivé côté serveur — jamais confié au client.
+- **Pré-sélection élève** : `?student_id=` dans la session form → `initialStudent = students.find(id) ?? students[0]`.
+- **Correction devoir** : server action simple (update status + feedback + grade + corrected_at). RLS bloque côté base.
+
+### Pièges & correctifs
+- **Trou RLS `student_profile_notes`** (migration 15) : la policy originale ne vérifiait pas `owns_student()` dans le `WITH CHECK`. Un teacher pouvait insérer une note pour l'élève d'un autre. Corrigé en ajoutant `AND private.owns_student(student_id)`. Découvert grâce aux tests empiriques.
+- **Youssef voit tous les élèves** : role `admin` → policy `students_admin_all`. By design. Le test d'isolation pertinent = Khadija (teacher non-admin).
+- **Rebase + force-push Vercel** : rebase author-fix change les hashes → branche Vercel rejette le push non-fast-forward. Résolu par `git push --force` sur la branche de déploiement uniquement.
+- **Jointure Supabase one-to-one** : `students.profiles` retourne un objet (pas un array) pour un FK one-to-one. Guard `Array.isArray(x) ? x[0] : x` pour la sécurité TypeScript.
+
 ## Session 1 (2026-06-21) — Socle (auth, RLS, modèle de données)
 
 ### Décisions d'architecture
