@@ -38,3 +38,19 @@
 
 ### Rappels process
 - Le propriétaire veut **valider le plan avant tout code** et des **checkpoints** (ne pas tout enchaîner). Respecter ce rythme même si CLAUDE.md dit « exécuter sans pause ».
+
+## Session 3 (2026-06-22) — Fiche de fin de cours (Lot 3)
+
+### Décisions
+- **Atomicité via RPC Postgres** `submit_session_record` plutôt qu'enchaînement d'`insert` côté serveur : une coupure réseau ne peut pas laisser un `lesson_record` sans son vocab/devoir. Une seule fonction = une seule transaction.
+- **SECURITY INVOKER** (pas DEFINER) : les RLS deny-by-default restent le garde-fou — chaque insert est vérifié avec les droits de l'appelant. Un contrôle `private.owns_student()` explicite en tête donne en plus un message d'erreur propre (errcode 42501) et dérive `teacher_id` côté serveur (jamais confié au client).
+- **Règle d'absence §8 en base** : `absent_unjustified` ET `late` comptent (le retard >5min = absence, §8.4) ; `absent_justified` ne compte pas. Seuil 3 ⇒ `suspended_absences`, calculé dans la même update.
+- **Lignes vocab/grammaire dynamiques** : champs HTML répétés (même `name`), lus côté serveur via `formData.getAll(...)` puis zippés par index. Plus simple que des noms indexés ou un JSON caché.
+- **Date en UTC (Principe 7)** : input `datetime-local` (heure locale navigateur) + champ caché `session_date_iso` synchronisé via `new Date(local).toISOString()`. La conversion se fait **côté client** (le serveur ignore le fuseau de l'utilisateur).
+
+### Pièges
+- **`generate_typescript_types` renvoie tout le fichier** (~1000 lignes). Inutile de tout réécrire : seul le bloc `Functions` change quand on ajoute une RPC → édition ciblée de ce bloc dans `database.types.ts`.
+- **Helpers en schéma `private`** (déplacés au lot 1) : une nouvelle fonction qui les appelle doit écrire `private.current_teacher_id()` / `private.owns_student()`, pas `public.`.
+- **`search_path = ''` dans la RPC** : oblige à qualifier tous les objets (`public.lesson_records`, casts `::public.student_status`). Évite les warnings d'advisor sur search_path mutable.
+- **Egress bloqué** (rappel) : le roundtrip supabase-js `.rpc()` n'est pas testable depuis le sandbox ; on prouve la fonction via `execute_sql` + simulation de rôle, et on vérifie le wiring sur la preview Vercel.
+- **Container frais** : `npm install` nécessaire en début de session (node_modules absent) avant lint/build.

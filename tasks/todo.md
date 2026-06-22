@@ -1,5 +1,39 @@
 # Todo
 
+## Étape 3 — Fiche de fin de cours (§7.6, composant critique < 30 s)
+
+> **Statut : EN COURS (feu vert reçu « lance, on corrigera après au besoin »).**
+> Objectif : une seule soumission qui alimente `lesson_records` + `vocabulary` + `grammar_rules` + `homework`, avance le curseur `student_progress`, crée la note privée de séance (`session_private_notes`), applique les règles d'absence (§8). Atomicité garantie par une RPC Postgres.
+> Défauts retenus (à valider plus tard) : `support_files` reportés ; `session_date` par défaut = maintenant, éditable. `late` compté comme absence injustifiée (§8.4).
+
+### Lot 3A — RPC atomique + règles métier
+- [x] Migration `13_session_record_rpc` : fonction `public.submit_session_record(...)` (SECURITY INVOKER → RLS = garde-fou), tout dans une transaction.
+- [x] Règles §8 : `absent_unjustified` / `late` ⇒ +1 `unjustified_absences_count` ; seuil 3 ⇒ `status = suspended_absences`.
+- [x] Tests MCP : soumission nominale alimente les 6 tables ; compteur d'absences ; seuil ; ownership refusé. Advisor sécurité = 0 nouveau lint.
+
+### Lot 3B — UI fiche `/teacher/session/new`
+- [x] Page + formulaire compact (sélecteur élève, présence en boutons, leçon pré-cochée au curseur, récap public, vocab/grammaire dynamiques, devoir optionnel, note privée distincte).
+- [x] Server action `submitSession` (appelle la RPC), validation serveur. Date saisie en heure locale → convertie UTC côté client (Principe 7).
+
+### Lot 3C — Lien cockpit
+- [x] Bouton « Fin de cours » depuis `/teacher` + entrée de nav + bandeau de succès.
+
+### Lot 3D — Preuves & déploiement
+- [x] Preuves RLS (note privée étanche élève, isolation prof↔prof) + build/lint verts + push → preview.
+- [x] Docs (todo Review + lessons).
+
+### Review (Étape 3)
+**État au 2026-06-22 — Fiche de fin de cours livrée.**
+- RPC atomique `submit_session_record` : une soumission alimente `lesson_records` + `vocabulary` + `grammar_rules` + `homework` + `session_private_notes` et avance `student_progress`. SECURITY INVOKER → RLS deny-by-default reste le garde-fou ; contrôle d'appartenance explicite en tête (`private.owns_student`).
+- Règles d'absence §8 appliquées en base : `absent_unjustified`/`late` incrémentent le compteur, seuil 3 → `suspended_absences`. Prouvé empiriquement (2 injustifiées + 1 retard = 3 ⇒ suspendu ; la justifiée ne compte pas).
+- UI `/teacher/session/new` mobile-first : présence tappable, leçon pré-sélectionnée au curseur de l'élève, lignes vocab/grammaire dynamiques, devoir optionnel, note privée visuellement distincte. Date convertie en UTC côté client.
+- Preuves : 6 tables alimentées par une soumission ; ownership refusé (élève d'un autre prof) ; note privée = 0 ligne côté élève ; isolation prof↔prof. Build & lint verts.
+- **Limite connue** : roundtrip supabase-js → RPC non testable depuis le sandbox (egress bloqué) ; la RPC elle-même est prouvée via `execute_sql`. À vérifier sur la preview Vercel.
+- **Défauts retenus à valider** : `support_files` reportés ; `late` compté comme absence ; `session_date` par défaut = maintenant.
+- **Prochaine étape** : espace élève (lecture du carnet/vocab/grammaire/devoirs) ou planning/paiement.
+
+---
+
 ## Étape 2 — Mode auteur / programme (§7.6 « Mon programme »)
 
 > **Statut : EN ATTENTE DE VALIDATION DU PLAN.** Ne rien coder avant le feu vert du propriétaire.
