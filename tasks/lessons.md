@@ -2,6 +2,22 @@
 
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
+## Session 8 (2026-06-22) — Messagerie temps réel + Paiements (Lots 7 & 8)
+
+### Décisions
+- **Realtime `postgres_changes`** : nécessite que les tables soient dans la publication `supabase_realtime`. Par défaut vide sur un nouveau projet → migration `ALTER PUBLICATION ... ADD TABLE` obligatoire avant tout abonnement.
+- **Création de conversation** : teacher a la policy d'écriture → upsert via client standard côté enseignant. Côté élève (pas de policy INSERT) → upsert via `createAdminClient()` dans le server component. Contrainte UNIQUE `(teacher_id, student_id)` déjà en base.
+- **Notifications INSERT** : pas de policy d'écriture côté client → toujours via `createAdminClient()` dans la server action après chaque `sendMessage`.
+- **Paiements INSERT** : idem, pas de policy → `createAdminClient()` dans `requestPayment` et les actions de confirmation enseignant.
+- **`confirmPayment` réactive l'élève** : si `status = suspended_payment`, le passage en `paid` remet l'élève en `active` automatiquement (même transaction).
+- **`ChatBox` partagé** : un seul composant `src/components/chat-box.tsx` avec `sendAction` + `markReadAction` injectés depuis les pages parent. Évite la duplication élève/enseignant.
+- **Payload notifs = `any`** : le type Supabase `Json` inclut `null`, incompatible avec `Record<string, unknown>`. Utiliser `any` ou `Json` importé depuis `database.types`.
+
+### Pièges
+- **UUID hex-only** : les préfixes de test `m`, `p` ne sont pas des hex valides → erreur `22P02 invalid input syntax for type uuid`. Utiliser uniquement `0-9, a-f` (ex : `ab`, `ba`, `ca`).
+- **`@supabase/ssr` Realtime** : `createBrowserClient` supporte bien les canaux Realtime. Ne pas créer le client en dehors de `useEffect` pour éviter les fuites de connexion — créer dans l'effet, nettoyer via `supabase.removeChannel(channel)`.
+- **Retrait du canal Realtime** : toujours retourner le cleanup `() => supabase.removeChannel(channel)` dans le `useEffect` pour éviter les multiples abonnements en dev (Strict Mode double-mount).
+
 ## Session 7 (2026-06-22) — Planning & réservation (Lot 6)
 
 ### Décisions

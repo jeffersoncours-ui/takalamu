@@ -126,7 +126,15 @@ export default async function StudentCardPage({
               <p className="text-sm text-slate-500">{profile.email}</p>
             )}
           </div>
-          <StatusForm studentId={id} currentStatus={student.status} />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/teacher/messages/${id}`}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-emerald-300 hover:text-emerald-700 transition"
+            >
+              Chat
+            </Link>
+            <StatusForm studentId={id} currentStatus={student.status} />
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,49 @@
 # Todo
 
+## Étape 7 — Messagerie + Paiements
+
+> **Statut : TERMINÉ.**
+
+### Lot 7A — Messagerie temps réel
+- [x] Migration 16 : Realtime activé sur `messages` + `notifications`
+- [x] Server actions `sendMessage` / `sendMessageAsTeacher` + `markMessagesRead`
+- [x] `ChatBox` client (Realtime `postgres_changes`, auto-scroll, reset form, mark-read)
+- [x] Page élève `/dashboard/messages` (upsert conv via admin, 50 msgs)
+- [x] Page enseignant `/teacher/messages/[studentId]` (upsert conv via teacher policy)
+- [x] Lien "Chat" depuis la fiche élève enseignant
+- [x] Onglet "Messages" dans DashboardTabs
+
+### Lot 7B — Cloche de notifications
+- [x] `NotifBell` client (Realtime INSERT notifs, badge count, liste déroulante, mark-all-read)
+- [x] Intégrée dans layout teacher + layout dashboard
+
+### Lot 8A — Paiements élève
+- [x] Page `/dashboard/payments` : historique + formulaire demande d'offre
+- [x] Server action `requestPayment` (admin client, guard duplicate)
+- [x] Onglet "Paiement" dans DashboardTabs
+
+### Lot 8B — Paiements enseignant
+- [x] Page `/teacher/payments` : pending en premier, historique
+- [x] `PaymentActions` client : Confirmer / Annuler (admin client)
+- [x] `confirmPayment` réactive le statut élève `suspended_payment → active`
+- [x] Badge pending dans le cockpit `/teacher`
+- [x] Lien "Paiements" dans nav enseignant
+
+### Lot 8C — Preuves & déploiement
+- [x] Tests MCP : isolation messages (A: Ali voit ses msgs ✓, B: Omar voit 0 ✓), paiements (C: pot commun teacher ✓, D: INSERT élève bloqué 42501 ✓)
+- [x] Build verts (21 routes) → push
+
+### Review (Étape 7)
+**État au 2026-06-22 — Messagerie temps réel + Paiements livrés.**
+- Realtime activé (migration 16) sur `messages` + `notifications`.
+- `ChatBox` : Supabase Realtime `postgres_changes`, bulles alignées (moi/eux), heure locale, indicateur "Lu", auto-scroll, reset form post-envoi.
+- Notifications `new_message` créées via admin client (RLS bloque INSERT côté client).
+- `NotifBell` : badge rouge avec count, dropdown 20 dernières, mark-all-read au clic, Realtime live.
+- Paiements : élève demande un plan → `pending` (admin client) ; enseignant confirme → `paid` + réactive `suspended_payment` si besoin.
+- **Prochaine étape possible** : vidéos Bunny Stream, vitrine publique, quiz auto-générés.
+
+---
+
 ## Étape 6 — Planning & réservation
 
 > **Statut : TERMINÉ.**

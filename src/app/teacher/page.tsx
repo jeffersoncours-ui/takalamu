@@ -24,7 +24,8 @@ export default async function TeacherHome({
   await requireTeacher();
   const supabase = await createClient();
 
-  const [hwResult, suspendedResult, sessionsResult] = await Promise.all([
+  const [hwResult, suspendedResult, sessionsResult, pendingPaymentsResult] =
+    await Promise.all([
     supabase
       .from("homework")
       .select(
@@ -44,11 +45,16 @@ export default async function TeacherHome({
       )
       .order("session_date", { ascending: false })
       .limit(5),
+    supabase
+      .from("payments")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ]);
 
   const pendingHw = hwResult.data ?? [];
   const suspended = suspendedResult.data ?? [];
   const recentSessions = sessionsResult.data ?? [];
+  const pendingPaymentsCount = pendingPaymentsResult.count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -99,6 +105,18 @@ export default async function TeacherHome({
         >
           <p className="font-medium text-slate-900">Programme</p>
           <p className="text-xs text-slate-500 mt-0.5">Bibliothèque de leçons</p>
+        </Link>
+        <Link
+          href="/teacher/payments"
+          className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-emerald-300 hover:bg-emerald-50/40 relative"
+        >
+          <p className="font-medium text-slate-900">Paiements</p>
+          <p className="text-xs text-slate-500 mt-0.5">Confirmer les règlements</p>
+          {pendingPaymentsCount > 0 && (
+            <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
+              {pendingPaymentsCount}
+            </span>
+          )}
         </Link>
       </div>
 

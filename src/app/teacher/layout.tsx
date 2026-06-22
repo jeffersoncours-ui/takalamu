@@ -2,13 +2,22 @@ import Link from "next/link";
 
 import { requireTeacher } from "@/lib/auth";
 import { signOut } from "@/app/login/actions";
+import { createClient } from "@/lib/supabase/server";
+import { NotifBell } from "@/components/notif-bell";
 
 export default async function TeacherLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { profile } = await requireTeacher();
+  const { profile, userId } = await requireTeacher();
+  const supabase = await createClient();
+  const { data: notifs } = await supabase
+    .from("notifications")
+    .select("id, type, payload, read, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(20);
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -59,6 +68,16 @@ export default async function TeacherLayout({
             >
               Résa
             </Link>
+            <Link
+              href="/teacher/payments"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Paiements
+            </Link>
+            <NotifBell
+              userId={userId}
+              initialNotifs={notifs ?? []}
+            />
             <form action={signOut}>
               <button
                 type="submit"
