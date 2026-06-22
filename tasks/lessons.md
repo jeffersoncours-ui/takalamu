@@ -24,5 +24,17 @@
 - **Egress réseau bloqué** vers `*.supabase.co` depuis le sandbox (allowlist) → impossible de tester le login REST en direct ; vérifié via MCP (`crypt()` match) à la place.
 - **Pas de token Vercel** ni login CLI dans le sandbox, et le MCP Vercel ne crée pas de projet / n'écrit pas d'env vars → le déploiement preview passe par l'**intégration Git** côté propriétaire.
 
+## Session 2 (2026-06-21) — Mode auteur / programme (Lot 2)
+
+### Décisions
+- **Aiguillage par rôle** centralisé dans `src/lib/auth.ts` (`getProfile`, `requireTeacher`, `homePathForRole`). Le layout `/teacher` appelle `requireTeacher()` → garde unique pour tout l'espace enseignant.
+- **CRUD lessons** via server actions (`createLesson`/`updateLesson`/`deleteLesson`/`moveLesson`). Validation serveur (titre requis, `isLessonPhase`). Pas de logique métier côté client (§11).
+- **Réordonnancement** : échange d'`order_index` avec le voisin (boutons ↑/↓), choisi pour la sobriété mobile plutôt que drag&drop.
+- **Édition** : `updateLesson.bind(null, id)` pour lier l'id de la leçon à l'action — pattern propre pour passer un paramètre fixe à une server action consommée par `useActionState`.
+
+### Pièges
+- **Pré-requis Vercel découverts à l'usage** (à refaire pour chaque projet) : (1) la *Deployment Protection* (Vercel Authentication) bloque tout visiteur par un 403 — à désactiver ; (2) repo GitHub public ≠ site public (réglages distincts) ; (3) variables d'env à mettre sur **tous** les environnements + **redéployer** après ajout (un build antérieur ne les a pas).
+- **Diagnostic à distance** : quand le projet Vercel est hors du scope du token MCP (compte perso vs team), `list_projects`/`web_fetch_vercel_url` ne le voient pas. Astuce : lire les **logs auth Supabase** (`get_logs auth`) pour savoir si la requête de login arrive — absence de tentative = problème côté app/env, pas côté base.
+
 ### Rappels process
 - Le propriétaire veut **valider le plan avant tout code** et des **checkpoints** (ne pas tout enchaîner). Respecter ce rythme même si CLAUDE.md dit « exécuter sans pause ».

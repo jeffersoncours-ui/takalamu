@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { homePathForRole } from "@/lib/auth";
 
 import { LoginForm } from "./login-form";
 
@@ -12,7 +13,12 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/dashboard");
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    redirect(homePathForRole(profile?.role));
   }
 
   return (

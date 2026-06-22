@@ -6,25 +6,29 @@
 > Objectif : CRUD ordonné de la bibliothèque maîtresse `lessons` (partagée entre enseignants), réservée aux rôles teacher/admin. Première vraie Uas-cas métier après le socle.
 
 ### Lot 2A — Espace enseignant & garde de rôle
-- [ ] Helpers serveur : `getProfile()` (profil courant) et `requireTeacher()` (redirige student/anon vers `/login` ou `/dashboard`).
-- [ ] Layout `/teacher` (nav sobre mobile-first) + redirection post-login selon le rôle (teacher/admin → `/teacher`, student → `/dashboard`).
+- [x] Helpers serveur : `getProfile()`, `requireTeacher()`, `homePathForRole()` (`src/lib/auth.ts`).
+- [x] Layout `/teacher` (nav sobre mobile-first) + redirection post-login selon le rôle.
 
 ### Lot 2B — CRUD `lessons` (cœur du lot)
-- [ ] `/teacher/program` : liste des leçons triées par `order_index`, badge de phase (dechiffrage/lecture_oral/grammaire), objectif.
-- [ ] **Créer** une leçon : formulaire + server action (insert). Champs : `title` (requis), `phase` (requis), `objective`, `grammar_point`, `reading_support`, `homework_template`. `order_index` = max+1 auto.
-- [ ] **Éditer** une leçon : formulaire pré-rempli + server action update.
-- [ ] **Supprimer** une leçon : action avec confirmation.
-- [ ] **Réordonner** : boutons monter/descendre (échange d'`order_index`) — simple et tactile.
-- [ ] Validation **côté serveur** (titre non vide, phase valide). RLS limite déjà l'écriture aux teachers.
-- [ ] *(Hors lot : upload audio `audio_assets` et liaison `quiz_id` — nécessitent Storage/quiz, traités plus tard. Champs laissés optionnels/non câblés.)*
+- [x] `/teacher/program` : liste triée par `order_index`, badge de phase, objectif.
+- [x] **Créer** (`/teacher/program/new`) : server action `createLesson`, `order_index` = max+1.
+- [x] **Éditer** (`/teacher/program/[id]/edit`) : formulaire pré-rempli + `updateLesson` (action liée à l'id).
+- [x] **Supprimer** : `deleteLesson`.
+- [x] **Réordonner** : boutons ↑/↓ (`moveLesson`, échange d'`order_index`).
+- [x] Validation **côté serveur** (titre requis, phase valide via `isLessonPhase`).
+- [x] *(Hors lot : audio + `quiz_id` laissés pour plus tard.)*
 
 ### Lot 2C — Preuves & déploiement
-- [ ] Tests via MCP : en tant que teacher, créer/éditer/réordonner/supprimer ; vérifier qu'un student peut **lire** mais **pas écrire** (RLS).
-- [ ] Build + lint verts ; push → redeploy preview ; vérif rapide sur Vercel.
-- [ ] Mettre à jour `tasks/todo.md` (Review) + `tasks/lessons.md`.
+- [x] Tests MCP : enseignant crée ✓ ; élève bloqué en écriture (`new row violates RLS`) ✓ ; élève lit le programme (2 leçons) ✓.
+- [x] Build + lint verts ; push → redeploy preview.
+- [x] Docs mises à jour (`todo.md` Review + `lessons.md`).
 
 ### Review (Étape 2)
-_(à remplir en fin d'étape)_
+**État au 2026-06-21 — Mode auteur / programme livré.**
+- Espace enseignant `/teacher` protégé par `requireTeacher()` ; aiguillage post-login par rôle (enseignant/admin → `/teacher`, élève → `/dashboard`).
+- CRUD complet des `lessons` (créer / éditer / supprimer / réordonner ↑↓) via server actions, validation serveur, RLS prouvée (écriture enseignant-only, lecture élève OK).
+- Build & lint verts ; poussé sur la branche → redeploy preview Vercel.
+- **Prochaine étape (après feu vert)** : Lot 3 — fiche de fin de cours (§7.6, composant critique < 30 s) qui alimente `lesson_records` + `vocabulary` + `grammar_rules` + `homework` et avance le curseur `student_progress`.
 
 ---
 

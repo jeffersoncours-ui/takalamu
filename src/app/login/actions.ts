@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { homePathForRole } from "@/lib/auth";
 
 export async function signIn(_prevState: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -26,13 +27,23 @@ export async function signIn(_prevState: unknown, formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
   if (error) {
     return { error: "Identifiants invalides." };
   }
 
-  redirect("/dashboard");
+  // Aiguillage selon le rôle : enseignant/admin → espace enseignant.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  redirect(homePathForRole(profile?.role));
 }
 
 export async function signOut() {
