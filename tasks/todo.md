@@ -1,8 +1,46 @@
 # Todo
 
+## Étape 4 — Espace élève (`/dashboard`)
+
+> **Statut : TERMINÉ.**
+> Objectif : 4 onglets en lecture seule — Cours (lesson_records), Vocabulaire (glossaire + recherche), Grammaire, Devoirs (cycle de statut).
+
+### Lot 4A — Garde de rôle + layout
+- [x] `requireStudent()` dans `src/lib/auth.ts` — renvoie `{ userId, profile, studentId }`.
+- [x] Layout `/dashboard/layout.tsx` : en-tête + `DashboardTabs` (client, active state via `usePathname`).
+
+### Lot 4B — Onglet Cours
+- [x] `/dashboard/page.tsx` : liste des `lesson_records` (date, titre de leçon, badge présence, récap public).
+
+### Lot 4C — Onglet Vocabulaire
+- [x] `/dashboard/vocabulary/page.tsx` + `vocab-search.tsx` (client) : liste complète + recherche FR↔AR en temps réel.
+
+### Lot 4D — Onglet Grammaire
+- [x] `/dashboard/grammar/page.tsx` : règles de grammaire triées par date.
+
+### Lot 4E — Onglet Devoirs
+- [x] `/dashboard/homework/page.tsx` : devoirs avec badge de statut, instructions, retour + note du prof.
+
+### Lot 4F — Preuves & déploiement
+- [x] RLS prouvées : Ali (1 lesson_record, 2 vocab, 1 grammar, 0 homework, 0 private_notes) ; Fatima voit uniquement ses données (0 ligne d'Ali) ; isolation cross-student ✓.
+- [x] Build & lint verts. Push → preview.
+
+### Review (Étape 4)
+**État au 2026-06-22 — Espace élève livré.**
+- Layout `/dashboard` avec 4 onglets (navigation active client-side) protégé par `requireStudent()`.
+- Cours : `lesson_records` triés par date DESC, badge coloré par statut de présence, récap public.
+- Vocabulaire : `vocabulary` complet avec recherche client-side FR↔AR (Arabic `dir="rtl"`).
+- Grammaire : `grammar_rules` avec titre + contenu, triés par date.
+- Devoirs : `homework` avec badge de statut (à_rendre → rendu → corrigé → vu) et retour du prof.
+- RLS prouvées empiriquement (isolation élève↔élève, notes privées = 0 côté élève).
+- **Défauts retenus** : upload de devoir (`submission_file`) non implémenté ; onglet Paiement/Quiz/Messagerie à venir.
+- **Prochaine étape** : fiche élève côté enseignant, planning/réservation, ou paiement Revolut.
+
+---
+
 ## Étape 3 — Fiche de fin de cours (§7.6, composant critique < 30 s)
 
-> **Statut : EN COURS (feu vert reçu « lance, on corrigera après au besoin »).**
+> **Statut : TERMINÉ.**
 > Objectif : une seule soumission qui alimente `lesson_records` + `vocabulary` + `grammar_rules` + `homework`, avance le curseur `student_progress`, crée la note privée de séance (`session_private_notes`), applique les règles d'absence (§8). Atomicité garantie par une RPC Postgres.
 > Défauts retenus (à valider plus tard) : `support_files` reportés ; `session_date` par défaut = maintenant, éditable. `late` compté comme absence injustifiée (§8.4).
 
