@@ -8,6 +8,7 @@ const TABS = [
   { href: "/dashboard/vocabulary", label: "Vocabulaire" },
   { href: "/dashboard/grammar", label: "Grammaire" },
   { href: "/dashboard/homework", label: "Devoirs" },
+  { href: "/dashboard/bookings", label: "Réservations" },
 ];
 
 export default function DashboardTabs() {

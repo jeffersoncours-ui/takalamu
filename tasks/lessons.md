@@ -2,6 +2,21 @@
 
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
+## Session 7 (2026-06-22) — Planning & réservation (Lot 6)
+
+### Décisions
+- **Slots disponibles côté serveur** : `generateAvailableSlots()` dans `src/lib/booking.ts` — explose les règles récurrentes sur 4 semaines, déduplique par clé UTC, filtre préavis 2h, max 20 résultats. Le calcul reste en TypeScript (pas de Postgres) : logique purement applicative.
+- **Admin client pour slots teacher** : le student ne peut pas lire les bookings des autres élèves (RLS). On utilise `createAdminClient()` côté serveur dans le Server Component pour récupérer tous les créneaux déjà pris chez l'enseignant (seulement les champs `scheduled_at`/`status`, pas les noms d'élèves).
+- **Verrou paiement = app-level** : `checkBookingEligibility()` appelé dans la server action `createBooking` (re-vérification serveur). La RLS `bookings_insert_student` ne vérifie que `student_id = current_student_id()`, pas le paiement — intentionnel : la sécurité par couches (RLS bloque un élève d'écrire pour un autre, l'app bloque l'écriture sans paiement).
+- **JoinButton temps réel** : `useEffect` + `setInterval(60_000)` pour rafraîchir `now` chaque minute. Affiche heure locale via `getHours()`/`getMinutes()` (pas UTC).
+- **Slots en heure locale navigateur** : `toLocaleDateString("fr-FR", {...})` + `toLocaleTimeString("fr-FR", {...})` dans le composant client `BookingSlots`. Serveur-side listings gardent `"HH:mm UTC"` avec label.
+- **Conversion heure locale → UTC** dans le formulaire enseignant : `new Date().getTimezoneOffset()` en minutes dans `toUtcTime()`. Gère le wrap minuit avec `% (24*60)`.
+
+### Pièges
+- **`typeof upcoming extends Array<infer T> ? T : never`** ne fonctionne pas si `upcoming` est `T[] | undefined` : le type devient `never`. Utiliser `NonNullable<typeof upcoming>[number]` à la place.
+- **`teacher_id` nullable** dans `students` table : TypeScript infère `string | null`. Garder `if (!student?.teacher_id)` plutôt que `if (!student)` pour éviter l'erreur de type en passant `null` à `.eq()`.
+- **UUID `LIKE` opérateur** : Postgres lève une erreur `operator does not exist: uuid ~~ unknown` quand on utilise `LIKE` avec un uuid. Toujours caster en `::text` ou utiliser `= ANY(ARRAY[...])` pour filtrer plusieurs UUIDs.
+
 ## Session 6 (2026-06-22) — Espace enseignant complet (Lot 5)
 
 ### Décisions

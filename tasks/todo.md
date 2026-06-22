@@ -1,5 +1,45 @@
 # Todo
 
+## Étape 6 — Planning & réservation
+
+> **Statut : TERMINÉ.**
+
+### Lot 6A — Dispos enseignant (`/teacher/availability`)
+- [x] CRUD créneaux récurrents (day_of_week + heure UTC, formulaire client avec conversion TZ)
+- [x] Server actions : `createSlot`, `deleteSlot`
+
+### Lot 6B — Réservations enseignant (`/teacher/bookings`)
+- [x] Liste des bookings à venir (statut `booked`)
+- [x] Actions : marquer `completed`/`cancelled`, ajouter `zoom_link`
+
+### Lot 6C — Réservation élève (`/dashboard/bookings`)
+- [x] Helper `checkBookingEligibility` (statut actif + paiement `paid` + quota 4/mois)
+- [x] Génération des créneaux libres côté serveur (4 semaines × dispos − déjà réservés)
+- [x] Formulaire de sélection (composant client, affichage heure locale navigateur)
+- [x] Server action `createBooking` (re-vérifie l'éligibilité + slot libre)
+- [x] Liste des réservations à venir
+
+### Lot 6D — Bouton Rejoindre (composant client)
+- [x] Fenêtre H−30min → H+5min : bouton Zoom actif
+- [x] Avant : "Rejoindre à HH:MM" ; après : "Accès fermé" (règle §8)
+- [x] Re-render toutes les minutes (`useEffect`)
+
+### Lot 6E — Preuves & déploiement
+- [x] Tests MCP : isolation bookings (A: élève voit uniquement les siens; B: Khadija ne voit pas les élèves de Youssef; D: Youssef voit les siens; C: INSERT RLS au bon niveau, verrou payment = app-level)
+- [x] Build + lint verts → push + sync Vercel
+
+### Review (Étape 6)
+**État au 2026-06-22 — Planning & réservation livré.**
+- `src/lib/booking.ts` : helpers `generateAvailableSlots` (4 semaines, dédupliqué UTC, ≤20 slots, préavis 2h) + `checkBookingEligibility` (statut actif + paiement paid + quota 4/mois).
+- `/teacher/availability` : CRUD créneaux récurrents (heure locale → UTC via `getTimezoneOffset()`), `DeleteSlotButton` client.
+- `/teacher/bookings` : liste à venir + passées, `BookingActions` client (zoom inline, marquer terminé/annulé).
+- `/dashboard/bookings` : eligibilité, créneaux libres (admin client pour filtrer tous les bookings teacher sans exposer les données), `BookingSlots` client (affichage heure locale navigateur), `JoinButton` (fenêtre H−30min/H+5min, re-render 1 min).
+- Nav teacher enrichie (Dispos + Résa), onglet élève Réservations ajouté.
+- **RLS tests** : isolation élève↔élève ✓, Khadija ne voit pas les bookings de Youssef ✓, Youssef voit les siens ✓, INSERT guard = app-level (server action `checkBookingEligibility`) ✓.
+- **Prochaine étape possible** : paiement Revolut, messagerie temps réel, vidéos Bunny Stream, ou vitrine publique.
+
+---
+
 ## Étape 5 — Espace enseignant complet (cockpit + élèves + correction)
 
 > **Statut : EN COURS.**

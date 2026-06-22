@@ -47,6 +47,18 @@ export default async function TeacherLayout({
             >
               Programme
             </Link>
+            <Link
+              href="/teacher/availability"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Dispos
+            </Link>
+            <Link
+              href="/teacher/bookings"
+              className="font-medium text-slate-700 hover:text-emerald-700"
+            >
+              Résa
+            </Link>
             <form action={signOut}>
               <button
                 type="submit"
