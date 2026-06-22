@@ -1,8 +1,36 @@
 # Todo
 
-## Étape 1 — Socle (auth, rôles, RLS, modèle de données)
+## Étape 2 — Mode auteur / programme (§7.6 « Mon programme »)
 
-> **Statut : EN ATTENTE DE VALIDATION DU PLAN.** Ne rien exécuter avant le feu vert du propriétaire.
+> **Statut : EN ATTENTE DE VALIDATION DU PLAN.** Ne rien coder avant le feu vert du propriétaire.
+> Objectif : CRUD ordonné de la bibliothèque maîtresse `lessons` (partagée entre enseignants), réservée aux rôles teacher/admin. Première vraie Uas-cas métier après le socle.
+
+### Lot 2A — Espace enseignant & garde de rôle
+- [ ] Helpers serveur : `getProfile()` (profil courant) et `requireTeacher()` (redirige student/anon vers `/login` ou `/dashboard`).
+- [ ] Layout `/teacher` (nav sobre mobile-first) + redirection post-login selon le rôle (teacher/admin → `/teacher`, student → `/dashboard`).
+
+### Lot 2B — CRUD `lessons` (cœur du lot)
+- [ ] `/teacher/program` : liste des leçons triées par `order_index`, badge de phase (dechiffrage/lecture_oral/grammaire), objectif.
+- [ ] **Créer** une leçon : formulaire + server action (insert). Champs : `title` (requis), `phase` (requis), `objective`, `grammar_point`, `reading_support`, `homework_template`. `order_index` = max+1 auto.
+- [ ] **Éditer** une leçon : formulaire pré-rempli + server action update.
+- [ ] **Supprimer** une leçon : action avec confirmation.
+- [ ] **Réordonner** : boutons monter/descendre (échange d'`order_index`) — simple et tactile.
+- [ ] Validation **côté serveur** (titre non vide, phase valide). RLS limite déjà l'écriture aux teachers.
+- [ ] *(Hors lot : upload audio `audio_assets` et liaison `quiz_id` — nécessitent Storage/quiz, traités plus tard. Champs laissés optionnels/non câblés.)*
+
+### Lot 2C — Preuves & déploiement
+- [ ] Tests via MCP : en tant que teacher, créer/éditer/réordonner/supprimer ; vérifier qu'un student peut **lire** mais **pas écrire** (RLS).
+- [ ] Build + lint verts ; push → redeploy preview ; vérif rapide sur Vercel.
+- [ ] Mettre à jour `tasks/todo.md` (Review) + `tasks/lessons.md`.
+
+### Review (Étape 2)
+_(à remplir en fin d'étape)_
+
+---
+
+## Étape 1 — Socle (auth, rôles, RLS, modèle de données) — ✅ TERMINÉ & VALIDÉ (preview OK)
+
+> Socle validé de bout en bout le 2026-06-21 (login fonctionnel sur la preview Vercel, RLS prouvées).
 > Contraintes propriétaire : livraison incrémentale (sous-lots + checkpoints), preview Vercel pour tests, comptes de test **conservés** avec identifiants+mots de passe fournis, nouveau projet Supabase.
 
 ### Lot 1A — Scaffold & câblage (checkpoint : app déployée sur Vercel)
