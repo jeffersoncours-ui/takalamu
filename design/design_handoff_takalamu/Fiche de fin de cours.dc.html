@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&family=Playfair+Display:wght@500;600;700&family=Libre+Baskerville:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Mulish:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;}
+.tk-scroll::-webkit-scrollbar{width:5px;}
+.tk-scroll::-webkit-scrollbar-thumb{background:#D8CFBF;border-radius:99px;}
+input::placeholder,textarea::placeholder{color:#B7B0A2;}
+@keyframes tkUp{from{transform:translateY(18px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes tkSheet{from{transform:translateY(100%);}to{transform:translateY(0);}}
+@keyframes tkFade{from{opacity:0;}to{opacity:1;}}
+@keyframes tkToast{0%{transform:transl(-50%,16px);opacity:0;}15%{transform:translate(-50%,0);opacity:1;}85%{opacity:1;}100%{opacity:0;}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="min-height:100vh;background:#e7e5df;font-family:var(--tk-body,'Plus Jakarta Sans'),sans-serif;-webkit-font-smoothing:antialiased;padding:44px;display:flex;gap:44px;align-items:flex-start;">
+
+  <!-- PHONE -->
+  <div style="flex:none;">
+    <div style="font:700 12px var(--tk-body,'Plus Jakarta Sans');color:#6B6459;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Espace enseignant · Fiche de fin de cours</div>
+    <div style="width:392px;height:844px;border-radius:46px;background:#0c0a08;padding:11px;box-shadow:0 36px 70px rgba(0,0,0,.26);">
+      <div style="width:100%;height:100%;border-radius:35px;overflow:hidden;background:#F7F4EE;position:relative;display:flex;flex-direction:column;">
+
+        <!-- status bar -->
+        <div style="height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex:none;z-index:6;"><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">9:41</span><div style="width:17px;height:11px;border:1.5px solid #1C1A17;border-radius:3px;"></div></div>
+
+        <!-- top bar -->
+        <div style="flex:none;padding:4px 18px 14px;display:flex;align-items:center;gap:12px;z-index:6;">
+          <div style="width:42px;height:42px;border-radius:13px;background:#fff;border:1px solid #E9E3D8;display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <div style="flex:1;"><div style="font:600 12px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;">Séance · {{ dateLabel }}</div><div style="font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:21px;color:#1C1A17;line-height:1.05;">Fin de cours</div></div>
+        </div>
+
+        <!-- SCROLL AREA -->
+        <div class="tk-scroll" style="flex:1;overflow-y:auto;padding:4px 18px 122px;"><div style="display:flex;flex-direction:column;gap:18px;">
+
+          <!-- élève -->
+          <div onClick="{{ openEleve }}" style="position:relative;overflow:hidden;background:#0A553F;border-radius:20px;padding:16px;cursor:pointer;box-shadow:0 14px 28px rgba(10,85,63,.30);">
+            <svg width="190" height="190" viewBox="0 0 190 190" style="position:absolute;top:-34px;right:-34px;opacity:.15;" fill="none" stroke="#9FE3C8" stroke-width="1.5"><rect x="45" y="45" width="100" height="100" rx="6" transform="rotate(45 95 95)"/><rect x="67" y="67" width="56" height="56" rx="4" transform="rotate(45 95 95)"/><rect x="23" y="23" width="144" height="144" rx="8" transform="rotate(45 95 95)"/></svg>
+            <div style="position:relative;display:flex;align-items:center;gap:13px;">
+              <div style="width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:20px;color:#fff;flex:none;">{{ eleveInitial }}</div>
+              <div style="flex:1;min-width:0;"><div style="font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:19px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">{{ eleve }}</div><div style="font:600 12px var(--tk-body,'Plus Jakarta Sans');color:#9FE3C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ eleveNiveau }}</div></div>
+              <div style="display:flex;align-items:center;gap:5px;height:30px;padding:0 12px;border-radius:99px;background:rgba(255,255,255,.16);font:700 12px var(--tk-body,'Plus Jakarta Sans');color:#fff;flex:none;">Changer<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+          </div>
+
+          <!-- PRÉSENCE -->
+          <div>
+            <div style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;margin:2px 0 10px 4px;">Présence</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+              <div onClick="{{ setPresent }}" style="cursor:pointer;">
+                <sc-if value="{{ p_present }}" hint-placeholder-val="{{ true }}"><div style="height:64px;border-radius:16px;border:1.6px solid var(--tk-accent,#0F9D6E);background:#ECFAF4;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:var(--tk-accent,#0F9D6E);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#0A6B4E;">Présent</span></div></sc-if>
+                <sc-if value="{{ np_present }}" hint-placeholder-val="{{ false }}"><div style="height:64px;border-radius:16px;border:1.4px solid #E9E3D8;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#6B6459;">Présent</span></div></sc-if>
+              </div>
+
+              <div onClick="{{ setRetard }}" style="cursor:pointer;">
+                <sc-if value="{{ p_retard }}" hint-placeholder-val="{{ false }}"><div style="height:64px;border-radius:16px;border:1.6px solid #F59E0B;background:#FDF4E3;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#F59E0B;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#9A6206;">En retard</span></div></sc-if>
+                <sc-if value="{{ np_retard }}" hint-placeholder-val="{{ true }}"><div style="height:64px;border-radius:16px;border:1.4px solid #E9E3D8;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></div><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#6B6459;">En retard</span></div></sc-if>
+              </div>
+
+              <div onClick="{{ setAbsJ }}" style="cursor:pointer;">
+                <sc-if value="{{ p_absj }}" hint-placeholder-val="{{ false }}"><div style="height:64px;border-radius:16px;border:1.6px solid #A8A29E;background:#F4F1EB;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#8B857A;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><span style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#57534E;">Absent justifié</span></div></sc-if>
+                <sc-if value="{{ np_absj }}" hint-placeholder-val="{{ true }}"><div style="height:64px;border-radius:16px;border:1.4px solid #E9E3D8;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><span style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#6B6459;">Absent justifié</span></div></sc-if>
+              </div>
+
+              <div onClick="{{ setAbsI }}" style="cursor:pointer;">
+                <sc-if value="{{ p_absi }}" hint-placeholder-val="{{ false }}"><div style="height:64px;border-radius:16px;border:1.6px solid #E5484D;background:#FDECEC;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#E5484D;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><span style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#B4292E;">Absent injustifié</span></div></sc-if>
+                <sc-if value="{{ np_absi }}" hint-placeholder-val="{{ true }}"><div style="height:64px;border-radius:16px;border:1.4px solid #E9E3D8;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;"><div style="width:30px;height:30px;border-radius:9px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><span style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#6B6459;">Absent injustifié</span></div></sc-if>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- LEÇON -->
+          <div>
+            <div style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;margin:2px 0 10px 4px;">Leçon travaillée</div>
+            <div onClick="{{ openLecon }}" style="background:#fff;border-radius:18px;padding:16px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);display:flex;align-items:center;gap:13px;cursor:pointer;">
+              <div style="width:40px;height:40px;border-radius:12px;background:#ECFAF4;display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:16px;color:var(--tk-accent,#0F9D6E);">{{ leconNum }}</div>
+              <div style="flex:1;min-width:0;"><div style="font:700 15px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ leconTitre }}</div><div style="font:600 12px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;">{{ leconPhase }}</div></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C1B2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+
+          <!-- SUPPORT DE COURS -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 4px 10px;"><span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;">Support de cours</span><span style="font:600 11px var(--tk-body,'Plus Jakarta Sans');color:#A8A29E;">photos · PDF · docs</span></div>
+            <div style="background:#fff;border-radius:18px;padding:14px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                <sc-for list="{{ supportList }}" as="f" hint-placeholder-count="0">
+                  <div style="position:relative;">
+                    <sc-if value="{{ f.isImage }}" hint-placeholder-val="{{ false }}"><div style="width:74px;height:74px;border-radius:12px;overflow:hidden;border:1px solid #E9E3D8;background:#F4F1EB;">{{ f.thumb }}</div></sc-if>
+                    <sc-if value="{{ f.isFile }}" hint-placeholder-val="{{ false }}"><div style="width:128px;height:74px;border-radius:12px;border:1px solid #E9E3D8;background:#FBF9F5;padding:9px 10px;display:flex;flex-direction:column;justify-content:space-between;"><div style="width:26px;height:26px;border-radius:8px;background:#EAEFFD;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg></div><div><div style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:108px;">{{ f.name }}</div><div style="font:600 10px var(--tk-body,'Plus Jakarta Sans');color:#A8A29E;">{{ f.sizeLabel }}</div></div></div></sc-if>
+                    <div onClick="{{ f.remove }}" style="position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:99px;background:#1C1A17;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                  </div>
+                </sc-for>
+                <label style="display:flex;align-items:center;gap:11px;flex:1;min-width:150px;height:74px;border-radius:14px;border:1.6px dashed #CFC6B5;background:#FBF9F5;padding:0 14px;cursor:pointer;">
+                  <input type="file" multiple accept="image/*,application/pdf,.doc,.docx,.ppt,.pptx" onChange="{{ onPickSupport }}" style="display:none;">
+                  <div style="width:38px;height:38px;border-radius:11px;background:#ECFAF4;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tk-accent,#0F9D6E)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+                  <div><div style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">Ajouter un support</div><div style="font:600 11px var(--tk-body,'Plus Jakarta Sans');color:#A8A29E;">Photo, PDF ou document</div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- VOCABULAIRE -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 4px 10px;"><span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;">Vocabulaire du jour</span><span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:var(--tk-accent,#0F9D6E);">{{ vocabCount }} mot(s)</span></div>
+            <div style="background:#fff;border-radius:18px;padding:14px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+              <sc-for list="{{ vocabList }}" as="v" hint-placeholder-count="1">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid #F4F0E8;">
+                  <div dir="rtl" style="font-family:'Amiri',serif;font-weight:700;font-size:24px;color:#1C1A17;min-width:84px;text-align:right;">{{ v.ar }}</div>
+                  <div style="flex:1;"><div style="font:600 14px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">{{ v.fr }}</div></div>
+                  <div onClick="{{ v.remove }}" style="width:28px;height:28px;border-radius:8px;background:#FDECEC;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                </div>
+              </sc-for>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
+                <input dir="rtl" value="{{ newAr }}" onChange="{{ onNewAr }}" placeholder="عربي" style="width:96px;height:46px;border-radius:13px;border:1.4px solid #E9E3D8;background:#FBF9F5;text-align:right;padding:0 12px;font-family:'Amiri',serif;font-weight:700;font-size:19px;color:#1C1A17;outline:none;flex:none;">
+                <input value="{{ newFr }}" onChange="{{ onNewFr }}" placeholder="français" style="flex:1;min-width:0;height:46px;border-radius:13px;border:1.4px solid #E9E3D8;background:#FBF9F5;padding:0 14px;font:600 14px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;">
+                <div onClick="{{ addVocab }}" style="width:46px;height:46px;border-radius:13px;background:var(--tk-accent,#0F9D6E);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;box-shadow:0 6px 14px rgba(15,157,110,.28);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RÈGLE -->
+          <div>
+            <div style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;margin:2px 0 10px 4px;">Règle de grammaire <span style="color:#BBB3A4;font-weight:600;text-transform:none;letter-spacing:0;">· optionnel</span></div>
+            <div style="background:#fff;border-radius:18px;padding:14px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);display:flex;flex-direction:column;gap:10px;">
+              <input value="{{ regleTitle }}" onChange="{{ onRegleTitle }}" placeholder="Titre de la règle" style="height:46px;border-radius:13px;border:1.4px solid #E9E3D8;background:#FBF9F5;padding:0 14px;font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;">
+              <textarea value="{{ regleBody }}" onChange="{{ onRegleBody }}" placeholder="Explication libre…" style="min-height:60px;resize:none;border-radius:13px;border:1.4px solid #E9E3D8;background:#FBF9F5;padding:12px 14px;font:500 14px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;font-family:var(--tk-body,'Plus Jakarta Sans');"></textarea>
+            </div>
+          </div>
+
+          <!-- DEVOIR -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 4px 10px;">
+              <span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;">Devoir à donner</span>
+              <div onClick="{{ toggleDevoir }}" style="cursor:pointer;">
+                <sc-if value="{{ devoirOn }}" hint-placeholder-val="{{ true }}"><div style="width:48px;height:28px;border-radius:99px;background:var(--tk-accent,#0F9D6E);padding:3px;display:flex;justify-content:flex-end;"><div style="width:22px;height:22px;border-radius:99px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);"></div></div></sc-if>
+                <sc-if value="{{ devoirOff }}" hint-placeholder-val="{{ false }}"><div style="width:48px;height:28px;border-radius:99px;background:#E2DBCD;padding:3px;display:flex;"><div style="width:22px;height:22px;border-radius:99px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.15);"></div></div></sc-if>
+              </div>
+            </div>
+            <sc-if value="{{ devoirOn }}" hint-placeholder-val="{{ true }}">
+              <div style="background:#fff;border-radius:18px;padding:14px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+                <textarea value="{{ devoirText }}" onChange="{{ onDevoir }}" placeholder="Consignes du devoir…" style="width:100%;min-height:64px;resize:none;border:none;background:transparent;font:500 14px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;font-family:var(--tk-body,'Plus Jakarta Sans');"></textarea>
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F4F0E8;display:flex;flex-wrap:wrap;gap:10px;">
+                  <sc-for list="{{ devoirList }}" as="f" hint-placeholder-count="0">
+                    <div style="position:relative;">
+                      <sc-if value="{{ f.isImage }}" hint-placeholder-val="{{ false }}"><div style="width:62px;height:62px;border-radius:11px;overflow:hidden;border:1px solid #E9E3D8;background:#F4F1EB;">{{ f.thumb }}</div></sc-if>
+                      <sc-if value="{{ f.isFile }}" hint-placeholder-val="{{ false }}"><div style="width:118px;height:62px;border-radius:11px;border:1px solid #E9E3D8;background:#FBF9F5;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg><div style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:98px;">{{ f.name }}</div></div></sc-if>
+                      <div onClick="{{ f.remove }}" style="position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:99px;background:#1C1A17;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                    </div>
+                  </sc-for>
+                  <label style="display:flex;align-items:center;gap:9px;height:62px;padding:0 14px;border-radius:13px;border:1.6px dashed #CFC6B5;background:#FBF9F5;cursor:pointer;flex:1;min-width:150px;">
+                    <input type="file" multiple accept="image/*,application/pdf,.doc,.docx" onChange="{{ onPickDevoir }}" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tk-accent,#0F9D6E)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05 12 20.45a5.5 5.5 0 0 1-7.78-7.78l8.49-8.48a3.67 3.67 0 0 1 5.18 5.18l-8.49 8.49a1.83 1.83 0 0 1-2.6-2.6l7.78-7.77"/></svg>
+                    <span style="font:700 13px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">Joindre un fichier</span>
+                  </label>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- RÉCAP PUBLIC -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin:2px 4px 10px;"><span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;text-transform:uppercase;letter-spacing:.07em;">Récap public</span><span style="display:inline-flex;align-items:center;gap:4px;font:700 10px var(--tk-body,'Plus Jakarta Sans');color:#2C49B8;background:#EAEFFD;border:1px solid #C6D2F7;padding:2px 8px;border-radius:99px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Vu par l'élève</span></div>
+            <div style="background:#fff;border-radius:18px;padding:14px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+              <textarea value="{{ recap }}" onChange="{{ onRecap }}" placeholder="Ex. Très bonne lecture aujourd'hui, à consolider les voyelles longues." style="width:100%;min-height:64px;resize:none;border:none;background:transparent;font:500 14px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;font-family:var(--tk-body,'Plus Jakarta Sans');"></textarea>
+            </div>
+          </div>
+
+          <!-- NOTE PRIVÉE -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin:2px 4px 10px;"><span style="font:700 11px var(--tk-body,'Plus Jakarta Sans');color:#9A6206;text-transform:uppercase;letter-spacing:.07em;">Note privée</span><span style="display:inline-flex;align-items:center;gap:4px;font:700 10px var(--tk-body,'Plus Jakarta Sans');color:#9A6206;background:#FDF4E3;border:1px solid #F4D193;padding:2px 8px;border-radius:99px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C98A1E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Jamais visible par l'élève</span></div>
+            <div style="background:#FFFBF2;border-radius:18px;padding:14px;border:1.4px solid #F2E3C2;">
+              <textarea value="{{ note }}" onChange="{{ onNote }}" placeholder="Observations confidentielles, points d'attention…" style="width:100%;min-height:60px;resize:none;border:none;background:transparent;font:500 14px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#5C4A22;outline:none;font-family:var(--tk-body,'Plus Jakarta Sans');"></textarea>
+            </div>
+          </div>
+
+          <div style="height:4px;"></div>
+          </div>
+        </div>
+
+        <!-- SAVE BAR -->
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 18px 26px;background:linear-gradient(to top,#F7F4EE 62%,rgba(247,244,238,0));z-index:6;">
+          <div onClick="{{ saveFiche }}" style="height:56px;border-radius:18px;background:var(--tk-accent,#0F9D6E);display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 12px 26px rgba(15,157,110,.36);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span style="font:800 16px var(--tk-body,'Plus Jakarta Sans');color:#fff;">Enregistrer la fiche</span></div>
+        </div>
+
+        <!-- LESSON PICKER SHEET -->
+        <sc-if value="{{ leconOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;z-index:20;">
+            <div onClick="{{ closeLecon }}" style="position:absolute;inset:0;background:rgba(28,26,23,.40);animation:tkFade .2s ease;"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:78%;background:#F7F4EE;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;animation:tkSheet .26s cubic-bezier(.22,1,.36,1);box-shadow:0 -10px 40px rgba(0,0,0,.18);">
+              <div style="flex:none;padding:14px 20px 10px;">
+                <div style="width:40px;height:5px;border-radius:99px;background:#DDD5C7;margin:0 auto 14px;"></div>
+                <div style="font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:20px;color:#1C1A17;margin-bottom:12px;">Choisir une leçon</div>
+                <div style="display:flex;align-items:center;gap:10px;height:48px;border-radius:14px;border:1.5px solid #E9E3D8;background:#fff;padding:0 14px;">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input value="{{ leconQuery }}" onChange="{{ onLeconQuery }}" placeholder="Rechercher une leçon…" style="flex:1;border:none;background:transparent;font:600 15px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;">
+                </div>
+              </div>
+              <div class="tk-scroll" style="flex:1;overflow-y:auto;padding:6px 16px 24px;display:flex;flex-direction:column;gap:8px;">
+                <sc-for list="{{ filteredLecons }}" as="l" hint-placeholder-count="6">
+                  <div onClick="{{ l.pick }}" style="display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #EFEAE0;border-radius:15px;padding:13px 14px;cursor:pointer;">
+                    <div style="width:38px;height:38px;border-radius:11px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:15px;color:var(--tk-accent,#0F9D6E);">{{ l.n }}</div>
+                    <div style="flex:1;min-width:0;"><div style="font:700 15px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">{{ l.titre }}</div><div style="font:600 12px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;">{{ l.phase }}</div></div>
+                    <sc-if value="{{ l.active }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tk-accent,#0F9D6E)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ÉLÈVE PICKER SHEET -->
+        <sc-if value="{{ eleveOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;z-index:20;">
+            <div onClick="{{ closeEleve }}" style="position:absolute;inset:0;background:rgba(28,26,23,.40);animation:tkFade .2s ease;"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;height:70%;background:#F7F4EE;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;animation:tkSheet .26s cubic-bezier(.22,1,.36,1);box-shadow:0 -10px 40px rgba(0,0,0,.18);">
+              <div style="flex:none;padding:14px 20px 10px;">
+                <div style="width:40px;height:5px;border-radius:99px;background:#DDD5C7;margin:0 auto 14px;"></div>
+                <div style="font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:20px;color:#1C1A17;margin-bottom:12px;">Choisir l'élève</div>
+                <div style="display:flex;align-items:center;gap:10px;height:48px;border-radius:14px;border:1.5px solid #E9E3D8;background:#fff;padding:0 14px;">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input value="{{ eleveQuery }}" onChange="{{ onEleveQuery }}" placeholder="Rechercher un élève…" style="flex:1;border:none;background:transparent;font:600 15px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;outline:none;">
+                </div>
+              </div>
+              <div class="tk-scroll" style="flex:1;overflow-y:auto;padding:6px 16px 24px;display:flex;flex-direction:column;gap:8px;">
+                <sc-for list="{{ filteredEleves }}" as="e" hint-placeholder-count="5">
+                  <div onClick="{{ e.pick }}" style="display:flex;align-items:center;gap:13px;background:#fff;border:1px solid #EFEAE0;border-radius:15px;padding:11px 14px;cursor:pointer;">
+                    <div style="width:42px;height:42px;border-radius:13px;background:#0A553F;display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:16px;color:#fff;">{{ e.initial }}</div>
+                    <div style="flex:1;min-width:0;"><div style="font:700 15px var(--tk-body,'Plus Jakarta Sans');color:#1C1A17;">{{ e.name }}</div><div style="font:600 12px var(--tk-body,'Plus Jakarta Sans');color:#8B857A;">{{ e.niveau }}</div></div>
+                    <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid {{ e.statutBorder }};background:{{ e.statutBg }};font:700 11px var(--tk-body,'Plus Jakarta Sans');color:{{ e.statutText }};"><span style="width:6px;height:6px;border-radius:99px;background:{{ e.statutDot }};"></span>{{ e.statut }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TOAST -->
+        <sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:9px;height:46px;padding:0 18px;border-radius:14px;background:#1C1A17;box-shadow:0 14px 30px rgba(0,0,0,.3);animation:tkToast 2.2s ease forwards;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6FD3AE" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span style="font:700 14px var(--tk-body,'Plus Jakarta Sans');color:#fff;">Fiche enregistrée</span></div>
+        </sc-if>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE NOTE -->
+  <div style="flex:none;width:300px;padding-top:34px;">
+    <div style="background:#fff;border-radius:20px;padding:24px;border:1px solid #EFEAE0;box-shadow:0 8px 22px rgba(28,26,23,.05);">
+      <div style="font-family:var(--tk-title,'Spectral'),serif;font-weight:700;font-size:20px;color:#1C1A17;margin-bottom:12px;">La page reine</div>
+      <div style="font:500 14px/1.6 var(--tk-body,'Plus Jakarta Sans');color:#5C564C;margin-bottom:18px;">Une carte par bloc, tout actionnable, sans rien oublier. Essaie&nbsp;:</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;">Tape une <b style="color:#1C1A17;">présence</b> → feedback immédiat.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;">Ouvre <b style="color:#1C1A17;">Leçon / Élève</b> → liste <b style="color:#1C1A17;">recherchable</b> qui scrolle.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;">Ajoute des <b style="color:#1C1A17;">paires arabe / français</b>.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;">Joins des <b style="color:#1C1A17;">photos / fichiers</b> en support de cours ou de devoir.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;">En haut à droite, <b style="color:#1C1A17;">change couleur & police</b> en direct.</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="width:6px;height:6px;border-radius:99px;background:var(--tk-accent,#0F9D6E);margin-top:7px;flex:none;"></span><span style="font:500 13px/1.5 var(--tk-body,'Plus Jakarta Sans');color:#4A463F;"><b style="color:#1C1A17;">Note privée</b> = zone ambre, jamais vue par l'élève.</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;accent&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#0F9D6E&quot;, &quot;options&quot;: [&quot;#0F9D6E&quot;, &quot;#0A7B6B&quot;, &quot;#2D6CDF&quot;, &quot;#7C4DD6&quot;, &quot;#C2410C&quot;], &quot;tsType&quot;: &quot;string&quot; },
+  &quot;titleFont&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Spectral&quot;, &quot;options&quot;: [&quot;Spectral&quot;, &quot;Cormorant Garamond&quot;, &quot;Playfair Display&quot;, &quot;Libre Baskerville&quot;], &quot;tsType&quot;: &quot;string&quot; },
+  &quot;bodyFont&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Plus Jakarta Sans&quot;, &quot;options&quot;: [&quot;Plus Jakarta Sans&quot;, &quot;Manrope&quot;, &quot;Mulish&quot;], &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  rootRef = React.createRef();
+  componentDidMount() { this.applyTheme(); }
+  componentDidUpdate() { this.applyTheme(); }
+  applyTheme() {
+    const el = this.rootRef.current; if (!el) return;
+    el.style.setProperty('--tk-accent', this.props.accent || '#0F9D6E');
+    el.style.setProperty('--tk-title', "'" + (this.props.titleFont || 'Spectral') + "'");
+    el.style.setProperty('--tk-body', "'" + (this.props.bodyFont || 'Plus Jakarta Sans') + "'");
+  }
+  state = {
+    eleve: 'Yacine Benali', eleveNiveau: 'Niveau 2 · Lecture-Oral', eleveStatut: 'Actif',
+    presence: 'present',
+    leconIdx: 13, leconOpen: false, leconQuery: '',
+    eleveOpen: false, eleveQuery: '',
+    vocab: [{ ar: 'كِتَاب', fr: 'livre' }, { ar: 'بَاب', fr: 'porte' }],
+    newAr: '', newFr: '',
+    regleTitle: '', regleBody: '',
+    devoirOn: true, devoirText: 'Relire la leçon et recopier 5 fois les voyelles longues (ـَا ـِي ـُو).',
+    recap: '', note: '',
+    supports: [], devoirFiles: [],
+    saved: false
+  };
+
+  lecons = [
+    { n: 1, titre: 'L\u2019alphabet · isolées', phase: 'Déchiffrage' },
+    { n: 2, titre: 'Les formes attachées', phase: 'Déchiffrage' },
+    { n: 3, titre: 'Les voyelles brèves', phase: 'Déchiffrage' },
+    { n: 4, titre: 'Le soukoune', phase: 'Déchiffrage' },
+    { n: 5, titre: 'La chadda', phase: 'Déchiffrage' },
+    { n: 6, titre: 'Le tanwine', phase: 'Lecture-Oral' },
+    { n: 7, titre: 'Les liaisons', phase: 'Lecture-Oral' },
+    { n: 8, titre: 'Lecture de mots simples', phase: 'Lecture-Oral' },
+    { n: 9, titre: 'L\u2019article (al-)', phase: 'Lecture-Oral' },
+    { n: 10, titre: 'Lettres solaires & lunaires', phase: 'Lecture-Oral' },
+    { n: 11, titre: 'Lecture de phrases', phase: 'Lecture-Oral' },
+    { n: 12, titre: 'Les liaisons avancées', phase: 'Lecture-Oral' },
+    { n: 13, titre: 'Le soukoune en contexte', phase: 'Grammaire' },
+    { n: 14, titre: 'Les voyelles longues', phase: 'Grammaire' },
+    { n: 15, titre: 'La hamza', phase: 'Grammaire' },
+    { n: 16, titre: 'Le pluriel régulier', phase: 'Grammaire' },
+    { n: 17, titre: 'Les pronoms attachés', phase: 'Grammaire' },
+    { n: 18, titre: 'La phrase nominale', phase: 'Grammaire' }
+  ];
+
+  eleves = [
+    { name: 'Yacine Benali', niveau: 'Niveau 2 · Lecture-Oral', statut: 'Actif' },
+    { name: 'Sofia Haddad', niveau: 'Niveau 1 · Déchiffrage', statut: 'Actif' },
+    { name: 'Idriss Camara', niveau: 'Niveau 3 · Grammaire', statut: 'Suspendu · paiement' },
+    { name: 'Leïla Mansour', niveau: 'Niveau 2 · Lecture-Oral', statut: 'Actif' },
+    { name: 'Omar Diallo', niveau: 'Niveau 1 · Déchiffrage', statut: 'Suspendu · absences' },
+    { name: 'Nour El Amrani', niveau: 'Niveau 3 · Grammaire', statut: 'Actif' }
+  ];
+
+  initialOf(name) { return name.trim().charAt(0).toUpperCase(); }
+
+  statutStyle(s) {
+    if (s === 'Actif') return { border: '#9FE3C8', bg: '#ECFAF4', text: '#0A6B4E', dot: 'var(--tk-accent,#0F9D6E)' };
+    if (s.indexOf('paiement') >= 0) return { border: '#F3B0B2', bg: '#FDECEC', text: '#B4292E', dot: '#E5484D' };
+    return { border: '#F4D193', bg: '#FDF4E3', text: '#9A6206', dot: '#F59E0B' };
+  }
+
+  addFiles(key, files) {
+    const mapped = files.map(f => ({ name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f), isImage: (f.type || '').indexOf('image/') === 0 }));
+    this.setState(st => ({ [key]: st[key].concat(mapped) }));
+  }
+  formatSize(b) {
+    if (b < 1024) return b + ' o';
+    if (b < 1048576) return Math.round(b / 1024) + ' Ko';
+    return (b / 1048576).toFixed(1) + ' Mo';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const p = s.presence;
+    const lecon = this.lecons[s.leconIdx] || this.lecons[0];
+    const q = s.leconQuery.trim().toLowerCase();
+    const filteredLecons = this.lecons
+      .filter(l => !q || l.titre.toLowerCase().indexOf(q) >= 0 || String(l.n).indexOf(q) >= 0)
+      .map((l) => {
+        const idx = this.lecons.indexOf(l);
+        return { n: l.n, titre: l.titre, phase: l.phase, active: idx === s.leconIdx,
+          pick: () => this.setState({ leconIdx: idx, leconOpen: false, leconQuery: '' }) };
+      });
+
+    const eq = s.eleveQuery.trim().toLowerCase();
+    const filteredEleves = this.eleves
+      .filter(e => !eq || e.name.toLowerCase().indexOf(eq) >= 0)
+      .map((e) => {
+        const st = this.statutStyle(e.statut);
+        return { name: e.name, niveau: e.niveau, initial: this.initialOf(e.name), statut: e.statut,
+          statutBorder: st.border, statutBg: st.bg, statutText: st.text, statutDot: st.dot,
+          pick: () => this.setState({ eleve: e.name, eleveNiveau: e.niveau, eleveStatut: e.statut, eleveOpen: false, eleveQuery: '' }) };
+      });
+
+    const vocabList = s.vocab.map((v, i) => ({ ar: v.ar, fr: v.fr,
+      remove: () => this.setState(st => ({ vocab: st.vocab.filter((_, j) => j !== i) })) }));
+
+    const mkFiles = (key) => s[key].map((f, i) => ({
+      name: f.name, url: f.url, isImage: f.isImage, isFile: !f.isImage,
+      sizeLabel: this.formatSize(f.size),
+      thumb: f.isImage ? React.createElement('img', { src: f.url, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
+      remove: () => this.setState(st => ({ [key]: st[key].filter((_, j) => j !== i) }))
+    }));
+    const supportList = mkFiles('supports');
+    const devoirList = mkFiles('devoirFiles');
+
+    return {
+      rootRef: this.rootRef,
+      dateLabel: 'mar. 17 juin · 18h00',
+      eleve: s.eleve, eleveNiveau: s.eleveNiveau, eleveInitial: this.initialOf(s.eleve),
+
+      p_present: p === 'present', np_present: p !== 'present',
+      p_retard: p === 'retard', np_retard: p !== 'retard',
+      p_absj: p === 'absj', np_absj: p !== 'absj',
+      p_absi: p === 'absi', np_absi: p !== 'absi',
+      setPresent: () => this.setState({ presence: 'present' }),
+      setRetard: () => this.setState({ presence: 'retard' }),
+      setAbsJ: () => this.setState({ presence: 'absj' }),
+      setAbsI: () => this.setState({ presence: 'absi' }),
+
+      leconNum: lecon.n, leconTitre: lecon.titre, leconPhase: lecon.phase,
+      leconOpen: s.leconOpen, leconQuery: s.leconQuery, filteredLecons,
+      openLecon: () => this.setState({ leconOpen: true }),
+      closeLecon: () => this.setState({ leconOpen: false, leconQuery: '' }),
+      onLeconQuery: (e) => this.setState({ leconQuery: e.target.value }),
+
+      eleveOpen: s.eleveOpen, eleveQuery: s.eleveQuery, filteredEleves,
+      openEleve: () => this.setState({ eleveOpen: true }),
+      closeEleve: () => this.setState({ eleveOpen: false, eleveQuery: '' }),
+      onEleveQuery: (e) => this.setState({ eleveQuery: e.target.value }),
+
+      vocabList, vocabCount: s.vocab.length, newAr: s.newAr, newFr: s.newFr,
+      onNewAr: (e) => this.setState({ newAr: e.target.value }),
+      onNewFr: (e) => this.setState({ newFr: e.target.value }),
+      addVocab: () => {
+        const ar = s.newAr.trim(), fr = s.newFr.trim();
+        if (!ar && !fr) return;
+        this.setState(st => ({ vocab: st.vocab.concat([{ ar: ar || '—', fr: fr || '—' }]), newAr: '', newFr: '' }));
+      },
+
+      regleTitle: s.regleTitle, regleBody: s.regleBody,
+      onRegleTitle: (e) => this.setState({ regleTitle: e.target.value }),
+      onRegleBody: (e) => this.setState({ regleBody: e.target.value }),
+
+      devoirOn: s.devoirOn, devoirOff: !s.devoirOn, devoirText: s.devoirText,
+      toggleDevoir: () => this.setState(st => ({ devoirOn: !st.devoirOn })),
+      onDevoir: (e) => this.setState({ devoirText: e.target.value }),
+
+      recap: s.recap, onRecap: (e) => this.setState({ recap: e.target.value }),
+      note: s.note, onNote: (e) => this.setState({ note: e.target.value }),
+
+      supportList, onPickSupport: (e) => { const fs = Array.from(e.target.files || []); if (fs.length) this.addFiles('supports', fs); e.target.value = ''; },
+      devoirList, onPickDevoir: (e) => { const fs = Array.from(e.target.files || []); if (fs.length) this.addFiles('devoirFiles', fs); e.target.value = ''; },
+
+      saved: s.saved,
+      saveFiche: () => {
+        this.setState({ saved: true });
+        clearTimeout(this._t);
+        this._t = setTimeout(() => this.setState({ saved: false }), 2200);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
