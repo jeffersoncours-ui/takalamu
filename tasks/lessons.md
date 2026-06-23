@@ -14,6 +14,7 @@
 - **Policy `payments_select_admin`** : admin sans ligne dans `teachers` avait `current_teacher_id() = null` → toutes les lignes de paiement bloquées. Ajout d'une policy séparée `USING (private.is_admin())` pour que le compte admin+teacher accède aux paiements même sans teacher row (ou en complément de sa teacher row).
 
 ### Pièges
+- **Tout `createAdminClient()` en prod = bombe à retardement.** Si `SUPABASE_SERVICE_ROLE_KEY` n'est pas dans les env vars Vercel, le crash arrive au runtime (pas au build). Pattern systématique de remplacement : INSERT bloqué par RLS → policy ciblée ; UPDATE multi-table → RPC SECURITY DEFINER ; SELECT cross-élève → RPC SECURITY DEFINER. Ne jamais patcher en ajoutant la clé service_role côté client.
 - **`generate_typescript_types` et fonctions** : après ajout d'un RPC, `database.types.ts` ne connaît pas la nouvelle fonction → TypeScript refuse `.rpc("get_teacher_booked_slots")`. Mettre à jour le bloc `Functions` dans `database.types.ts` manuellement ou en régénérant.
 - **Push non-fast-forward sur la branche Vercel** : si la branche de déploiement a divergé (rebase ou commits différents), `git push` échoue. Solution propre : `git fetch origin`, créer une branche temp depuis l'origine, `git cherry-pick <hash>`, pusher depuis la temp. Ne jamais `--force` sur une branche partagée sans confirmation.
 - **Jointure Supabase + guards TypeScript** : `bookings.students.profiles` peut être un objet ou un tableau selon le contexte. Toujours garder `Array.isArray(x) ? x[0] : x`.

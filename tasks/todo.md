@@ -350,7 +350,8 @@ _(à remplir en fin d'étape)_
 - [x] **Bug `/dashboard/messages`** : suppression admin client — nouvelle RLS policy `conv_student_insert_own` (INSERT élève avec son enseignant) ; page passe par select + insert standard
 - [x] **Bug `/dashboard/bookings`** : suppression admin client — nouvelle RPC SECURITY DEFINER `get_teacher_booked_slots()` qui retourne uniquement `scheduled_at/status` des créneaux du prof, visible uniquement pour l'élève de ce prof
 - [x] **Bug paiements teacher** : policy `payments_select_admin` ajoutée (compte admin sans ligne `teachers` voyait page vide)
-- [x] Types TS mis à jour (`get_teacher_booked_slots`, `prep_notes` dans `bookings`)
+- [x] **Bug validation/annulation paiement** : suppression admin client — deux RPCs SECURITY DEFINER `confirm_payment` / `cancel_payment` (transaction atomique : payment + réactivation élève)
+- [x] Types TS mis à jour (`get_teacher_booked_slots`, `prep_notes`, `confirm_payment`, `cancel_payment`)
 
 ### Cockpit enseignant refactorisé
 - [x] Suppression du bouton "Fiche de fin de cours" permanent
