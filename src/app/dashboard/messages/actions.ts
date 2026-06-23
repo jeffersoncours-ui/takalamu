@@ -2,7 +2,6 @@
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 type SentMessage = { id: string; sender_id: string; body: string; sent_at: string; read_at: string | null };
 type ActionState = { error?: string; message?: SentMessage };
@@ -18,7 +17,6 @@ export async function sendMessage(
 
   const supabase = await createClient();
 
-  // Vérifier que l'utilisateur est bien membre de cette conversation
   const { data: conv } = await supabase
     .from("conversations")
     .select("id, teacher_id, student_id")
@@ -40,19 +38,19 @@ export async function sendMessage(
 
   if (error) return { error: "Impossible d'envoyer le message." };
 
-  // Créer une notification pour le destinataire (admin client car pas de policy INSERT)
-  const admin = createAdminClient();
-  const recipientProfileId =
-    conv.student_id === (await getStudentId(supabase, userId))
-      ? await getTeacherProfileId(admin, conv.teacher_id)
-      : null;
+  // Notifier l'enseignant via RPC SECURITY DEFINER (pas de service_role nécessaire)
+  // teachers est lisible publiquement (vitrine), donc le client standard suffit
+  const { data: teacher } = await supabase
+    .from("teachers")
+    .select("profile_id")
+    .eq("id", conv.teacher_id)
+    .maybeSingle();
 
-  if (recipientProfileId) {
-    await admin.from("notifications").insert({
-      user_id: recipientProfileId,
-      type: "new_message",
-      payload: { conversation_id: conversationId },
-      read: false,
+  if (teacher?.profile_id) {
+    await supabase.rpc("insert_notification", {
+      p_user_id: teacher.profile_id,
+      p_type: "new_message",
+      p_payload: { conversation_id: conversationId },
     });
   }
 
@@ -70,31 +68,4 @@ export async function markMessagesRead(
     .eq("conversation_id", conversationId)
     .neq("sender_id", userId)
     .is("read_at", null);
-}
-
-// Helpers internes
-async function getStudentId(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  profileId: string,
-): Promise<string | null> {
-  const { data } = await supabase
-    .from("students")
-    .select("id")
-    .eq("profile_id", profileId)
-    .maybeSingle();
-  return data?.id ?? null;
-}
-
-async function getTeacherProfileId(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
-  teacherId: string,
-): Promise<string | null> {
-  const { data } = await admin
-    .from("teachers")
-    .select("profile_id")
-    .eq("id", teacherId)
-    .maybeSingle();
-  return data?.profile_id ?? null;
 }

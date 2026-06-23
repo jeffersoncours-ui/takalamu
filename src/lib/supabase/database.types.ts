@@ -1252,6 +1252,14 @@ export type Database = {
           status: string
         }[]
       }
+      insert_notification: {
+        Args: {
+          p_user_id: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_payload: Json
+        }
+        Returns: undefined
+      }
       submit_session_record: {
         Args: {
           p_advance_progress?: boolean
