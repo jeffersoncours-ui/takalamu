@@ -25,6 +25,18 @@ export function HwCorrectionForm({ homeworkId }: { homeworkId: string }) {
         />
       </div>
 
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-slate-600">
+          Copie corrigée (optionnel)
+        </label>
+        <input
+          name="correction_file"
+          type="file"
+          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+          className="block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:cursor-pointer"
+        />
+      </div>
+
       <div className="flex items-end gap-3">
         <div className="space-y-1">
           <label className="block text-xs font-medium text-slate-600">
