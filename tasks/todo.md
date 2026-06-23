@@ -1,5 +1,61 @@
 # Todo
 
+---
+
+## Session 10 — Corrections prod + Fonctionnalités manquantes
+
+> **Statut : EN COURS.**
+> Audit réalisé en session 10 (2026-06-23) — 4 agents parallèles. Plan en 5 blocs.
+
+### Bloc 1 — Chat lag (UX critique)
+- [x] `useOptimistic` : message apparaît instantanément, vrai message retourné par le serveur avant dissipation de l'optimistic
+- [x] Debounce `markReadAction` 600 ms : élimine N×UPDATE en rafale
+- [x] `createClient()` dans `useRef` (une seule instance par composant)
+- [x] Scroll `behavior: 'auto'` au montage, `'smooth'` uniquement pour nouveaux messages
+- [x] Actions `sendMessage` / `sendMessageAsTeacher` : ajout `.select().single()` pour retourner le message inséré
+- [x] Realtime : skip messages propres (déjà ajoutés via `setMessages` dans la transition)
+
+### Bloc 2 — Corrections rapides ✅
+- [x] Label paiement dynamique : `individual_sub` → "Abonnement individuel" / `book` → "Cours de groupe" (3 fichiers : `dashboard/payments/page.tsx`, `teacher/payments/page.tsx` × 2 endroits)
+- [x] Pagination historique séances : lien "Voir tout (N)" / "Voir moins" avec `?all=true`, `.limit(200)` quand présent, `count: "exact"` pour vrai total dans stats
+
+### Bloc 3 — Liste chats enseignant
+- [ ] Page `/teacher/messages/page.tsx` : liste toutes les conversations du teacher (dernier message + badge non-lu)
+- [ ] Lien dans `DrawerNav` vers `/teacher/messages`
+
+### Bloc 4 — Uploads fichiers
+- [ ] Bucket Storage `session-files` (si inexistant) + policy RLS
+- [ ] `support_files` : champ upload dans `session-form.tsx` + paramètre dans RPC `submit_session_record` + server action
+- [ ] Bucket Storage `homework-corrections` + policy RLS
+- [ ] `correction_file` : champ upload dans `hw-correction-form.tsx` + champ dans action `correctHomework`
+
+### Bloc 6 — Notifications complètes (cloche)
+> Contexte : `notifications` table + `NotifBell` composant déjà en place. Realtime actif.
+> Ce qui manque : la **création** des notifications dans les bonnes server actions.
+> **Pas de notification pour les vidéos** — elles s'affichent automatiquement à la connexion.
+>
+> | Événement | Destinataire | Type | Action à modifier |
+> |-----------|-------------|------|-------------------|
+> | Message reçu | enseignant ou élève | `new_message` | `sendMessage` / `sendMessageAsTeacher` ✅ |
+> | Devoir soumis (élève dépose fichier) | teacher | `homework_submitted` | action soumission devoir (Bloc 4) |
+> | Devoir corrigé (prof corrige) | student | `homework_corrected` | `correctHomework` |
+> | Paiement demandé (élève) | teacher | `payment_requested` | `requestPayment` |
+> | Paiement confirmé (prof) | student | `payment_confirmed` | `confirm_payment` RPC ou action |
+
+- [x] Notification `new_message` → via RPC SECURITY DEFINER `insert_notification` (remplace createAdminClient)
+- [ ] Notification `homework_submitted` → teacher quand un élève dépose un devoir
+- [ ] Notification `homework_corrected` → student quand `correctHomework` passe à `corrige`
+- [ ] Notification `payment_requested` → teacher quand `requestPayment` crée un pending
+- [ ] Notification `payment_confirmed` → student quand `confirm_payment` RPC passe à `paid`
+- [ ] `NotifBell` : libellés lisibles par type (map `type → texte humain`)
+
+### Bloc 5 — Admin (faible priorité)
+- [ ] Page `/teacher/admin/teachers` : liste des enseignants + bouton "Inviter un enseignant"
+- [ ] Server action `inviteTeacher` : `supabase.auth.admin.inviteUserByEmail()` + création ligne `teachers` + `profiles(role=teacher)`
+- [ ] Lien dans `DrawerNav` visible uniquement si `role === 'admin'`
+
+---
+
 ## Étape 7 — Messagerie + Paiements
 
 > **Statut : TERMINÉ.**

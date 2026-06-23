@@ -2,7 +2,6 @@
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 type SentMessage = { id: string; sender_id: string; body: string; sent_at: string; read_at: string | null };
 type ActionState = { error?: string; message?: SentMessage };
@@ -39,20 +38,18 @@ export async function sendMessageAsTeacher(
 
   if (error) return { error: "Impossible d'envoyer le message." };
 
-  // Notification pour l'élève
-  const admin = createAdminClient();
-  const { data: student } = await admin
+  // Teacher can read own students via owns_student RLS
+  const { data: student } = await supabase
     .from("students")
     .select("profile_id")
     .eq("id", conv.student_id)
     .maybeSingle();
 
   if (student?.profile_id) {
-    await admin.from("notifications").insert({
-      user_id: student.profile_id,
-      type: "new_message",
-      payload: { conversation_id: conversationId },
-      read: false,
+    await supabase.rpc("insert_notification", {
+      p_user_id: student.profile_id,
+      p_type: "new_message",
+      p_payload: { conversation_id: conversationId },
     });
   }
 
