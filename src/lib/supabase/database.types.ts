@@ -1237,6 +1237,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_payment: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
+      confirm_payment: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
       get_teacher_booked_slots: {
         Args: { p_from?: string; p_teacher_id: string }
         Returns: {
