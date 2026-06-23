@@ -28,11 +28,18 @@
 - [x] Page prof : détection audio par extension → lecteur `<audio>` inline
 - [x] Pas de migration (audio = fichier dans le même bucket, `allowed_mime_types` null)
 
-### Q2 — Évaluations de grammaire rédigées par le prof (à venir, validé par le propriétaire)
+### Q2 — Évaluations de grammaire rédigées par le prof ✅
 > **Reclassement décidé le 2026-06-23** : les exercices de grammaire ne sont PAS des devoirs — ce sont des **évaluations** (comme le quiz), rédigées à la main par le prof (jamais auto-générées), QCM auto-corrigé.
-- [ ] Côté prof : CRUD `quizzes` (scope grammaire) + `quiz_questions` (prompt + correct_answer + distractors, saisis à la main)
-- [ ] Côté élève : passation dans `/dashboard/evaluations` (onglet/section grammaire), même `QuizRunner`, RPC de soumission qui masque la bonne réponse
-- [ ] Réutilise le schéma existant `quizzes`/`quiz_questions`/`quiz_attempts`
+- [x] Migration `24_grammar_quiz` : `ALTER TYPE quiz_source ADD VALUE 'grammar'`, `quizzes.teacher_id`, CASCADE FK quiz→questions/attempts, RPC `get_grammar_quiz_questions` (SECURITY DEFINER, sans bonne réponse, choix mélangés), RPC `submit_grammar_quiz` (anti-triche)
+- [x] Côté prof : `/teacher/evaluations` (liste), `/teacher/evaluations/new` (créer), `/teacher/evaluations/[quizId]` (gérer questions + notifier élèves + supprimer). Lien "Évaluations" dans `DrawerNav`.
+- [x] Côté élève : `GrammarQuizRunner` (machine d'état idle→playing→done), section "Exercices de grammaire" dans `/dashboard/evaluations` (filtrés par enseignant), historique des tentatives grammaire
+- [x] `database.types.ts` : `quiz_source` + 'grammar', `quizzes.teacher_id`, 2 nouvelles fonctions
+- [x] Preuves MCP : questions renvoyées sans `correct_answer` ✅ ; score 1/2 recalculé server-side ✅ ; cross-teacher 42501 ✅ ; CASCADE delete questions = 0 ✅ ; build 30 routes vert ✅
+
+### Review (Session 13 — Q2)
+**État au 2026-06-23 — Quiz de grammaire prof → élève livré.**
+- **Q2** : teacher CRUD complet (`/teacher/evaluations`). 2 RPCs SECURITY DEFINER : `get_grammar_quiz_questions` (masque la bonne réponse, mélange les choix) + `submit_grammar_quiz` (score recalculé server-side, bonne réponse révélée post-soumission). Notification `eval_due` aux élèves. `GrammarQuizRunner` côté élève avec machine d'état identique au quiz vocab. Section grammaire dans `/dashboard/evaluations`, séparée de la section vocabulaire. Historique des tentatives par type.
+- **Reste** : vitrine publique (le propriétaire a des idées sur la révision offre/paiement), vidéos Bunny.
 
 ### Review (Session 12 — Q1 + D1 + D2)
 **État au 2026-06-23 — Quiz vocab + soumission devoirs (photo & audio) livrés.**

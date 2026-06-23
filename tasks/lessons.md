@@ -27,6 +27,21 @@
 
 
 
+## Session 13 (2026-06-23) — Quiz de grammaire prof→élève (Q2)
+
+### Décisions
+- **`quiz_source = 'grammar'` plutôt qu'un nouveau scope.** Le scope `individual` est réutilisé ; seul `source_type` change (`glossary` vs `grammar`). `quizzes.teacher_id` (nullable) identifie l'auteur du quiz pour le filtrage côté élève et la vérification de propriété côté prof. Les quiz `book` continuent via `books.teacher_id` — pas de collision.
+- **`get_grammar_quiz_questions` : RPC SECURITY DEFINER pour masquer `correct_answer`.** La RLS `quiz_questions_teacher_all` interdit l'accès direct aux élèves. Le RPC vérifie `student.teacher_id == quiz.teacher_id` (cloisonnement prof/élève), mélange les choix à la volée (insert position aléatoire 1..N+1), retourne `[{ question_id, prompt, choices[] }]` — jamais `correct_answer`.
+- **`submit_grammar_quiz` : même anti-triche que Q1.** Relit `correct_answer` depuis la DB pour chaque réponse. Le client envoie `{ question_id, chosen }` — il ne connaît pas les bonnes réponses. Résultat `{ score, total, answers[] }` révèle la bonne réponse post-soumission pour la review pédagogique.
+- **CASCADE sur `quiz_questions.quiz_id` et `quiz_attempts.quiz_id`.** ALTER FOREIGN KEY → ON DELETE CASCADE. La suppression d'un quiz depuis la page prof nettoie questions + tentatives automatiquement. Plus sûr qu'une suppression manuelle en ordre dans le server action.
+- **Clé `ver` dans l'état `useActionState` pour reset du formulaire.** Incrémenter `state.ver` après succès → `<form key={state.ver}>` → React démonte/remonte le formulaire, effaçant tous les inputs. Plus propre que `formRef.current.reset()` et évite un `useEffect`.
+- **Grammar quizzes visibles à tous les élèves du prof sans assignation.** Pas de notion d'assignation individuelle (contrairement aux milestone videos). Visible dès création ; le bouton "Notifier mes élèves" envoie `eval_due` aux élèves actifs — notification optionnelle, pas un verrou d'accès.
+- **Historique grammar séparé du historique vocab** sur la page `/dashboard/evaluations`. Deux sections distinctes, chacune avec son propre historique de tentatives filtré par `source_type`. `quizzes.title` est affiché dans l'historique grammaire (le vocab n'a pas de titre lisible).
+
+### Pièges
+- **`array_length(arr, 1)` retourne NULL sur un tableau vide** (pas 0). Guard `IF array_length(...) IS NULL` avant le calcul de position d'insertion — sinon `floor(random() * (NULL + 1))` renvoie NULL et la position devient NULL → erreur de découpage.
+- **`quizzes.teacher_id` vs `books.teacher_id`** : les quiz de groupe utilisent `books.teacher_id` via FK `book_id`. Les quiz de grammaire utilisent `quizzes.teacher_id` directement. Ne pas confondre les deux chemins lors de requêtes de vérification de propriété.
+
 ## Session 12 (2026-06-23) — Quiz vocabulaire auto-généré (Q1)
 
 ### Décisions

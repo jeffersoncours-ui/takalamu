@@ -826,6 +826,7 @@ export type Database = {
           id: string
           scope: Database["public"]["Enums"]["quiz_scope"]
           source_type: Database["public"]["Enums"]["quiz_source"]
+          teacher_id: string | null
           title: string | null
           updated_at: string
         }
@@ -835,6 +836,7 @@ export type Database = {
           id?: string
           scope: Database["public"]["Enums"]["quiz_scope"]
           source_type: Database["public"]["Enums"]["quiz_source"]
+          teacher_id?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -844,6 +846,7 @@ export type Database = {
           id?: string
           scope?: Database["public"]["Enums"]["quiz_scope"]
           source_type?: Database["public"]["Enums"]["quiz_source"]
+          teacher_id?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -853,6 +856,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -1252,6 +1262,18 @@ export type Database = {
         }
         Returns: Json
       }
+      get_grammar_quiz_questions: {
+        Args: { p_quiz_id: string }
+        Returns: Json
+      }
+      submit_grammar_quiz: {
+        Args: {
+          p_student_id: string
+          p_quiz_id: string
+          p_answers: Json
+        }
+        Returns: Json
+      }
       cancel_payment: {
         Args: { p_payment_id: string }
         Returns: undefined
@@ -1323,7 +1345,7 @@ export type Database = {
       payment_product: "individual_sub" | "book"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual" | "group"
-      quiz_source: "glossary" | "book"
+      quiz_source: "glossary" | "book" | "grammar"
       student_status: "active" | "suspended_payment" | "suspended_absences"
       user_role: "admin" | "teacher" | "student"
       video_type: "welcome" | "milestone"
