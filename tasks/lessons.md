@@ -2,6 +2,23 @@
 
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
+## Session 9 (2026-06-23) — Corrections prod + Cockpit contextuel
+
+### Décisions
+- **Ne jamais utiliser `createAdminClient()` dans un Server Component/Action qui n'a pas `SUPABASE_SERVICE_ROLE_KEY` en prod.** Sur Vercel, seules les variables explicitement ajoutées dans les env vars sont disponibles. Toute page qui appelle `createAdminClient()` explose au runtime si la clé manque — même si elle fonctionne en local avec `.env.local`.
+- **Corriger via RLS + RPC SECURITY DEFINER, jamais en ajoutant la clé service_role au client.** Pour `dashboard/bookings` : RPC `get_teacher_booked_slots` (`SECURITY DEFINER`) expose uniquement `scheduled_at` + `status` des créneaux du teacher de l'élève, sans révéler les autres élèves. Pour `dashboard/messages` : policy `conversations_insert_student` permet à l'élève de créer sa propre conversation.
+- **Cockpit contextuel** : afficher "À documenter" uniquement si un cours passé n'a pas de `lesson_record`. Computed via jointure composite `${student_id}-${YYYY-MM-DD}` entre `bookings` (passés) et `lesson_records` (même fenêtre). Évite un bouton permanent qui pollue l'interface.
+- **Bouton "Préparer le cours"** sur les bookings à venir : lien vers `/teacher/session/prep/${bookingId}`, badge vert si `prep_notes` existe déjà. Charge le contexte élève (leçon en cours + dernière séance) pour que l'enseignant ne perde pas de temps.
+- **UTC borders pour fenêtre du jour** : `new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))` au lieu de `setHours(0,0,0,0)` (local). Le cockpit vit sur un serveur Vercel dont le fuseau n'est pas garanti.
+- **`prep_notes`** : colonne `text null` ajoutée à `bookings` via migration `add_prep_notes_to_bookings`. Valeur nullable — distinction entre "jamais préparé" et "notes vides".
+- **Policy `payments_select_admin`** : admin sans ligne dans `teachers` avait `current_teacher_id() = null` → toutes les lignes de paiement bloquées. Ajout d'une policy séparée `USING (private.is_admin())` pour que le compte admin+teacher accède aux paiements même sans teacher row (ou en complément de sa teacher row).
+
+### Pièges
+- **`generate_typescript_types` et fonctions** : après ajout d'un RPC, `database.types.ts` ne connaît pas la nouvelle fonction → TypeScript refuse `.rpc("get_teacher_booked_slots")`. Mettre à jour le bloc `Functions` dans `database.types.ts` manuellement ou en régénérant.
+- **Push non-fast-forward sur la branche Vercel** : si la branche de déploiement a divergé (rebase ou commits différents), `git push` échoue. Solution propre : `git fetch origin`, créer une branche temp depuis l'origine, `git cherry-pick <hash>`, pusher depuis la temp. Ne jamais `--force` sur une branche partagée sans confirmation.
+- **Jointure Supabase + guards TypeScript** : `bookings.students.profiles` peut être un objet ou un tableau selon le contexte. Toujours garder `Array.isArray(x) ? x[0] : x`.
+- **`suppressHydrationWarning` sur les dates** : tout composant affichant une date locale (format heure) doit porter cet attribut sur le `<p>` ou `<span>` concerné, sinon erreur d'hydratation en production (serveur ≠ client timezone).
+
 ## Session 8 (2026-06-22) — Messagerie temps réel + Paiements (Lots 7 & 8)
 
 ### Décisions
