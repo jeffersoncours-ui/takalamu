@@ -15,9 +15,9 @@
 - [x] Actions `sendMessage` / `sendMessageAsTeacher` : ajout `.select().single()` pour retourner le message inséré
 - [x] Realtime : skip messages propres (déjà ajoutés via `setMessages` dans la transition)
 
-### Bloc 2 — Corrections rapides
-- [ ] Label paiement dynamique : `individual_sub` → "Abonnement individuel" / `book` → "Cours de groupe" (3 fichiers : `dashboard/payments/page.tsx`, `teacher/payments/page.tsx` × 2 endroits)
-- [ ] Pagination historique séances : bouton "Voir tout" → lien avec `?all=true`, supprime le `.limit(8)` quand paramètre présent (`teacher/students/[id]/page.tsx`)
+### Bloc 2 — Corrections rapides ✅
+- [x] Label paiement dynamique : `individual_sub` → "Abonnement individuel" / `book` → "Cours de groupe" (3 fichiers : `dashboard/payments/page.tsx`, `teacher/payments/page.tsx` × 2 endroits)
+- [x] Pagination historique séances : lien "Voir tout (N)" / "Voir moins" avec `?all=true`, `.limit(200)` quand présent, `count: "exact"` pour vrai total dans stats
 
 ### Bloc 3 — Liste chats enseignant
 - [ ] Page `/teacher/messages/page.tsx` : liste toutes les conversations du teacher (dernier message + badge non-lu)
@@ -28,6 +28,26 @@
 - [ ] `support_files` : champ upload dans `session-form.tsx` + paramètre dans RPC `submit_session_record` + server action
 - [ ] Bucket Storage `homework-corrections` + policy RLS
 - [ ] `correction_file` : champ upload dans `hw-correction-form.tsx` + champ dans action `correctHomework`
+
+### Bloc 6 — Notifications complètes (cloche)
+> Contexte : `notifications` table + `NotifBell` composant déjà en place. Realtime actif.
+> Ce qui manque : la **création** des notifications dans les bonnes server actions.
+>
+> | Événement | Destinataire | Type | Action à modifier |
+> |-----------|-------------|------|-------------------|
+> | Devoir soumis (élève dépose fichier) | teacher | `homework_submitted` | action soumission devoir (Bloc 4) |
+> | Devoir corrigé (prof corrige) | student | `homework_corrected` | `correctHomework` |
+> | Paiement demandé (élève) | teacher | `payment_requested` | `requestPayment` |
+> | Paiement confirmé (prof) | student | `payment_confirmed` | `confirm_payment` RPC ou action |
+> | Vidéo de palier assignée | student | `video_assigned` | à créer lors de l'assignation |
+>
+> Travail : (1) créer les notifs dans chaque action via `createAdminClient()` ; (2) s'assurer que `NotifBell` affiche un libellé lisible par type (ex. "Devoir corrigé : Leçon 4") et non juste le type brut.
+
+- [ ] Notification `homework_submitted` → teacher quand un élève dépose un devoir
+- [ ] Notification `homework_corrected` → student quand `correctHomework` passe à `corrige`
+- [ ] Notification `payment_requested` → teacher quand `requestPayment` crée un pending
+- [ ] Notification `payment_confirmed` → student quand `confirm_payment` RPC passe à `paid`
+- [ ] `NotifBell` : libellés lisibles par type (map `type → texte humain`)
 
 ### Bloc 5 — Admin (faible priorité)
 - [ ] Page `/teacher/admin/teachers` : liste des enseignants + bouton "Inviter un enseignant"
