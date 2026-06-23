@@ -1275,6 +1275,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_homework: {
+        Args: {
+          p_homework_id: string
+          p_submission_file: string
+        }
+        Returns: undefined
+      }
       submit_session_record: {
         Args: {
           p_advance_progress?: boolean
@@ -1311,6 +1318,7 @@ export type Database = {
         | "homework_corrected"
         | "payment_requested"
         | "payment_confirmed"
+        | "homework_submitted"
       payment_plan: "1x" | "2x" | "3x" | "12x" | "single"
       payment_product: "individual_sub" | "book"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
