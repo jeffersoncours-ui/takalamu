@@ -1,5 +1,21 @@
 # Lessons
 
+## Session 11 (2026-06-23) — Liste chats enseignant + Storage uploads + Notifications complètes
+
+### Décisions
+- **Storage RLS via helpers `private.current_teacher_id()` / `private.current_student_id()`** : les policies Storage s'appuient sur les mêmes helpers que les tables Postgres. Teacher=ALL, student=SELECT uniquement sur son dossier (`storage.foldername(name))[1] = student_id`). Cohérent avec le reste du modèle d'accès.
+- **Path Storage = `{student_id}/{timestamp}_{nom_nettoyé}`** : le premier segment est le student_id pour que la policy student puisse filtrer via `foldername`. Pas de session_id dans le path pour simplifier (le lien DB → storage_path dans `lesson_records.support_files` fait la jointure).
+- **Upload avant la RPC** : les fichiers sont uploadés dans la server action avant d'appeler `submit_session_record`. Si l'upload échoue, on ignore le fichier silencieusement (pas d'erreur bloquante) et on continue. Si la RPC échoue après upload, les fichiers orphelins restent dans le bucket — acceptable à cette échelle.
+- **`DROP FUNCTION IF EXISTS` par signature exacte** pour remplacer une fonction avec une nouvelle signature. `CREATE OR REPLACE` seul échoue si plusieurs surcharges coexistent (erreur 42725). Pattern à retenir pour toutes les futures évolutions de RPC.
+- **Notification `payment_requested` via client standard (session élève)** : `requestPayment` utilise déjà `createAdminClient()` pour l'INSERT payment (RLS bloque élève). La notification elle, passe par `createClient()` (session élève authentifiée) pour appeler le RPC `insert_notification` SECURITY DEFINER. Les deux clients coexistent dans la même action — pas de problème.
+- **Liste chats enseignant** : query avec `messages(...)` embedded, tri JS côté serveur par date du dernier message. Unread count calculé en JS (filtre `sender_id !== userId && !read_at`). Suffisant à cette échelle.
+
+### Pièges
+- **`CREATE OR REPLACE FUNCTION` sur une fonction avec plusieurs surcharges existantes** → erreur `42725 function name is not unique`. Résoudre avec `DROP FUNCTION IF EXISTS <sig_exacte>` avant le `CREATE OR REPLACE`. Spécifier tous les types d'argument dans la signature DROP.
+- **`git cherry-pick` après merge dans todo.md** : si `tasks/todo.md` a été modifié par le cherry-pick lui-même (Auto-merging), ne pas re-lire le fichier — il a déjà l'état voulu. L'outil Edit détecte le conflit si on tente d'éditer sur l'ancien contenu.
+
+
+
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
 ## Session 9 (2026-06-23) — Corrections prod + Cockpit contextuel

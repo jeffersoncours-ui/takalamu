@@ -4,32 +4,42 @@
 
 ## Session 11 — Blocs 3, 4, fin Bloc 6
 
-> **Statut : EN COURS.**
-> Suite directe de la session 10. Priorités dans l'ordre : Bloc 3 (chats enseignant), fin Bloc 6 (notifs), Bloc 4 (uploads).
+> **Statut : TERMINÉ.**
+> Tous les blocs prioritaires livrés. Build vert 25 routes. Poussé sur les deux branches.
 
-### Bloc 3 — Liste chats enseignant
-- [ ] Ajouter "Messages" dans `DrawerNav` NAV_ITEMS → `/teacher/messages`
-- [ ] Créer `/teacher/messages/page.tsx` : liste conversations (nom élève + dernier message + badge non-lu), triée par dernière activité
+### Bloc 3 — Liste chats enseignant ✅
+- [x] Ajouter "Messages" dans `DrawerNav` NAV_ITEMS → `/teacher/messages`
+- [x] Créer `/teacher/messages/page.tsx` : liste conversations (nom élève + dernier message + badge non-lu), triée par dernière activité
 
-### Fin Bloc 6 — Notifications (suite)
-- [ ] Migration `18_extend_notification_types` : ajouter `homework_corrected`, `payment_requested`, `payment_confirmed` à l'enum `notification_type`
-- [ ] `database.types.ts` : mettre à jour `Enums.notification_type`
-- [ ] Notification `homework_corrected` → student dans `correctHomework` (server action)
-- [ ] Notification `payment_requested` → teacher dans `requestPayment` (server action)
-- [ ] Notification `payment_confirmed` → student dans `confirmPayment` (server action)
-- [ ] `NotifBell` : libellés pour les 3 nouveaux types
+### Fin Bloc 6 — Notifications (suite) ✅
+- [x] Migration `18_extend_notification_types` : ajouter `homework_corrected`, `payment_requested`, `payment_confirmed` à l'enum `notification_type`
+- [x] `database.types.ts` : mettre à jour `Enums.notification_type`
+- [x] Notification `homework_corrected` → student dans `correctHomework` (server action)
+- [x] Notification `payment_requested` → teacher dans `requestPayment` (server action)
+- [x] Notification `payment_confirmed` → student dans `confirmPayment` (server action)
+- [x] `NotifBell` : libellés pour les 3 nouveaux types (déjà présents depuis session 10)
 
-### Bloc 4 — Uploads fichiers
-- [ ] Migration `19_storage_buckets` : créer buckets `session-files` + `homework-corrections` + policies RLS Storage
-- [ ] Migration `20_extend_session_rpc` : ajouter `p_support_files jsonb DEFAULT '[]'` à `submit_session_record`
-- [ ] `database.types.ts` : mettre à jour `Functions.submit_session_record`
-- [ ] `session-form.tsx` : champ `<input type="file" multiple name="support_files">`
-- [ ] `actions.ts` (session) : upload fichiers → Storage, passer paths à la RPC
-- [ ] `hw-correction-form.tsx` : champ `<input type="file" name="correction_file">`
-- [ ] `actions.ts` (homework) : upload fichier → Storage, stocker path dans `homework.correction_file`
+### Bloc 4 — Uploads fichiers ✅
+- [x] Migration `19_storage_buckets` : créer buckets `session-files` + `homework-corrections` + 4 policies RLS Storage
+- [x] Migration `20_extend_session_rpc` : ajouter `p_support_files jsonb DEFAULT '[]'` à `submit_session_record`
+- [x] `database.types.ts` : mettre à jour `Functions.submit_session_record`
+- [x] `session-form.tsx` : champ `<input type="file" multiple name="support_files">`
+- [x] `actions.ts` (session) : upload fichiers → Storage, passer paths à la RPC
+- [x] `hw-correction-form.tsx` : champ `<input type="file" name="correction_file">`
+- [x] `actions.ts` (homework) : upload fichier → Storage, stocker path dans `homework.correction_file`
+
+### Bloc 5 — Admin (faible priorité, reporté)
+- [ ] Page `/teacher/admin/teachers` : liste des enseignants + bouton "Inviter un enseignant"
+- [ ] Server action `inviteTeacher` : `supabase.auth.admin.inviteUserByEmail()` + création ligne `teachers` + `profiles(role=teacher)`
+- [ ] Lien dans `DrawerNav` visible uniquement si `role === 'admin'`
 
 ### Review (Session 11)
-_(à remplir en fin de session)_
+**État au 2026-06-23 — Blocs 3, 4, fin Bloc 6 livrés. Build vert (25 routes).**
+- **Bloc 3** : `/teacher/messages` liste toutes les conversations avec dernier message, date relative et badge non-lu. "Messages" ajouté dans DrawerNav.
+- **Fin Bloc 6** : 3 nouveaux types d'enum (`homework_corrected`, `payment_requested`, `payment_confirmed`). Notifications déclenchées dans `correctHomework`, `confirmPayment` et `requestPayment` via RPC SECURITY DEFINER (pas de createAdminClient).
+- **Bloc 4** : Buckets Storage `session-files` + `homework-corrections` (private, 10 Mo), 4 policies (teacher=ALL, student=SELECT/dossier propre). RPC étendue avec `p_support_files`. Champs upload dans le form de séance et dans la correction de devoir. Fichiers nommés `{student_id}/{timestamp}_{nom}`.
+- Preuves SQL : enum 7 valeurs ✅, buckets ✅, policies ✅, RPC signature ✅, 3 types insertables ✅.
+- **Reste (Bloc 5 admin, faible priorité)** : page liste enseignants + invitation.
 
 ---
 
