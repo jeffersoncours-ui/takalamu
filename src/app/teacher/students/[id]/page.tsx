@@ -5,27 +5,9 @@ import { fr } from "date-fns/locale";
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { attendanceLabel } from "@/lib/attendance";
-import type { Database } from "@/lib/supabase/database.types";
+import { StatusBadge, attendanceBadge } from "@/components/status-badge";
 import { ProfileNoteForm } from "./profile-note-form";
 import { StatusForm } from "./status-form";
-
-type AttendanceStatus = Database["public"]["Enums"]["attendance_status"];
-type HomeworkStatus = Database["public"]["Enums"]["homework_status"];
-
-const ATTENDANCE_COLOR: Record<AttendanceStatus, string> = {
-  present: "bg-emerald-100 text-emerald-800",
-  absent_justified: "bg-slate-100 text-slate-600",
-  absent_unjustified: "bg-red-100 text-red-800",
-  late: "bg-amber-100 text-amber-800",
-};
-
-const HW_STATUS_LABEL: Record<HomeworkStatus, string> = {
-  a_rendre: "À rendre",
-  rendu: "Rendu",
-  corrige: "Corrigé",
-  vu: "Vu",
-};
 
 const PHASE_LABEL: Record<string, string> = {
   dechiffrage: "Déchiffrage",
@@ -107,51 +89,67 @@ export default async function StudentCardPage({
   const recentGrammar = grammarRes.data ?? [];
   const grammarCount = grammarRes.count ?? recentGrammar.length;
 
+  const name = profile?.full_name ?? "—";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Retour */}
+      <Link
+        href="/teacher/students"
+        className="inline-flex items-center gap-1 font-semibold"
+        style={{ color: "#8B857A", fontSize: 13 }}
+      >
+        ← Mes élèves
+      </Link>
+
       {/* En-tête */}
-      <div>
-        <Link
-          href="/teacher/students"
-          className="text-xs text-slate-500 hover:text-slate-700"
+      <div className="flex items-center gap-[14px]">
+        <span
+          className="flex shrink-0 items-center justify-center rounded-[17px] text-white font-bold"
+          style={{ width: 58, height: 58, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 23 }}
         >
-          ← Mes élèves
-        </Link>
-        <div className="mt-2 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">
-              {profile?.full_name ?? "—"}
-            </h1>
-            {profile?.email && (
-              <p className="text-sm text-slate-500">{profile.email}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/teacher/messages/${id}`}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-emerald-300 hover:text-emerald-700 transition"
-            >
-              Chat
-            </Link>
-            <StatusForm studentId={id} currentStatus={student.status} />
-          </div>
+          {name[0]?.toUpperCase() ?? "?"}
+        </span>
+        <div className="flex-1 min-w-0">
+          <h1
+            className="leading-tight"
+            style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+          >
+            {name}
+          </h1>
+          {profile?.email && (
+            <p className="truncate" style={{ color: "#8B857A", fontSize: 13 }}>{profile.email}</p>
+          )}
         </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/teacher/messages/${id}`}
+          className="flex-1 text-center font-semibold rounded-[12px] py-2.5"
+          style={{ color: "#1C1A17", fontSize: 13, border: "1.5px solid #E9E3D8", background: "#fff" }}
+        >
+          Chat
+        </Link>
+        <StatusForm studentId={id} currentStatus={student.status} />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "séances", value: records.length },
-          { label: "abs. injust.", value: student.unjustified_absences_count },
-          { label: "mots", value: vocabCount },
-          { label: "règles", value: grammarCount },
+          { label: "séances", value: records.length, accent: false },
+          { label: "abs. injust.", value: student.unjustified_absences_count, accent: false },
+          { label: "mots", value: vocabCount, accent: false },
+          { label: "règles", value: grammarCount, accent: false },
         ].map(({ label, value }) => (
           <div
             key={label}
-            className="rounded-xl border border-slate-200 bg-white p-3 text-center"
+            className="rounded-[16px] p-3 text-center"
+            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
           >
-            <p className="text-xl font-bold text-slate-900">{value}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+            <p style={{ fontWeight: 800, fontSize: 22, color: "#1C1A17", lineHeight: 1 }}>{value}</p>
+            <p className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>{label}</p>
           </div>
         ))}
       </div>
@@ -159,27 +157,49 @@ export default async function StudentCardPage({
       {/* Note privée épinglée */}
       <ProfileNoteForm studentId={id} initialContent={noteContent} />
 
+      {/* CTA nouvelle fiche */}
+      <Link
+        href={`/teacher/session/new?student_id=${id}`}
+        className="flex items-center gap-3 rounded-[16px] p-[15px]"
+        style={{ background: "#0F9D6E", boxShadow: "0 8px 18px rgba(15,157,110,.26)" }}
+      >
+        <span
+          className="flex shrink-0 items-center justify-center rounded-[12px]"
+          style={{ width: 40, height: 40, background: "rgba(255,255,255,.20)" }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+        </span>
+        <span className="flex-1 font-bold text-white" style={{ fontSize: 15 }}>
+          Nouvelle fiche de fin de cours
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </Link>
+
       {/* Leçon en cours */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
-        <p className="text-sm font-medium text-slate-700">Leçon en cours</p>
+      <div
+        className="rounded-[16px] p-4 space-y-1"
+        style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+      >
+        <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+          Leçon en cours
+        </p>
         {currentLesson ? (
           <div>
-            <p className="font-medium text-slate-900">{currentLesson.title}</p>
+            <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{currentLesson.title}</p>
             {currentLesson.phase && (
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p style={{ color: "#8B857A", fontSize: 12 }}>
                 {PHASE_LABEL[currentLesson.phase] ?? currentLesson.phase}
               </p>
             )}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Aucun curseur défini.</p>
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun curseur défini.</p>
         )}
-        <Link
-          href={`/teacher/session/new?student_id=${id}`}
-          className="inline-block rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100 transition"
-        >
-          Nouvelle séance →
-        </Link>
       </div>
 
       {/* Devoirs en attente */}
@@ -209,34 +229,32 @@ export default async function StudentCardPage({
 
       {/* Historique des séances */}
       <div className="space-y-2">
-        <p className="text-sm font-medium text-slate-700">
+        <p className="px-0.5 font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
           Historique des séances ({records.length})
         </p>
         {records.length === 0 && (
-          <p className="text-sm text-slate-500">Aucune séance enregistrée.</p>
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune séance enregistrée.</p>
         )}
         {records.map((r) => {
           const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
+          const badge = attendanceBadge(r.attendance);
           return (
             <div
               key={r.id}
-              className="rounded-lg border border-slate-200 bg-white p-3 space-y-1"
+              className="rounded-[14px] p-[13px] space-y-1"
+              style={{ background: "#fff", border: "1px solid #EFEAE0" }}
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-slate-900">
+                <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
                   {lesson?.title ?? "Sans leçon"}
                 </p>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${ATTENDANCE_COLOR[r.attendance]}`}
-                >
-                  {attendanceLabel(r.attendance)}
-                </span>
+                <StatusBadge hue={badge.hue} label={badge.label} />
               </div>
-              <p className="text-xs text-slate-500">
+              <p style={{ color: "#A8A29E", fontSize: 11 }}>
                 {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
               </p>
               {r.public_recap && (
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="leading-relaxed" style={{ color: "#4A463F", fontSize: 13 }}>
                   {r.public_recap}
                 </p>
               )}

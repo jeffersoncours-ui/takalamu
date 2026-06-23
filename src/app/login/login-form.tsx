@@ -9,44 +9,54 @@ const initialState: { error?: string } = {};
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(signIn, initialState);
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    borderRadius: 13,
+    border: "1.5px solid #E9E3D8",
+    background: "#fff",
+    padding: "12px 14px",
+    fontSize: 15,
+    color: "#1C1A17",
+    outline: "none",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#8B857A",
+    textTransform: "uppercase",
+    letterSpacing: ".06em",
+    marginBottom: 6,
+  };
+
   return (
     <form action={formAction} className="space-y-4">
-      <div className="space-y-1">
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-slate-700"
-        >
-          Email
-        </label>
+      <div>
+        <label htmlFor="email" style={labelStyle}>Email</label>
         <input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
           required
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+          style={inputStyle}
         />
       </div>
 
-      <div className="space-y-1">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-slate-700"
-        >
-          Mot de passe
-        </label>
+      <div>
+        <label htmlFor="password" style={labelStyle}>Mot de passe</label>
         <input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+          style={inputStyle}
         />
       </div>
 
       {state?.error ? (
-        <p className="text-sm text-red-600" role="alert">
+        <p style={{ color: "#B4292E", fontSize: 14 }} role="alert">
           {state.error}
         </p>
       ) : null}
@@ -54,7 +64,8 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-800 disabled:opacity-60"
+        className="w-full font-bold text-white disabled:opacity-60"
+        style={{ borderRadius: 14, background: "#0F9D6E", padding: "13px", fontSize: 15, boxShadow: "0 8px 18px rgba(15,157,110,.30)" }}
       >
         {pending ? "Connexion…" : "Se connecter"}
       </button>
