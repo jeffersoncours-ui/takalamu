@@ -308,3 +308,34 @@
 
 ### Review
 _(à remplir en fin d'étape)_
+
+---
+
+## Refonte UI — Design system Claude Design
+
+### Phase 1 — Fondations (fonts + tokens)
+- [x] Remplacer Geist par Spectral + Plus Jakarta Sans + Amiri dans `layout.tsx`
+- [x] Mettre à jour `globals.css` : fond page `#F7F4EE`, tokens couleurs warm
+- [x] Étendre Tailwind v4 avec les tokens du design system
+
+### Phase 2 — Layouts (navigation)
+- [x] Réécrire `dashboard-tabs.tsx` → `BottomTabBar` (bottom tab bar flottante, 5 onglets)
+- [x] Créer `/dashboard/more/page.tsx` (Vocabulaire, Grammaire, Paiements, Déconnexion)
+- [x] Mettre à jour `dashboard/layout.tsx` (bottom bar, fond warm, pb pour le contenu)
+- [x] Créer `DrawerNav` composant enseignant (tiroir teal `#0A4636`, animation)
+- [x] Mettre à jour `teacher/layout.tsx` (burger + drawer, fond warm)
+
+### Phase 3 — Pages élève (session suivante)
+- [ ] Page Cours/Accueil (hero teal + compte à rebours + historique)
+- [ ] Page Réserver (grouper par jour, bouton Réserver → Réservé)
+- [ ] Page Devoirs (badges cycle + bottom sheet upload)
+- [ ] Page Messages (bulles, barre de saisie)
+- [ ] Page Plus (profil hero + menu)
+
+### Phase 4 — Pages enseignant
+- [ ] Cockpit (action vedette + grille stats + liste cours du jour)
+- [ ] Mes élèves (recherche + filtres + fiche bottom sheet)
+- [ ] File de correction
+- [ ] Disponibilités (toggle)
+- [ ] Paiements (hero teal encaissé)
+- [ ] Fiche de fin de cours (l'écran le plus critique)
