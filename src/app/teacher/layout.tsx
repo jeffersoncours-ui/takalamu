@@ -28,6 +28,7 @@ export default async function TeacherLayout({
           <DrawerNav
             profileName={profile?.full_name ?? "Enseignant"}
             signOutAction={signOut}
+            isAdmin={profile?.role === "admin"}
           />
           <div className="ml-auto">
             <NotifBell userId={userId} initialNotifs={notifs ?? []} />
