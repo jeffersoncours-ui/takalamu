@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 type Notif = {
@@ -15,8 +16,11 @@ type Notif = {
 const TYPE_LABEL: Record<string, string> = {
   new_message: "Nouveau message",
   homework_due: "Devoir à rendre",
+  homework_submitted: "Devoir soumis",
+  homework_corrected: "Devoir corrigé",
   eval_due: "Évaluation disponible",
-  video_assigned: "Vidéo assignée",
+  payment_requested: "Demande de paiement",
+  payment_confirmed: "Paiement confirmé",
 };
 
 async function markAllRead(userId: string) {
@@ -85,6 +89,10 @@ export function NotifBell({
     }
   }
 
+  function handleItemClick() {
+    setOpen(false);
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -126,22 +134,38 @@ export function NotifBell({
             </p>
           ) : (
             <ul className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-              {notifs.slice(0, 20).map((n) => (
-                <li
-                  key={n.id}
-                  className={`px-4 py-3 text-sm ${n.read ? "text-slate-500" : "text-slate-900 font-medium"}`}
-                >
-                  <p>{TYPE_LABEL[n.type] ?? n.type}</p>
-                  <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>
-                    {new Date(n.created_at).toLocaleString("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </li>
-              ))}
+              {notifs.slice(0, 20).map((n) => {
+                const url = n.payload?.url as string | undefined;
+                const senderName = n.payload?.sender_name as string | undefined;
+                const label = TYPE_LABEL[n.type] ?? n.type;
+                const className = `block px-4 py-3 text-sm ${n.read ? "text-slate-500" : "text-slate-900 font-medium"}`;
+
+                const inner = (
+                  <>
+                    <p>{senderName ? `${label} · ${senderName}` : label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>
+                      {new Date(n.created_at).toLocaleString("fr-FR", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </>
+                );
+
+                return (
+                  <li key={n.id}>
+                    {url ? (
+                      <Link href={url} className={className} onClick={handleItemClick}>
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div className={className}>{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
