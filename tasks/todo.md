@@ -2,10 +2,10 @@
 
 ---
 
-## Session 11 — Blocs 3, 4, fin Bloc 6
+## Session 11 — Blocs 3, 4, 5, fin Bloc 6
 
 > **Statut : TERMINÉ.**
-> Tous les blocs prioritaires livrés. Build vert 25 routes. Poussé sur les deux branches.
+> Tous les blocs livrés (3, 4, 5, fin 6). Build vert 26 routes. Poussé sur les deux branches.
 
 ### Bloc 3 — Liste chats enseignant ✅
 - [x] Ajouter "Messages" dans `DrawerNav` NAV_ITEMS → `/teacher/messages`
@@ -28,18 +28,21 @@
 - [x] `hw-correction-form.tsx` : champ `<input type="file" name="correction_file">`
 - [x] `actions.ts` (homework) : upload fichier → Storage, stocker path dans `homework.correction_file`
 
-### Bloc 5 — Admin (faible priorité, reporté)
-- [ ] Page `/teacher/admin/teachers` : liste des enseignants + bouton "Inviter un enseignant"
-- [ ] Server action `inviteTeacher` : `supabase.auth.admin.inviteUserByEmail()` + création ligne `teachers` + `profiles(role=teacher)`
-- [ ] Lien dans `DrawerNav` visible uniquement si `role === 'admin'`
+### Bloc 5 — Admin (inviter un enseignant) ✅
+- [x] `requireAdmin()` dans `auth.ts` (garde-fou rôle admin)
+- [x] Action `inviteTeacher` : `auth.admin.inviteUserByEmail()` (metadata role=teacher → trigger crée le profil) + INSERT ligne `teachers`. Garde si `SUPABASE_SERVICE_ROLE_KEY` absent.
+- [x] Page `/teacher/admin/teachers` : liste des enseignants (badge admin/genre) + formulaire d'invitation
+- [x] Lien "Enseignants" dans `DrawerNav` visible uniquement si `role === 'admin'`
 
 ### Review (Session 11)
-**État au 2026-06-23 — Blocs 3, 4, fin Bloc 6 livrés. Build vert (25 routes).**
+**État au 2026-06-23 — Blocs 3, 4, 5, fin Bloc 6 livrés. Build vert (26 routes).**
 - **Bloc 3** : `/teacher/messages` liste toutes les conversations avec dernier message, date relative et badge non-lu. "Messages" ajouté dans DrawerNav.
 - **Fin Bloc 6** : 3 nouveaux types d'enum (`homework_corrected`, `payment_requested`, `payment_confirmed`). Notifications déclenchées dans `correctHomework`, `confirmPayment` et `requestPayment` via RPC SECURITY DEFINER (pas de createAdminClient).
 - **Bloc 4** : Buckets Storage `session-files` + `homework-corrections` (private, 10 Mo), 4 policies (teacher=ALL, student=SELECT/dossier propre). RPC étendue avec `p_support_files`. Champs upload dans le form de séance et dans la correction de devoir. Fichiers nommés `{student_id}/{timestamp}_{nom}`.
-- Preuves SQL : enum 7 valeurs ✅, buckets ✅, policies ✅, RPC signature ✅, 3 types insertables ✅.
-- **Reste (Bloc 5 admin, faible priorité)** : page liste enseignants + invitation.
+- **Bloc 5** : `requireAdmin()` + page `/teacher/admin/teachers` (liste + invitation) + entrée DrawerNav admin-only. Invitation via `inviteUserByEmail` (service_role légitime — seule voie pour créer un compte auth + e-mail). Garde explicite si la clé manque.
+- Preuves SQL : enum 7 valeurs ✅, buckets ✅, policies Storage ✅, RPC signature ✅, 3 types insertables ✅, RLS teachers (non-admin bloqué / admin autorisé) ✅, `confirm_payment` étanche élève (§8.1) ✅, advisor 0 nouveau lint ✅.
+- **Note exploitation** : la fonctionnalité d'invitation requiert `SUPABASE_SERVICE_ROLE_KEY` dans les env vars Vercel (sinon message d'erreur clair, pas de crash). À vérifier côté propriétaire.
+- **Reste possible (prochaines sessions)** : vidéos Bunny Stream, vitrine publique, quiz auto-générés, soumission de devoir côté élève (upload `submission_file`).
 
 ---
 

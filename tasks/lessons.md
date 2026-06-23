@@ -1,8 +1,19 @@
 # Lessons
 
-## Session 11 (2026-06-23) — Liste chats enseignant + Storage uploads + Notifications complètes
+## Session 11 (2026-06-23) — Liste chats enseignant + Storage uploads + Notifications + Admin invite
 
-### Décisions
+### Décisions (Bloc 5 — admin invite)
+- **`auth.admin.inviteUserByEmail()` = seul usage légitime de `createAdminClient()`.** Créer un compte Supabase Auth + envoyer l'e-mail d'invitation n'a AUCUNE alternative RLS/RPC (on ne peut pas insérer dans `auth.users` ni déclencher l'e-mail depuis une fonction SECURITY DEFINER). Le commentaire de `admin.ts` le prévoit déjà ("création de comptes par l'admin"). Contrairement aux notifications/paiements, ici l'admin client est inévitable.
+- **Garde explicite `if (!process.env.SUPABASE_SERVICE_ROLE_KEY)`** avant d'appeler l'admin API → message d'erreur clair au lieu du crash silencieux décrit en sessions 9/10. Transforme le piège récurrent en feedback utilisateur.
+- **Le trigger `handle_new_user` fait le travail de création de profil.** En passant `data: { role: 'teacher', full_name, gender }` à `inviteUserByEmail`, ces valeurs deviennent `raw_user_meta_data` → le trigger `on_auth_user_created` crée le profil avec `role=teacher`. Il ne reste qu'à INSERT la ligne `teachers` (le profil n'est pas à créer à la main). Pattern réutilisable pour inviter des élèves.
+- **`requireAdmin()` réutilise `homePathForRole()`** pour rediriger proprement (teacher→/teacher, élève→/dashboard) au lieu d'un simple /login.
+- **Nav admin-only via prop + filtre** : `NavItem.adminOnly?: boolean` + `NAV_ITEMS.filter(i => !i.adminOnly || isAdmin)`. La prop `isAdmin` vient du layout serveur (`profile?.role === 'admin'`). Garder la logique de rôle côté serveur, le composant client ne fait que filtrer l'affichage.
+
+### Pièges (Bloc 5)
+- **Impersonation SQL + table temp** : sous `set_config('role','authenticated')`, le rôle `authenticated` ne peut pas écrire dans une table TEMP créée par `postgres` (permission denied). Solution : capturer le résultat dans une variable PL/pgSQL **pendant** l'impersonation, **remettre** `role=postgres`, **puis** INSERT dans la table de résultats.
+- **Preuve RLS d'un INSERT admin sans données valides** : utiliser un `profile_id` factice → si la RLS passe, l'INSERT échoue sur la FK (`teachers_profile_id_fkey`), ce qui PROUVE que la policy `teachers_admin_all` a autorisé l'écriture (l'erreur n'est pas RLS mais FK). Astuce pour tester une policy WITH CHECK sans seed complet.
+
+### Décisions (Blocs 3, 4, 6)
 - **Storage RLS via helpers `private.current_teacher_id()` / `private.current_student_id()`** : les policies Storage s'appuient sur les mêmes helpers que les tables Postgres. Teacher=ALL, student=SELECT uniquement sur son dossier (`storage.foldername(name))[1] = student_id`). Cohérent avec le reste du modèle d'accès.
 - **Path Storage = `{student_id}/{timestamp}_{nom_nettoyé}`** : le premier segment est le student_id pour que la policy student puisse filtrer via `foldername`. Pas de session_id dans le path pour simplifier (le lien DB → storage_path dans `lesson_records.support_files` fait la jointure).
 - **Upload avant la RPC** : les fichiers sont uploadés dans la server action avant d'appeler `submit_session_record`. Si l'upload échoue, on ignore le fichier silencieusement (pas d'erreur bloquante) et on continue. Si la RPC échoue après upload, les fichiers orphelins restent dans le bucket — acceptable à cette échelle.
