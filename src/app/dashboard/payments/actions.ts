@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireStudent } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
 type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
@@ -24,7 +25,7 @@ export async function requestPayment(
 
   const admin = createAdminClient();
 
-  // Vérifier s'il n'y a pas déjà un paiement pending ou paid actif
+  // Vérifier doublon
   const { data: existing } = await admin
     .from("payments")
     .select("id, status")
@@ -33,12 +34,8 @@ export async function requestPayment(
     .in("status", ["pending", "paid"])
     .maybeSingle();
 
-  if (existing?.status === "paid") {
-    return { error: "Tu as déjà un abonnement actif." };
-  }
-  if (existing?.status === "pending") {
-    return { error: "Une demande est déjà en attente de confirmation." };
-  }
+  if (existing?.status === "paid") return { error: "Tu as déjà un abonnement actif." };
+  if (existing?.status === "pending") return { error: "Une demande est déjà en attente de confirmation." };
 
   const { error } = await admin.from("payments").insert({
     student_id: studentId,
@@ -48,6 +45,23 @@ export async function requestPayment(
   });
 
   if (error) return { error: "Impossible de créer la demande." };
+
+  // Notifier le teacher via RPC SECURITY DEFINER (client standard, session élève)
+  const supabase = await createClient();
+  const { data: studentRow } = await supabase
+    .from("students")
+    .select("teacher_id, teachers(profile_id)")
+    .eq("id", studentId)
+    .maybeSingle();
+
+  const teacher = Array.isArray(studentRow?.teachers) ? studentRow?.teachers[0] : studentRow?.teachers;
+  if (teacher?.profile_id) {
+    await supabase.rpc("insert_notification", {
+      p_user_id: teacher.profile_id,
+      p_type: "payment_requested",
+      p_payload: { url: "/teacher/payments" },
+    });
+  }
 
   revalidatePath("/dashboard/payments");
   return { success: true };

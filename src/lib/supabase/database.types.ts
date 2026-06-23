@@ -1272,6 +1272,7 @@ export type Database = {
           p_session_date: string
           p_student_id: string
           p_vocab?: Json
+          p_support_files?: Json
         }
         Returns: string
       }
@@ -1292,6 +1293,9 @@ export type Database = {
         | "homework_due"
         | "eval_due"
         | "video_assigned"
+        | "homework_corrected"
+        | "payment_requested"
+        | "payment_confirmed"
       payment_plan: "1x" | "2x" | "3x" | "12x" | "single"
       payment_product: "individual_sub" | "book"
       payment_status: "pending" | "paid" | "failed" | "cancelled"

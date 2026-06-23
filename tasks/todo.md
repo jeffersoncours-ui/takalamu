@@ -2,6 +2,37 @@
 
 ---
 
+## Session 11 — Blocs 3, 4, fin Bloc 6
+
+> **Statut : EN COURS.**
+> Suite directe de la session 10. Priorités dans l'ordre : Bloc 3 (chats enseignant), fin Bloc 6 (notifs), Bloc 4 (uploads).
+
+### Bloc 3 — Liste chats enseignant
+- [ ] Ajouter "Messages" dans `DrawerNav` NAV_ITEMS → `/teacher/messages`
+- [ ] Créer `/teacher/messages/page.tsx` : liste conversations (nom élève + dernier message + badge non-lu), triée par dernière activité
+
+### Fin Bloc 6 — Notifications (suite)
+- [ ] Migration `18_extend_notification_types` : ajouter `homework_corrected`, `payment_requested`, `payment_confirmed` à l'enum `notification_type`
+- [ ] `database.types.ts` : mettre à jour `Enums.notification_type`
+- [ ] Notification `homework_corrected` → student dans `correctHomework` (server action)
+- [ ] Notification `payment_requested` → teacher dans `requestPayment` (server action)
+- [ ] Notification `payment_confirmed` → student dans `confirmPayment` (server action)
+- [ ] `NotifBell` : libellés pour les 3 nouveaux types
+
+### Bloc 4 — Uploads fichiers
+- [ ] Migration `19_storage_buckets` : créer buckets `session-files` + `homework-corrections` + policies RLS Storage
+- [ ] Migration `20_extend_session_rpc` : ajouter `p_support_files jsonb DEFAULT '[]'` à `submit_session_record`
+- [ ] `database.types.ts` : mettre à jour `Functions.submit_session_record`
+- [ ] `session-form.tsx` : champ `<input type="file" multiple name="support_files">`
+- [ ] `actions.ts` (session) : upload fichiers → Storage, passer paths à la RPC
+- [ ] `hw-correction-form.tsx` : champ `<input type="file" name="correction_file">`
+- [ ] `actions.ts` (homework) : upload fichier → Storage, stocker path dans `homework.correction_file`
+
+### Review (Session 11)
+_(à remplir en fin de session)_
+
+---
+
 ## Session 10 — Corrections prod + Fonctionnalités manquantes
 
 > **Statut : TERMINÉ (blocs 1, 2, 6-partiel). Blocs 3, 4, 5 à continuer.**
