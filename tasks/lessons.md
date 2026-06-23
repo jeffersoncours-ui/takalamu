@@ -2,6 +2,20 @@
 
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
+## Session 10 (2026-06-23) — Chat lag + Notifications cliquables + UX onglets
+
+### Décisions
+- **RPC SECURITY DEFINER pour toutes les notifications.** `insert_notification` est le seul endroit où on insère dans `notifications`. N'importe quel utilisateur authentifié peut l'appeler. Élimine définitivement la dépendance à `createAdminClient()` / `SUPABASE_SERVICE_ROLE_KEY` pour les notifications. Pattern à généraliser : INSERT multi-table bloqué par RLS → RPC SECURITY DEFINER.
+- **Enrichir le payload dès la création, pas à l'affichage.** Stocker `{ url, sender_name }` dans le payload au moment de l'INSERT (server action) plutôt que de requêter la DB au moment de l'affichage (NotifBell client). Évite une requête Supabase supplémentaire côté client et fonctionne pour les notifs historiques sans migration.
+- **`loading.tsx` = levier de performance perçue le moins coûteux dans App Router.** Un fichier de 8 lignes donne un feedback visuel immédiat au changement d'onglet pendant que le serveur rend la page. À ajouter sur toutes les routes à fort transit utilisateur.
+- **`requireStudent()` retourne `{ userId, profile, studentId }`** — le profil complet est disponible sans requête supplémentaire. Utiliser directement `profile.full_name` dans les actions pour enrichir les payloads.
+- **Branche vercel-sync : stratégie cherry-pick = acceptable mais fragile.** Les conflits répétés (commentaire seulement) viennent de commits différents entre les deux branches. À terme : ne garder qu'une seule branche active et utiliser Vercel Preview Deployments sur la branche de travail principale.
+
+### Pièges
+- **`createAdminClient()` en prod = échec silencieux.** Pas de log, pas d'erreur visible côté client. Le premier symptôme est "la fonctionnalité ne marche pas en prod mais marche en local". Root cause systématique : `SUPABASE_SERVICE_ROLE_KEY` absent en prod. Diagnostic : vérifier la table `notifications` (ou la table cible) directement via MCP `execute_sql`.
+- **Cherry-pick + commentaires différents → conflit trivial à répétition.** Résoudre avec `git checkout --ours <file>` quand le code est identique et seul le commentaire diffère. Ne pas rejeter le cherry-pick entier pour ça.
+- **`loading.tsx` scope** : un `loading.tsx` à la racine `/dashboard/` couvre uniquement la page `/dashboard`, pas les enfants `/dashboard/messages`, `/dashboard/bookings`, etc. Chaque sous-route a besoin de son propre fichier.
+
 ## Session 9 (2026-06-23) — Corrections prod + Cockpit contextuel
 
 ### Décisions
