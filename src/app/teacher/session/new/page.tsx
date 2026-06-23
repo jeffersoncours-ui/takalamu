@@ -39,16 +39,23 @@ export default async function NewSessionPage({
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold text-slate-900">Fin de cours</h1>
-        <p className="text-sm text-slate-600">
-          Une seule fiche : présence, leçon, vocabulaire, grammaire, devoir,
-          récap et note privée.
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        >
+          Fiche de fin de cours
+        </h1>
+        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+          Présence, leçon, vocabulaire, grammaire, devoir, récap et note privée.
         </p>
       </div>
 
       {students.length === 0 ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <p
+          className="rounded-[16px] p-4"
+          style={{ background: "#FDF4E3", border: "1px solid #F4D193", color: "#9A6206", fontSize: 14 }}
+        >
           Aucun élève rattaché pour l&apos;instant.
         </p>
       ) : (
