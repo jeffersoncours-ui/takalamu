@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge, homeworkBadge } from "@/components/status-badge";
+import { HwSubmitForm } from "./hw-submit-form";
 
 export default async function DevoirsPage() {
   await requireStudent();
@@ -11,7 +12,7 @@ export default async function DevoirsPage() {
 
   const { data: homeworks } = await supabase
     .from("homework")
-    .select("id, instructions, status, feedback, grade, assigned_at, lesson_records(lessons(title))")
+    .select("id, instructions, status, feedback, grade, assigned_at, submission_file, lesson_records(lessons(title))")
     .order("assigned_at", { ascending: false });
 
   const list = homeworks ?? [];
@@ -78,6 +79,22 @@ export default async function DevoirsPage() {
                     <span className="font-semibold">Retour : </span>
                     {hw.feedback}
                     {hw.grade && <span className="ml-2 font-bold">— Note : {hw.grade}</span>}
+                  </p>
+                </div>
+              )}
+
+              {hw.status === "a_rendre" && <HwSubmitForm homeworkId={hw.id} />}
+
+              {hw.status === "rendu" && hw.submission_file && (
+                <div
+                  className="flex items-center gap-2 rounded-[12px] px-3 py-2.5 mt-3"
+                  style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  <p className="font-medium" style={{ color: "#2C4BB8", fontSize: 13 }}>
+                    Devoir envoyé, en attente de correction.
                   </p>
                 </div>
               )}
