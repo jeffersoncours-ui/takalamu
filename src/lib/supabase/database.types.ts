@@ -144,6 +144,7 @@ export type Database = {
           created_at: string
           id: string
           linked_book_session_id: string | null
+          prep_notes: string | null
           scheduled_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_id: string
@@ -156,6 +157,7 @@ export type Database = {
           created_at?: string
           id?: string
           linked_book_session_id?: string | null
+          prep_notes?: string | null
           scheduled_at: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_id: string
@@ -168,6 +170,7 @@ export type Database = {
           created_at?: string
           id?: string
           linked_book_session_id?: string | null
+          prep_notes?: string | null
           scheduled_at?: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_id?: string
