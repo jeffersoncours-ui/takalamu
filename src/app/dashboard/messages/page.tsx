@@ -1,6 +1,5 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { ChatBox } from "@/components/chat-box";
 import { sendMessage, markMessagesRead } from "./actions";
 
@@ -26,17 +25,22 @@ export default async function StudentMessagesPage() {
     : student.teachers;
   const teacherName = teacher?.display_name ?? "Mon enseignant";
 
-  // Créer la conversation si elle n'existe pas (seul le teacher peut via RLS,
-  // donc on passe par l'admin client)
-  const admin = createAdminClient();
-  const { data: conv } = await admin
+  // Trouver ou créer la conversation (la policy INSERT permet aux élèves de créer leur propre conv)
+  let { data: conv } = await supabase
     .from("conversations")
-    .upsert(
-      { teacher_id: student.teacher_id, student_id: studentId },
-      { onConflict: "teacher_id,student_id", ignoreDuplicates: false },
-    )
     .select("id")
+    .eq("teacher_id", student.teacher_id)
+    .eq("student_id", studentId)
     .maybeSingle();
+
+  if (!conv) {
+    const { data: newConv } = await supabase
+      .from("conversations")
+      .insert({ teacher_id: student.teacher_id, student_id: studentId })
+      .select("id")
+      .maybeSingle();
+    conv = newConv;
+  }
 
   if (!conv) {
     return (
