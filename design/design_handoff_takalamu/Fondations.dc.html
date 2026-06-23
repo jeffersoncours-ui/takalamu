@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;}
+@keyframes tkPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.72);}}
+@keyframes tkRipple{0%{box-shadow:0 0 0 0 rgba(15,157,110,.42);}100%{box-shadow:0 0 0 14px rgba(15,157,110,0);}}
+</style>
+</helmet>
+<div style="width:max-content;min-width:100%;min-height:100vh;box-sizing:border-box;padding:56px 56px 88px;background:#e7e5df;font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased;">
+
+  <!-- PAGE HEADER -->
+  <div style="max-width:980px;margin-bottom:8px;">
+    <div style="display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;background:#fff;border:1px solid #E2DBCD;box-shadow:0 2px 8px rgba(28,26,23,.04);margin-bottom:22px;">
+      <span style="width:22px;height:22px;border-radius:7px;background:#0F9D6E;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Amiri',serif;font-weight:700;font-size:14px;">ت</span>
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;letter-spacing:.01em;">Takalamu</span>
+      <span style="width:4px;height:4px;border-radius:99px;background:#C9C1B2;"></span>
+      <span style="font:600 12px 'Plus Jakarta Sans';color:#8B857A;">Fondations UI</span>
+    </div>
+    <h1 style="margin:0 0 14px;font-family:'Spectral',serif;font-weight:700;font-size:44px;line-height:1.05;color:#1C1A17;letter-spacing:-.01em;">Le langage visuel,<br>à valider ensemble.</h1>
+    <p style="margin:0;max-width:680px;font:500 16px/1.6 'Plus Jakarta Sans';color:#5C564C;">Avant de dessiner le moindre écran. Palette émeraude, système de statuts, échelle typo, composants de base et les deux modèles de navigation mobile. Plusieurs variantes côte à côte sur les points clés — choisis, on fige, puis on attaque la Fiche de fin de cours.</p>
+  </div>
+
+  <!-- ============ 01 PALETTE ============ -->
+  <div style="margin-top:60px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">01</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Palette</h2>
+      <span style="font:500 14px 'Plus Jakarta Sans';color:#8B857A;">Émeraude vif · neutres chauds · 6 teintes sémantiques</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;">
+
+      <!-- Émeraude scale -->
+      <div style="flex:none;width:560px;background:#fff;border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;margin-bottom:4px;">Émeraude — couleur de marque</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;margin-bottom:20px;">CTA · onglet actif · accents. Le <b style="color:#0F9D6E;">500</b> est la teinte signature.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#ECFAF4;border:1px solid #E2DBCD;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">50</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#D2F2E5;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">100</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#A6E5CC;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">200</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#6FD3AE;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">300</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#2FB888;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">400</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#0F9D6E;box-shadow:0 6px 14px rgba(15,157,110,.35);outline:2px solid #0F9D6E;outline-offset:2px;"></div><div style="font:800 11px 'Plus Jakarta Sans';color:#0F9D6E;">500★</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#0A8560;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">600</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#086B4E;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">700</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px;"><div style="width:54px;height:60px;border-radius:13px;background:#0A553F;"></div><div style="font:700 11px 'Plus Jakarta Sans';color:#1C1A17;">800</div></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;"><div style="font:600 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.05em;">Hex</div><div style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">#0F9D6E</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;"><div style="font:600 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.05em;">Pressé</div><div style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">#0A8560</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;"><div style="font:600 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.05em;">Sur émeraude</div><div style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">#FFFFFF</div></div>
+        </div>
+      </div>
+
+      <!-- Neutres chauds -->
+      <div style="flex:none;width:360px;background:#fff;border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;margin-bottom:4px;">Neutres chauds — le papier</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;margin-bottom:20px;">Blanc cassé crème, jamais de gris froid clinique.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:14px;"><div style="width:46px;height:46px;border-radius:12px;background:#F7F4EE;border:1px solid #E2DBCD;"></div><div><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Fond page</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">#F7F4EE</div></div></div>
+          <div style="display:flex;align-items:center;gap:14px;"><div style="width:46px;height:46px;border-radius:12px;background:#FFFFFF;border:1px solid #E2DBCD;"></div><div><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Surface / carte</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">#FFFFFF</div></div></div>
+          <div style="display:flex;align-items:center;gap:14px;"><div style="width:46px;height:46px;border-radius:12px;background:#E9E3D8;"></div><div><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Bordure</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">#E9E3D8</div></div></div>
+          <div style="display:flex;align-items:center;gap:14px;"><div style="width:46px;height:46px;border-radius:12px;background:#1C1A17;"></div><div><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Texte fort</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">#1C1A17</div></div></div>
+          <div style="display:flex;align-items:center;gap:14px;"><div style="width:46px;height:46px;border-radius:12px;background:#8B857A;"></div><div><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Texte discret</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">#8B857A</div></div></div>
+        </div>
+      </div>
+
+      <!-- Sémantique -->
+      <div style="flex:none;width:300px;background:#fff;border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;margin-bottom:4px;">Teintes de statut</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;margin-bottom:20px;">6 hues, même logique partout.</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#0F9D6E;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Vert</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">valide · ok</span></div>
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#F59E0B;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Ambre</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">attente · retard</span></div>
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#E5484D;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Rouge</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">échec · bloqué</span></div>
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#3E63DD;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Bleu</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">rendu · en cours</span></div>
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#8E4EC6;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Violet</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">corrigé</span></div>
+          <div style="display:flex;align-items:center;gap:12px;"><span style="width:11px;height:11px;border-radius:99px;background:#A8A29E;"></span><span style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;flex:1;">Ardoise</span><span style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">à faire · annulé</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 02 BADGES DE STATUT ============ -->
+  <div style="margin-top:64px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">02</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Badges de statut</h2>
+      <span style="font:500 14px 'Plus Jakarta Sans';color:#8B857A;">Bordure colorée + pastille · discret mais net, jamais pâle</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;">
+      <div style="flex:none;width:680px;background:#fff;border-radius:24px;padding:30px 30px 8px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+
+        <div style="display:flex;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:1px solid #F0EBE1;margin-bottom:22px;">
+          <div style="width:110px;flex:none;"><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Présence</div><div style="font:500 12px 'Plus Jakarta Sans';color:#A8A29E;">par séance</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 13px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:7px;height:7px;border-radius:99px;background:#0F9D6E;"></span>Présent</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #C7C0B4;background:#F4F1EB;font:700 13px 'Plus Jakarta Sans';color:#6B6459;"><span style="width:7px;height:7px;border-radius:99px;background:#A8A29E;"></span>Absent justifié</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F3B0B2;background:#FDECEC;font:700 13px 'Plus Jakarta Sans';color:#B4292E;"><span style="width:7px;height:7px;border-radius:99px;background:#E5484D;"></span>Absent injustifié</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F4D193;background:#FDF4E3;font:700 13px 'Plus Jakarta Sans';color:#9A6206;"><span style="width:7px;height:7px;border-radius:99px;background:#F59E0B;"></span>En retard</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:1px solid #F0EBE1;margin-bottom:22px;">
+          <div style="width:110px;flex:none;"><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Devoir</div><div style="font:500 12px 'Plus Jakarta Sans';color:#A8A29E;">cycle →</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #C7C0B4;background:#F4F1EB;font:700 13px 'Plus Jakarta Sans';color:#6B6459;"><span style="width:7px;height:7px;border-radius:99px;background:#A8A29E;"></span>À rendre</span>
+            <span style="color:#CFC8BB;font-weight:700;">→</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #AEBEF2;background:#EAEFFD;font:700 13px 'Plus Jakarta Sans';color:#2C49B8;"><span style="width:7px;height:7px;border-radius:99px;background:#3E63DD;"></span>Rendu</span>
+            <span style="color:#CFC8BB;font-weight:700;">→</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #D4B0EC;background:#F6EDFC;font:700 13px 'Plus Jakarta Sans';color:#7233A8;"><span style="width:7px;height:7px;border-radius:99px;background:#8E4EC6;"></span>Corrigé</span>
+            <span style="color:#CFC8BB;font-weight:700;">→</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 13px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:7px;height:7px;border-radius:99px;background:#0F9D6E;"></span>Vu</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:24px;padding-bottom:22px;border-bottom:1px solid #F0EBE1;margin-bottom:22px;">
+          <div style="width:110px;flex:none;"><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Paiement</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F4D193;background:#FDF4E3;font:700 13px 'Plus Jakarta Sans';color:#9A6206;"><span style="width:7px;height:7px;border-radius:99px;background:#F59E0B;"></span>En attente</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 13px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:7px;height:7px;border-radius:99px;background:#0F9D6E;"></span>Payé</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F3B0B2;background:#FDECEC;font:700 13px 'Plus Jakarta Sans';color:#B4292E;"><span style="width:7px;height:7px;border-radius:99px;background:#E5484D;"></span>Échoué</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #C7C0B4;background:#F4F1EB;font:700 13px 'Plus Jakarta Sans';color:#6B6459;"><span style="width:7px;height:7px;border-radius:99px;background:#A8A29E;"></span>Annulé</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:24px;padding-bottom:24px;">
+          <div style="width:110px;flex:none;"><div style="font:700 13px 'Plus Jakarta Sans';color:#1C1A17;">Élève</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 13px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:7px;height:7px;border-radius:99px;background:#0F9D6E;"></span>Actif</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F3B0B2;background:#FDECEC;font:700 13px 'Plus Jakarta Sans';color:#B4292E;"><span style="width:7px;height:7px;border-radius:99px;background:#E5484D;"></span>Suspendu · paiement</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:6px 13px 6px 11px;border-radius:999px;border:1.4px solid #F4D193;background:#FDF4E3;font:700 13px 'Plus Jakarta Sans';color:#9A6206;"><span style="width:7px;height:7px;border-radius:99px;background:#F59E0B;"></span>Suspendu · absences</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Rejoindre 3 états -->
+      <div style="flex:none;width:300px;background:#fff;border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;margin-bottom:4px;">Bouton « Rejoindre »</div>
+        <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;margin-bottom:22px;">3 états selon l'heure du cours.</div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;">À venir · désactivé</div>
+            <button style="width:100%;height:50px;border-radius:15px;border:1.5px solid #E2DBCD;background:#F4F1EB;color:#A8A29E;font:700 14px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;gap:8px;cursor:not-allowed;"><span style="font-size:13px;">⏱</span>Disponible à 18h00</button>
+          </div>
+          <div>
+            <div style="font:600 11px 'Plus Jakarta Sans';color:#0F9D6E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;">Fenêtre ouverte · actif</div>
+            <button style="width:100%;height:50px;border-radius:15px;border:none;background:#0F9D6E;color:#fff;font:700 14px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;box-shadow:0 8px 18px rgba(15,157,110,.32);"><span style="width:9px;height:9px;border-radius:99px;background:#fff;animation:tkPulse 1.4s ease-in-out infinite;"></span>Rejoindre le cours</button>
+          </div>
+          <div>
+            <div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;">Accès fermé</div>
+            <button style="width:100%;height:50px;border-radius:15px;border:1.5px solid #E2DBCD;background:#fff;color:#8B857A;font:700 14px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;gap:8px;cursor:not-allowed;"><span style="font-size:13px;">🔒</span>Séance terminée</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 03 TYPOGRAPHIE ============ -->
+  <div style="margin-top:64px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">03</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Typographie</h2>
+      <span style="font:500 14px 'Plus Jakarta Sans';color:#8B857A;">Spectral (titres, chaleureux) + Plus Jakarta Sans (corps, net)</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;">
+      <div style="flex:none;width:620px;background:#fff;border-radius:24px;padding:34px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="display:flex;align-items:baseline;gap:16px;padding-bottom:18px;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font-family:'Spectral',serif;font-weight:700;font-size:40px;line-height:1;color:#1C1A17;letter-spacing:-.015em;">Fiche de fin de cours</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">Display<br>Spectral 700 · 40</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font-family:'Spectral',serif;font-weight:700;font-size:28px;line-height:1;color:#1C1A17;">Titre de page</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">H1<br>Spectral 700 · 28</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font-family:'Spectral',serif;font-weight:600;font-size:22px;line-height:1;color:#1C1A17;">Section / sous-titre</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">H2<br>Spectral 600 · 22</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font:700 17px 'Plus Jakarta Sans';color:#1C1A17;">Titre de carte</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">H3<br>Jakarta 700 · 17</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font:500 15px/1.5 'Plus Jakarta Sans';color:#4A463F;">Texte courant. Le corps de lecture, confortable sur petit écran, pour les consignes, définitions et messages.</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">Corps<br>Jakarta 500 · 15</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding:18px 0;border-bottom:1px solid #F0EBE1;"><div style="flex:1;font:500 13px 'Plus Jakarta Sans';color:#8B857A;">Texte secondaire, discret — dates, méta, aides.</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">Petit<br>Jakarta 500 · 13</div></div>
+        <div style="display:flex;align-items:baseline;gap:16px;padding-top:18px;"><div style="flex:1;font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.08em;">Étiquette de champ</div><div style="font:600 11px 'Plus Jakarta Sans';color:#A8A29E;text-align:right;flex:none;">Label<br>Jakarta 700 · 11 · maj</div></div>
+      </div>
+
+      <!-- chiffres + arabe -->
+      <div style="flex:none;width:360px;display:flex;flex-direction:column;gap:24px;">
+        <div style="background:#fff;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+          <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Chiffres-clés (cockpit)</div>
+          <div style="display:flex;align-items:baseline;gap:6px;"><span style="font:800 52px 'Plus Jakarta Sans';color:#1C1A17;letter-spacing:-.02em;line-height:.9;">128</span><span style="font:600 16px 'Plus Jakarta Sans';color:#8B857A;">séances</span></div>
+          <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;margin-top:8px;">Jakarta 800 · gros & gras, le chiffre domine, le label s'efface.</div>
+        </div>
+        <div style="background:#fff;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+          <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Arabe — RTL · Amiri</div>
+          <div dir="rtl" style="font-family:'Amiri',serif;font-weight:700;font-size:40px;color:#1C1A17;text-align:right;line-height:1.2;">اَلسَّلَامُ عَلَيْكُمْ</div>
+          <div style="font:500 14px 'Plus Jakarta Sans';color:#4A463F;margin-top:6px;">« La paix soit sur vous » — <span style="color:#8B857A;">racine س ل م</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 04 COMPOSANTS ============ -->
+  <div style="margin-top:64px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">04</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Composants de base</h2>
+      <span style="font:500 14px 'Plus Jakarta Sans';color:#8B857A;">Boutons · champs · sélecteurs · cibles tactiles ≥ 50px</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;">
+
+      <!-- Boutons + champs -->
+      <div style="flex:none;width:480px;background:#fff;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;">Boutons</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <button style="height:54px;border-radius:16px;border:none;background:#0F9D6E;color:#fff;font:700 15px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;box-shadow:0 8px 18px rgba(15,157,110,.30);"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Enregistrer la fiche</button>
+          <div style="display:flex;gap:12px;">
+            <button style="flex:1;height:50px;border-radius:15px;border:1.5px solid #DDD5C7;background:#fff;color:#1C1A17;font:700 14px 'Plus Jakarta Sans';cursor:pointer;">Secondaire</button>
+            <button style="flex:1;height:50px;border-radius:15px;border:none;background:transparent;color:#0F9D6E;font:700 14px 'Plus Jakarta Sans';cursor:pointer;">Fantôme</button>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <button style="flex:1;height:50px;border-radius:15px;border:1.5px solid #F3B0B2;background:#FDECEC;color:#B4292E;font:700 14px 'Plus Jakarta Sans';cursor:pointer;">Destructif</button>
+            <button style="flex:1;height:50px;border-radius:15px;border:1.5px solid #E2DBCD;background:#F4F1EB;color:#BDB6A8;font:700 14px 'Plus Jakarta Sans';cursor:not-allowed;">Désactivé</button>
+          </div>
+        </div>
+
+        <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin:26px 0 16px;">Champs</div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <label style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;">Leçon travaillée</label>
+            <div style="height:52px;border-radius:14px;border:1.5px solid #E9E3D8;background:#fff;display:flex;align-items:center;padding:0 16px;font:500 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 14 — Les voyelles longues</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <label style="font:700 11px 'Plus Jakarta Sans';color:#0F9D6E;text-transform:uppercase;letter-spacing:.06em;">Récap public · focus</label>
+            <div style="height:52px;border-radius:14px;border:2px solid #0F9D6E;background:#fff;display:flex;align-items:center;padding:0 16px;font:500 15px 'Plus Jakarta Sans';color:#1C1A17;box-shadow:0 0 0 4px rgba(15,157,110,.10);">Bravo, lecture fluide aujourd'hui<span style="width:1.5px;height:22px;background:#0F9D6E;margin-left:2px;"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sélecteurs + chips -->
+      <div style="flex:none;width:380px;background:#fff;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;">
+        <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Sélecteur segmenté (présence)</div>
+        <div style="display:flex;gap:5px;padding:5px;background:#F4F1EB;border-radius:15px;">
+          <div style="flex:1;height:42px;border-radius:11px;background:#0F9D6E;color:#fff;font:700 13px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(15,157,110,.28);">Présent</div>
+          <div style="flex:1;height:42px;border-radius:11px;color:#6B6459;font:700 13px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;">Retard</div>
+          <div style="flex:1;height:42px;border-radius:11px;color:#6B6459;font:700 13px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;">Absent</div>
+        </div>
+
+        <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin:24px 0 14px;">Chips / filtres</div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;">
+          <span style="padding:9px 16px;border-radius:999px;background:#1C1A17;color:#fff;font:700 13px 'Plus Jakarta Sans';">Tous</span>
+          <span style="padding:9px 16px;border-radius:999px;background:#fff;border:1.5px solid #E2DBCD;color:#4A463F;font:700 13px 'Plus Jakarta Sans';">À corriger</span>
+          <span style="padding:9px 16px;border-radius:999px;background:#fff;border:1.5px solid #E2DBCD;color:#4A463F;font:700 13px 'Plus Jakarta Sans';">Suspendus</span>
+        </div>
+
+        <div style="font:700 13px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin:24px 0 14px;">Interrupteur</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:52px;height:30px;border-radius:99px;background:#0F9D6E;padding:3px;display:flex;justify-content:flex-end;box-shadow:inset 0 1px 3px rgba(0,0,0,.1);"><div style="width:24px;height:24px;border-radius:99px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);"></div></div>
+          <div style="width:52px;height:30px;border-radius:99px;background:#E2DBCD;padding:3px;display:flex;"><div style="width:24px;height:24px;border-radius:99px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.15);"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 05 CARTES ============ -->
+  <div style="margin-top:64px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">05</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Cartes & états</h2>
+      <span style="font:500 14px 'Plus Jakarta Sans';color:#8B857A;">Distinguer l'actionnable de l'informatif — le point n°1 du brief</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;margin-top:20px;">
+
+      <!-- Actionnable vs informatif -->
+      <div style="flex:none;width:340px;display:flex;flex-direction:column;gap:18px;">
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;">Actionnable — pleine, ombrée, flèche</div>
+        <div style="background:#fff;border-radius:20px;padding:20px;box-shadow:0 10px 26px rgba(28,26,23,.09);border:1px solid #EFEAE0;display:flex;align-items:center;gap:16px;cursor:pointer;">
+          <div style="width:48px;height:48px;border-radius:14px;background:#ECFAF4;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+          <div style="flex:1;"><div style="font:700 16px 'Plus Jakarta Sans';color:#1C1A17;">Fiche de fin de cours</div><div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;">Saisir une séance · &lt; 30 s</div></div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C1B2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-top:6px;">Informatif — plate, bordée, sans ombre</div>
+        <div style="background:#FBF9F5;border-radius:20px;padding:20px;border:1px solid #E9E3D8;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 14 · Voyelles longues</div><span style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 12px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:6px;height:6px;border-radius:99px;background:#0F9D6E;"></span>Présent</span></div>
+          <div style="font:500 13px 'Plus Jakarta Sans';color:#8B857A;">Mardi 17 juin · 18h00 — récap : lecture fluide, à consolider le « ُ ».</div>
+        </div>
+      </div>
+
+      <!-- Stat cards -->
+      <div style="flex:none;width:340px;display:flex;flex-direction:column;gap:18px;">
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;">Cartes-stats (cockpit)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div style="background:#fff;border-radius:20px;padding:18px;box-shadow:0 8px 22px rgba(28,26,23,.05);border:1px solid #EFEAE0;"><div style="width:38px;height:38px;border-radius:11px;background:#ECFAF4;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div style="font:800 32px 'Plus Jakarta Sans';color:#1C1A17;line-height:1;">4</div><div style="font:600 12px 'Plus Jakarta Sans';color:#8B857A;margin-top:4px;">Cours aujourd'hui</div></div>
+          <div style="background:#fff;border-radius:20px;padding:18px;box-shadow:0 8px 22px rgba(28,26,23,.05);border:1px solid #EFEAE0;"><div style="width:38px;height:38px;border-radius:11px;background:#F6EDFC;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8E4EC6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div><div style="font:800 32px 'Plus Jakarta Sans';color:#1C1A17;line-height:1;">7</div><div style="font:600 12px 'Plus Jakarta Sans';color:#8B857A;margin-top:4px;">À corriger</div></div>
+        </div>
+        <!-- bandeau alerte -->
+        <div style="background:#FDF4E3;border:1.4px solid #F4D193;border-radius:18px;padding:16px;display:flex;align-items:center;gap:13px;">
+          <div style="width:38px;height:38px;border-radius:11px;background:#F59E0B;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+          <div style="flex:1;"><div style="font:700 14px 'Plus Jakarta Sans';color:#9A6206;">2 élèves suspendus</div><div style="font:500 12px 'Plus Jakarta Sans';color:#B5862E;">Paiement en attente — à vérifier</div></div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div style="flex:none;width:320px;">
+        <div style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:18px;">État vide — soigné</div>
+        <div style="background:#fff;border-radius:24px;padding:38px 28px;box-shadow:0 10px 30px rgba(28,26,23,.05);border:1px solid #EFEAE0;text-align:center;">
+          <div style="width:72px;height:72px;border-radius:22px;background:#F4F1EB;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9C1B2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></div>
+          <div style="font-family:'Spectral',serif;font-weight:600;font-size:20px;color:#1C1A17;margin-bottom:8px;">Aucun mot pour l'instant</div>
+          <div style="font:500 14px/1.5 'Plus Jakarta Sans';color:#8B857A;margin-bottom:22px;">Ton glossaire se remplit séance après séance, à mesure que tu apprends.</div>
+          <button style="height:48px;padding:0 22px;border-radius:14px;border:none;background:#0F9D6E;color:#fff;font:700 14px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 6px 14px rgba(15,157,110,.28);">Voir mes prochains cours</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 06 NAV ÉLÈVE ============ -->
+  <div style="margin-top:72px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">06</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Navigation élève — barre d'onglets en bas</h2>
+    </div>
+    <p style="margin:0 0 26px;max-width:760px;font:500 15px/1.5 'Plus Jakarta Sans';color:#5C564C;">À portée de pouce, 5 entrées max, le reste dans « Plus ». Deux traitements de l'onglet actif — dis-moi lequel « glisse » le mieux.</p>
+    <div style="display:flex;gap:40px;align-items:flex-start;">
+
+      <!-- Variante A : barre classique + indicateur -->
+      <div style="flex:none;width:340px;">
+        <div style="font:700 12px 'Plus Jakarta Sans';color:#6B6459;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Variante A · trait + icône pleine</div>
+        <div style="width:340px;height:720px;border-radius:42px;background:#0c0a08;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.22);">
+          <div style="width:100%;height:100%;border-radius:33px;overflow:hidden;background:#F7F4EE;position:relative;display:flex;flex-direction:column;">
+            <!-- status bar -->
+            <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex:none;"><span style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">9:41</span><div style="display:flex;gap:6px;align-items:center;"><div style="width:17px;height:11px;border:1.5px solid #1C1A17;border-radius:3px;"></div></div></div>
+            <!-- header -->
+            <div style="padding:8px 22px 16px;display:flex;justify-content:space-between;align-items:flex-start;flex:none;">
+              <div><div style="font:600 13px 'Plus Jakarta Sans';color:#8B857A;">Bonjour,</div><div style="font-family:'Spectral',serif;font-weight:700;font-size:26px;color:#1C1A17;">Mes cours</div></div>
+              <div style="width:42px;height:42px;border-radius:13px;background:#fff;border:1px solid #E9E3D8;display:flex;align-items:center;justify-content:center;position:relative;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:99px;background:#E5484D;border:1.5px solid #fff;"></span></div>
+            </div>
+            <!-- list -->
+            <div style="flex:1;padding:0 18px;overflow:hidden;display:flex;flex-direction:column;gap:12px;">
+              <div style="background:#fff;border-radius:18px;padding:16px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 14 · Voyelles longues</div><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 11px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:6px;height:6px;border-radius:99px;background:#0F9D6E;"></span>Présent</span></div>
+                <div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">Mardi 17 juin · 18h00</div>
+              </div>
+              <div style="background:#fff;border-radius:18px;padding:16px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 13 · Le soukoune</div><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid #F4D193;background:#FDF4E3;font:700 11px 'Plus Jakarta Sans';color:#9A6206;"><span style="width:6px;height:6px;border-radius:99px;background:#F59E0B;"></span>Retard</span></div>
+                <div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">Jeudi 12 juin · 18h00</div>
+              </div>
+              <div style="background:#fff;border-radius:18px;padding:16px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 12 · Les liaisons</div><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 11px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:6px;height:6px;border-radius:99px;background:#0F9D6E;"></span>Présent</span></div>
+                <div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">Mardi 10 juin · 18h00</div>
+              </div>
+            </div>
+            <!-- tab bar A -->
+            <div style="flex:none;background:#fff;border-top:1px solid #EDE7DC;padding:10px 8px 22px;display:flex;justify-content:space-around;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;width:58px;"><div style="position:absolute;top:-10px;width:28px;height:3px;border-radius:99px;background:#0F9D6E;"></div><svg width="23" height="23" viewBox="0 0 24 24" fill="#0F9D6E" stroke="#0F9D6E" stroke-width="1.6" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg><span style="font:700 10px 'Plus Jakarta Sans';color:#0F9D6E;">Cours</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span style="font:600 10px 'Plus Jakarta Sans';color:#A8A29E;">Réserv.</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a1 1 0 0 0 1 1h15"/><path d="M8 16V9M12 16v-5M16 16v-2"/></svg><span style="font:600 10px 'Plus Jakarta Sans';color:#A8A29E;">Devoirs</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;position:relative;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-1L3 20l1.2-4.5a8.4 8.4 0 0 1-1-4A8.5 8.5 0 0 1 21 11.5Z"/></svg><span style="font:600 10px 'Plus Jakarta Sans';color:#A8A29E;">Messages</span><span style="position:absolute;top:-4px;right:8px;width:8px;height:8px;border-radius:99px;background:#E5484D;"></span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg><span style="font:600 10px 'Plus Jakarta Sans';color:#A8A29E;">Plus</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variante B : pilule active -->
+      <div style="flex:none;width:340px;">
+        <div style="font:700 12px 'Plus Jakarta Sans';color:#6B6459;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Variante B · pilule émeraude flottante</div>
+        <div style="width:340px;height:720px;border-radius:42px;background:#0c0a08;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.22);">
+          <div style="width:100%;height:100%;border-radius:33px;overflow:hidden;background:#F7F4EE;position:relative;display:flex;flex-direction:column;">
+            <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex:none;"><span style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">9:41</span><div style="width:17px;height:11px;border:1.5px solid #1C1A17;border-radius:3px;"></div></div>
+            <div style="padding:8px 22px 16px;display:flex;justify-content:space-between;align-items:flex-start;flex:none;">
+              <div><div style="font:600 13px 'Plus Jakarta Sans';color:#8B857A;">Bonjour,</div><div style="font-family:'Spectral',serif;font-weight:700;font-size:26px;color:#1C1A17;">Mes cours</div></div>
+              <div style="width:42px;height:42px;border-radius:13px;background:#fff;border:1px solid #E9E3D8;display:flex;align-items:center;justify-content:center;position:relative;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:99px;background:#E5484D;border:1.5px solid #fff;"></span></div>
+            </div>
+            <div style="flex:1;padding:0 18px;overflow:hidden;display:flex;flex-direction:column;gap:12px;">
+              <div style="background:#0A553F;border-radius:20px;padding:18px;color:#fff;box-shadow:0 12px 26px rgba(10,85,63,.32);">
+                <div style="font:600 12px 'Plus Jakarta Sans';color:#9FE3C8;margin-bottom:5px;">Prochain cours · dans 2h</div>
+                <div style="font-family:'Spectral',serif;font-weight:700;font-size:20px;margin-bottom:14px;">Leçon 15 · La hamza</div>
+                <button style="width:100%;height:46px;border-radius:13px;border:none;background:#fff;color:#0A553F;font:700 14px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;gap:8px;">⏱ Disponible à 18h00</button>
+              </div>
+              <div style="background:#fff;border-radius:18px;padding:16px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Leçon 14 · Voyelles longues</div><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 11px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:6px;height:6px;border-radius:99px;background:#0F9D6E;"></span>Présent</span></div>
+                <div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">Mardi 17 juin · 18h00</div>
+              </div>
+            </div>
+            <!-- tab bar B floating pill -->
+            <div style="flex:none;padding:0 16px 24px;">
+              <div style="background:#fff;border:1px solid #EDE7DC;border-radius:22px;padding:8px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 12px 30px rgba(28,26,23,.12);">
+                <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 16px;border-radius:15px;background:#0F9D6E;box-shadow:0 6px 14px rgba(15,157,110,.30);"><svg width="21" height="21" viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg><span style="font:700 13px 'Plus Jakarta Sans';color:#fff;">Cours</span></div>
+                <div style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+                <div style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a1 1 0 0 0 1 1h15"/><path d="M8 16V9M12 16v-5M16 16v-2"/></svg></div>
+                <div style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;position:relative;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-1L3 20l1.2-4.5a8.4 8.4 0 0 1-1-4A8.5 8.5 0 0 1 21 11.5Z"/></svg><span style="position:absolute;top:8px;right:11px;width:8px;height:8px;border-radius:99px;background:#E5484D;border:1.5px solid #fff;"></span></div>
+                <div style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 07 NAV ENSEIGNANT ============ -->
+  <div style="margin-top:72px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+      <span style="font:700 13px 'Plus Jakarta Sans';color:#0F9D6E;letter-spacing:.08em;">07</span>
+      <h2 style="margin:0;font-family:'Spectral',serif;font-weight:700;font-size:28px;color:#1C1A17;">Navigation enseignant — menu en tiroir</h2>
+    </div>
+    <p style="margin:0 0 26px;max-width:760px;font:500 15px/1.5 'Plus Jakarta Sans';color:#5C564C;">Le cockpit reste plein écran ; le ☰ glisse une liste verticale lisible avec icônes. Fini les liens texte horizontaux. À gauche : le cockpit (état fermé). À droite : le tiroir ouvert.</p>
+    <div style="display:flex;gap:40px;align-items:flex-start;">
+
+      <!-- Cockpit (tiroir fermé) -->
+      <div style="flex:none;width:340px;">
+        <div style="font:700 12px 'Plus Jakarta Sans';color:#6B6459;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Cockpit · tiroir fermé</div>
+        <div style="width:340px;height:720px;border-radius:42px;background:#0c0a08;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.22);">
+          <div style="width:100%;height:100%;border-radius:33px;overflow:hidden;background:#F7F4EE;position:relative;display:flex;flex-direction:column;">
+            <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;flex:none;"><span style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">9:41</span><div style="width:17px;height:11px;border:1.5px solid #1C1A17;border-radius:3px;"></div></div>
+            <!-- header with burger -->
+            <div style="padding:8px 22px 18px;display:flex;justify-content:space-between;align-items:center;flex:none;">
+              <div style="width:44px;height:44px;border-radius:13px;background:#fff;border:1px solid #E9E3D8;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div>
+              <div style="font-family:'Spectral',serif;font-weight:700;font-size:20px;color:#1C1A17;">Cockpit</div>
+              <div style="width:44px;height:44px;border-radius:13px;background:#fff;border:1px solid #E9E3D8;display:flex;align-items:center;justify-content:center;position:relative;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:99px;background:#E5484D;border:1.5px solid #fff;"></span></div>
+            </div>
+            <div style="flex:1;padding:0 18px;overflow:hidden;display:flex;flex-direction:column;gap:14px;">
+              <!-- action vedette -->
+              <div style="background:#0F9D6E;border-radius:20px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 26px rgba(15,157,110,.30);">
+                <div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+                <div style="flex:1;"><div style="font:700 16px 'Plus Jakarta Sans';color:#fff;">Fin de cours</div><div style="font:500 12px 'Plus Jakarta Sans';color:#CFF0E2;">Saisir une séance · &lt; 30 s</div></div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <!-- stats -->
+              <div style="display:flex;gap:12px;">
+                <div style="flex:1;background:#fff;border-radius:18px;padding:15px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);"><div style="font:800 28px 'Plus Jakarta Sans';color:#1C1A17;line-height:1;">4</div><div style="font:600 11px 'Plus Jakarta Sans';color:#8B857A;margin-top:3px;">Cours aujourd'hui</div></div>
+                <div style="flex:1;background:#fff;border-radius:18px;padding:15px;border:1px solid #EFEAE0;box-shadow:0 6px 16px rgba(28,26,23,.04);"><div style="font:800 28px 'Plus Jakarta Sans';color:#1C1A17;line-height:1;">7</div><div style="font:600 11px 'Plus Jakarta Sans';color:#8B857A;margin-top:3px;">À corriger</div></div>
+              </div>
+              <!-- alerte -->
+              <div style="background:#FDF4E3;border:1.4px solid #F4D193;border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:#F59E0B;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+                <div style="flex:1;"><div style="font:700 13px 'Plus Jakarta Sans';color:#9A6206;">2 élèves suspendus</div></div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99A3A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div style="font:700 11px 'Plus Jakarta Sans';color:#8B857A;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Séances récentes</div>
+              <div style="background:#fff;border-radius:16px;padding:14px;border:1px solid #EFEAE0;display:flex;justify-content:space-between;align-items:center;"><div><div style="font:700 14px 'Plus Jakarta Sans';color:#1C1A17;">Yacine · Leçon 14</div><div style="font:500 11px 'Plus Jakarta Sans';color:#8B857A;">Il y a 1h</div></div><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 8px;border-radius:999px;border:1.4px solid #9FE3C8;background:#ECFAF4;font:700 11px 'Plus Jakarta Sans';color:#0A6B4E;"><span style="width:6px;height:6px;border-radius:99px;background:#0F9D6E;"></span>Présent</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiroir ouvert -->
+      <div style="flex:none;width:340px;">
+        <div style="font:700 12px 'Plus Jakarta Sans';color:#6B6459;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">Tiroir ouvert · liste verticale</div>
+        <div style="width:340px;height:720px;border-radius:42px;background:#0c0a08;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.22);">
+          <div style="width:100%;height:100%;border-radius:33px;overflow:hidden;background:#F7F4EE;position:relative;display:flex;flex-direction:column;">
+            <!-- scrim -->
+            <div style="position:absolute;inset:0;background:rgba(28,26,23,.42);z-index:1;"></div>
+            <!-- drawer -->
+            <div style="position:absolute;top:0;left:0;bottom:0;width:80%;background:#fff;z-index:2;border-top-right-radius:28px;border-bottom-right-radius:28px;box-shadow:24px 0 60px rgba(0,0,0,.25);display:flex;flex-direction:column;padding:46px 14px 22px;">
+              <!-- profile -->
+              <div style="display:flex;align-items:center;gap:12px;padding:6px 12px 20px;border-bottom:1px solid #F0EBE1;margin-bottom:14px;">
+                <div style="width:46px;height:46px;border-radius:14px;background:#0A553F;display:flex;align-items:center;justify-content:center;font-family:'Spectral',serif;font-weight:700;font-size:18px;color:#fff;">A</div>
+                <div><div style="font:700 15px 'Plus Jakarta Sans';color:#1C1A17;">Ustadh Amine</div><div style="font:500 12px 'Plus Jakarta Sans';color:#8B857A;">Enseignant · arabe</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;background:#ECFAF4;margin-bottom:3px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span style="font:700 15px 'Plus Jakarta Sans';color:#0A6B4E;">Cockpit</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">Mes élèves</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a1 1 0 0 0 1 1h15"/><path d="M8 16V9M12 16v-5M16 16v-2"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">File de correction</span><span style="margin-left:auto;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#8E4EC6;color:#fff;font:700 11px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;">7</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">Programme</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">Disponibilités</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-1L3 20l1.2-4.5a8.4 8.4 0 0 1-1-4A8.5 8.5 0 0 1 21 11.5Z"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">Chat</span></div>
+              <div style="display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6459" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#4A463F;">Paiements</span></div>
+              <div style="margin-top:auto;display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B4292E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg><span style="font:600 15px 'Plus Jakarta Sans';color:#B4292E;">Déconnexion</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div style="max-width:760px;margin-top:64px;padding:24px 28px;background:#fff;border-radius:20px;border:1px solid #EFEAE0;box-shadow:0 8px 22px rgba(28,26,23,.04);">
+    <div style="font-family:'Spectral',serif;font-weight:600;font-size:18px;color:#1C1A17;margin-bottom:8px;">Prochaine étape</div>
+    <div style="font:500 14px/1.6 'Plus Jakarta Sans';color:#5C564C;">Dis-moi : (1) variante de barre d'onglets élève — <b style="color:#1C1A17;">A (trait)</b> ou <b style="color:#1C1A17;">B (pilule)</b> · (2) intensité des badges OK ? · (3) typo Spectral + Jakarta validée ? Une fois figé, j'attaque <b style="color:#0F9D6E;">la Fiche de fin de cours</b> avec ce langage.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
