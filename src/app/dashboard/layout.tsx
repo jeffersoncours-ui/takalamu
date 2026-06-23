@@ -21,18 +21,18 @@ export default async function DashboardLayout({
     <div className="flex min-h-full flex-1 flex-col" style={{ background: "#F7F4EE" }}>
       <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#E9E3D8" }}>
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
-          <div className="flex flex-col leading-tight">
+          <div className="flex items-center gap-2">
             <span
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "#8B857A", letterSpacing: ".06em", fontSize: "10px" }}
+              className="flex items-center justify-center rounded-lg text-white font-arabic"
+              style={{ width: 30, height: 30, background: "#0F9D6E", fontSize: "18px" }}
             >
-              Takalamu
+              ت
             </span>
             <span
-              className="text-lg font-semibold leading-tight"
+              className="text-base font-semibold"
               style={{ color: "#1C1A17", fontFamily: "var(--font-spectral)" }}
             >
-              {profile.full_name ?? "—"}
+              Takalamu
             </span>
           </div>
           <NotifBell userId={userId} initialNotifs={notifs ?? []} />

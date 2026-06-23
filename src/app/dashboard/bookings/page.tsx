@@ -63,49 +63,56 @@ export default async function BookingsPage() {
   }));
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-xl font-semibold text-slate-900">Réservations</h1>
+    <div className="space-y-7">
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        >
+          Réserver
+        </h1>
+        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+          Choisis un créneau proposé par ton enseignant.
+        </p>
+      </div>
 
       {/* Cours à venir */}
       {upcomingBookings.length > 0 && (
         <section className="space-y-3">
-          <p className="text-sm font-medium text-slate-700">
-            Mes cours à venir ({upcomingBookings.length})
+          <p
+            className="px-0.5 font-bold uppercase"
+            style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}
+          >
+            Mes cours à venir
           </p>
           {upcomingBookings.map((b) => (
             <div
               key={b.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+              className="flex items-center justify-between gap-3 rounded-[16px] px-4 py-[14px]"
+              style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
             >
               <div>
-                <p className="font-medium text-slate-900 capitalize">
-                  {format(new Date(b.scheduled_at), "EEEE d MMMM", {
-                    locale: fr,
-                  })}
+                <p className="font-bold capitalize" style={{ color: "#1C1A17", fontSize: 15 }} suppressHydrationWarning>
+                  {format(new Date(b.scheduled_at), "EEEE d MMMM", { locale: fr })}
                 </p>
-                <p className="text-sm text-slate-500">
-                  {format(new Date(b.scheduled_at), "HH:mm", { locale: fr })}{" "}
-                  <span className="text-xs text-slate-400">UTC</span>
+                <p className="font-medium" style={{ color: "#8B857A", fontSize: 12 }} suppressHydrationWarning>
+                  {format(new Date(b.scheduled_at), "HH:mm", { locale: fr })} (UTC)
                 </p>
               </div>
-              <JoinButton
-                scheduledAt={b.scheduled_at}
-                zoomLink={b.zoom_link}
-              />
+              <JoinButton scheduledAt={b.scheduled_at} zoomLink={b.zoom_link} />
             </div>
           ))}
         </section>
       )}
 
       {/* Réserver un nouveau créneau */}
-      <section className="space-y-3">
-        <p className="text-sm font-medium text-slate-700">
-          Réserver un cours
-        </p>
-
+      <section className="space-y-4">
         {!eligibility.eligible ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-sm text-amber-800">{eligibility.reason}</p>
+          <div
+            className="rounded-[16px] px-4 py-3"
+            style={{ background: "#FDF4E3", border: "1px solid #F4D193" }}
+          >
+            <p style={{ color: "#9A6206", fontSize: 14 }}>{eligibility.reason}</p>
           </div>
         ) : (
           <BookingSlots slots={slotData} />

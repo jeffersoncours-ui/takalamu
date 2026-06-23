@@ -3,64 +3,171 @@ import { fr } from "date-fns/locale";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { attendanceLabel } from "@/lib/attendance";
-import type { Database } from "@/lib/supabase/database.types";
-
-type AttendanceStatus = Database["public"]["Enums"]["attendance_status"];
-
-const ATTENDANCE_COLOR: Record<AttendanceStatus, string> = {
-  present: "bg-emerald-100 text-emerald-800",
-  absent_justified: "bg-slate-100 text-slate-600",
-  absent_unjustified: "bg-red-100 text-red-800",
-  late: "bg-amber-100 text-amber-800",
-};
+import { StatusBadge, attendanceBadge } from "@/components/status-badge";
+import { NextCourseHero } from "./next-course-hero";
 
 export default async function CoursPage() {
-  await requireStudent();
+  const { profile, studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const { data: records } = await supabase
-    .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, lessons(title, phase)")
-    .order("session_date", { ascending: false });
+  const nowIso = new Date().toISOString();
+
+  const [recordsRes, studentRes, nextBookingRes] = await Promise.all([
+    supabase
+      .from("lesson_records")
+      .select("id, session_date, attendance, public_recap, lessons(title)")
+      .order("session_date", { ascending: false }),
+    supabase
+      .from("students")
+      .select("teacher_id, student_progress(lessons:current_lesson_id(title)), teachers:teacher_id(display_name)")
+      .eq("id", studentId)
+      .maybeSingle(),
+    supabase
+      .from("bookings")
+      .select("scheduled_at, zoom_link")
+      .eq("student_id", studentId)
+      .eq("status", "booked")
+      .gte("scheduled_at", nowIso)
+      .order("scheduled_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const records = recordsRes.data ?? [];
+  const firstName = (profile.full_name ?? "").trim().split(" ")[0] || "—";
+
+  // Stats parcours
+  const totalSessions = records.length;
+  const presentish = records.filter(
+    (r) => r.attendance === "present" || r.attendance === "late",
+  ).length;
+  const assiduite =
+    totalSessions > 0 ? Math.round((presentish / totalSessions) * 100) : null;
+
+  // Prochain cours
+  const nextBooking = nextBookingRes.data;
+  const student = studentRes.data;
+  const progress = student
+    ? Array.isArray(student.student_progress)
+      ? student.student_progress[0]
+      : student.student_progress
+    : null;
+  const currentLesson = progress
+    ? Array.isArray(progress.lessons)
+      ? progress.lessons[0]
+      : progress.lessons
+    : null;
+  const teacher = student
+    ? Array.isArray(student.teachers)
+      ? student.teachers[0]
+      : student.teachers
+    : null;
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-900">Mes cours</h1>
+    <div className="space-y-1">
+      {/* Salutation */}
+      <div className="px-0.5 pb-3">
+        <div className="font-semibold" style={{ color: "#8B857A", fontSize: 13 }}>
+          Salâm &apos;alaykoum,
+        </div>
+        <div
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        >
+          {firstName}
+        </div>
+      </div>
 
-      {!records?.length && (
-        <p className="text-sm text-slate-500">Aucun cours enregistré pour le moment.</p>
+      {/* Hero prochain cours */}
+      {nextBooking ? (
+        <NextCourseHero
+          scheduledAt={nextBooking.scheduled_at}
+          lessonTitle={currentLesson?.title ?? "Cours individuel"}
+          teacherName={teacher?.display_name ?? "ton enseignant"}
+          zoomLink={nextBooking.zoom_link}
+        />
+      ) : (
+        <div
+          className="rounded-[20px] p-5 text-center"
+          style={{ background: "#FBF9F5", border: "1px solid #E9E3D8" }}
+        >
+          <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 15 }}>
+            Aucun cours à venir
+          </p>
+          <p className="mt-1" style={{ color: "#8B857A", fontSize: 13 }}>
+            Réserve un créneau dans l&apos;onglet Réserver.
+          </p>
+        </div>
       )}
 
-      {records?.map((r) => {
-        const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
-        return (
-          <div
-            key={r.id}
-            className="rounded-xl border border-slate-200 bg-white p-4 space-y-2"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  {lesson?.title ?? "Cours sans leçon"}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${ATTENDANCE_COLOR[r.attendance]}`}
-              >
-                {attendanceLabel(r.attendance)}
-              </span>
-            </div>
-
-            {r.public_recap && (
-              <p className="text-sm text-slate-700 leading-relaxed">{r.public_recap}</p>
-            )}
+      {/* Parcours */}
+      <div
+        className="pt-6 pb-3 px-0.5"
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 600, fontSize: 19, color: "#1C1A17" }}
+      >
+        Mon parcours
+      </div>
+      <div className="flex gap-3">
+        <div
+          className="flex-1 rounded-[18px] p-4"
+          style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+        >
+          <div className="leading-none" style={{ fontWeight: 800, fontSize: 30, color: "#1C1A17" }}>
+            {totalSessions}
           </div>
-        );
-      })}
+          <div className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 12 }}>
+            Séances suivies
+          </div>
+        </div>
+        <div
+          className="flex-1 rounded-[18px] p-4"
+          style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+        >
+          <div className="leading-none" style={{ fontWeight: 800, fontSize: 30, color: "#0F9D6E" }}>
+            {assiduite !== null ? `${assiduite}%` : "—"}
+          </div>
+          <div className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 12 }}>
+            Assiduité
+          </div>
+        </div>
+      </div>
+
+      {/* Historique */}
+      <div
+        className="pt-6 pb-3 px-0.5"
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 600, fontSize: 19, color: "#1C1A17" }}
+      >
+        Historique
+      </div>
+
+      {records.length === 0 ? (
+        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun cours enregistré pour le moment.</p>
+      ) : (
+        <div className="flex flex-col gap-[10px]">
+          {records.map((r) => {
+            const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
+            const badge = attendanceBadge(r.attendance);
+            return (
+              <div
+                key={r.id}
+                className="rounded-[16px] p-[15px]"
+                style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
+                    {lesson?.title ?? "Cours sans leçon"}
+                  </div>
+                  <StatusBadge hue={badge.hue} label={badge.label} />
+                </div>
+                <div className="font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
+                  {format(new Date(r.session_date), "EEE d MMM", { locale: fr })}
+                  {r.public_recap ? ` · ${r.public_recap}` : ""}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

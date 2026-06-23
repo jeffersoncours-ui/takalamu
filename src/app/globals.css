@@ -69,6 +69,22 @@
 
 .font-arabic {
   font-family: var(--font-amiri);
-  direction: rtl;
-  text-align: right;
+}
+
+/* Animations (design system) */
+@keyframes tkPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .4; transform: scale(.72); }
+}
+@keyframes tkFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes tkSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes tkUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
