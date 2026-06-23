@@ -126,3 +126,22 @@
 - **`search_path = ''` dans la RPC** : oblige à qualifier tous les objets (`public.lesson_records`, casts `::public.student_status`). Évite les warnings d'advisor sur search_path mutable.
 - **Egress bloqué** (rappel) : le roundtrip supabase-js `.rpc()` n'est pas testable depuis le sandbox ; on prouve la fonction via `execute_sql` + simulation de rôle, et on vérifie le wiring sur la preview Vercel.
 - **Container frais** : `npm install` nécessaire en début de session (node_modules absent) avant lint/build.
+
+## Refonte UI (23 juin) — enseignements
+
+- **React 19 + dates locales = crash, pas warning.** Tout affichage dépendant du
+  fuseau/locale (`toLocaleTimeString`, `format` date-fns) doit porter
+  `suppressHydrationWarning`, ou être calculé côté client via
+  `useState<Date|null>(null)` + `useEffect`. Sinon erreur serveur en prod.
+- **Découpage par phases committables.** Fondations → navigation → pages une par
+  une, avec `npm run build` + commit + push à chaque étape. Aucune régression,
+  rollback trivial si besoin.
+- **Garder les `name` de champs lors d'un restyle de formulaire.** La fiche de fin
+  de cours a été refaite visuellement sans toucher à la server action : tous les
+  `name=` ont été conservés à l'identique.
+- **Tokens en CSS variables + @theme (Tailwind v4).** Couleurs/ombres du design
+  system déclarées une fois dans `globals.css`, réutilisées partout. Les valeurs
+  hex inline restent acceptables pour coller au pixel près au handoff.
+- **Ne pas inventer de données.** Le hero paiements enseignant affiche des
+  compteurs (et non des montants en €) car la table `payments` n'a pas de colonne
+  montant — rester honnête plutôt que d'afficher un faux « 1 240 € ».

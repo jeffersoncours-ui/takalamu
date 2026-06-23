@@ -339,3 +339,38 @@ _(à remplir en fin d'étape)_
 - [ ] Disponibilités (toggle)
 - [ ] Paiements (hero teal encaissé)
 - [ ] Fiche de fin de cours (l'écran le plus critique)
+
+---
+
+## Review — Refonte UI (session du 23 juin)
+
+**Fait & poussé** sur `claude/takalamu-dev-continuation-7u0xw3` :
+
+- **Phase 1 — Fondations** : polices Spectral/Plus Jakarta Sans/Amiri, tokens
+  CSS (warm neutrals + emerald), animations, fond `#F7F4EE`.
+- **Phase 2 — Navigation** : bottom tab bar élève (5 onglets) + page « Plus » ;
+  drawer latéral teal enseignant (DrawerNav).
+- **Phase 3 — Espace élève** : Cours (hero teal + compte à rebours live + bouton
+  Rejoindre 3 états + stats + historique), Réserver (créneaux groupés par jour),
+  Devoirs (badges de cycle), Glossaire (Amiri RTL + recherche), Grammaire,
+  Messages (bulles iMessage), Paiement.
+- **Phase 4 — Espace enseignant** : Cockpit (action vedette + grille stats +
+  alerte + cours du jour), Mes élèves (recherche + filtres), File de correction,
+  Disponibilités, Paiements (hero teal), Réservations, **Fiche de fin de cours**
+  (présence 2×2 colorée, note privée ambre à cadenas, barre d'enregistrement
+  collante), fiche élève détaillée. Login + landing restylés.
+- Composants partagés : `StatusBadge` (table sémantique), `NextCourseHero`,
+  `DrawerNav`, `StudentsList`.
+
+**Validation** : `npm run build` OK à chaque phase (22 routes, 0 erreur TS).
+Logs Supabase API : 200 partout, pas d'erreur serveur.
+
+**Reste / non fait (volontairement, hors périmètre de cette passe)** :
+- Pages mode auteur `/teacher/program*` (CRUD leçons) : non restylées — utilitaire
+  d'avant-rentrée, faible priorité visuelle.
+- Bottom sheet d'upload de devoir (rendu fichier élève) : nécessite un bucket
+  Storage + server action de soumission — feature, pas du style.
+- Combobox recherchables (élève/leçon) dans la fiche : on a gardé les `<select>`
+  natifs (plus rapides à saisir, incassables) — conforme au principe « saisie < 30s ».
+- Sélecteur de police/accent du proto : volontairement figé (Spectral + Jakarta +
+  #0F9D6E) comme recommandé par le handoff.

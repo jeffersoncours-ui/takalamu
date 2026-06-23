@@ -59,14 +59,26 @@ export default async function TeacherMessagesPage({
   const sendAction = sendMessageAsTeacher.bind(null, conv.id);
   const markReadAction = markMessagesReadAsTeacher.bind(null, conv.id);
 
+  const name = studentName ?? "Élève";
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold text-slate-900">
-          Chat — {studentName ?? "Élève"}
-        </h1>
+      <div className="flex items-center gap-3 px-0.5">
+        <div
+          className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-bold"
+          style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+        >
+          {name[0]?.toUpperCase() ?? "?"}
+        </div>
+        <div>
+          <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{name}</div>
+          <div style={{ color: "#8B857A", fontSize: 12 }}>Élève</div>
+        </div>
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div
+        className="rounded-[20px] p-4"
+        style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+      >
         <ChatBox
           conversationId={conv.id}
           initialMessages={messages ?? []}
