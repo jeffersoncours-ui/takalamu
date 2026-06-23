@@ -1,24 +1,10 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PaymentRequestForm } from "./payment-request-form";
+import { StatusBadge, paymentBadge } from "@/components/status-badge";
 import type { Database } from "@/lib/supabase/database.types";
 
-type PaymentStatus = Database["public"]["Enums"]["payment_status"];
 type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
-
-const STATUS_LABEL: Record<PaymentStatus, string> = {
-  pending: "En attente",
-  paid: "Payé",
-  failed: "Échoué",
-  cancelled: "Annulé",
-};
-
-const STATUS_COLOR: Record<PaymentStatus, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  paid: "bg-emerald-100 text-emerald-800",
-  failed: "bg-red-100 text-red-800",
-  cancelled: "bg-slate-100 text-slate-500",
-};
 
 const PLAN_LABEL: Record<PaymentPlan, string> = {
   "1x": "Paiement unique",
@@ -44,15 +30,23 @@ export default async function PaymentsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-slate-900">Paiement</h1>
+      <h1
+        className="px-0.5 leading-tight"
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+      >
+        Mes paiements
+      </h1>
 
       {/* Demander un abonnement */}
       {!hasActiveSub && (
-        <section className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
-          <p className="text-sm font-medium text-slate-800">
+        <section
+          className="rounded-[18px] p-4 space-y-3"
+          style={{ background: "#fff", border: "1px solid #C8EBDB", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+        >
+          <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
             Demander un abonnement individuel
           </p>
-          <p className="text-xs text-slate-500">
+          <p style={{ color: "#8B857A", fontSize: 12 }}>
             Choisis ton plan, puis transmets la référence générée à ton enseignant pour
             confirmer le paiement via Revolut.
           </p>
@@ -62,42 +56,45 @@ export default async function PaymentsPage() {
 
       {/* Historique */}
       <section className="space-y-2">
-        <p className="text-sm font-medium text-slate-700">
-          Historique ({payments?.length ?? 0})
+        <p
+          className="px-0.5 font-bold uppercase"
+          style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}
+        >
+          Historique
         </p>
         {!payments?.length && (
-          <p className="text-sm text-slate-500">Aucun paiement enregistré.</p>
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun paiement enregistré.</p>
         )}
-        {payments?.map((p) => (
-          <div
-            key={p.id}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between gap-3"
-          >
-            <div>
-              <p className="text-sm font-medium text-slate-900">
-                Abonnement individuel
-                {p.plan ? ` — ${PLAN_LABEL[p.plan]}` : ""}
-              </p>
-              {p.revolut_reference && (
-                <p className="text-xs text-slate-500 font-mono mt-0.5">
-                  Réf. {p.revolut_reference}
-                </p>
-              )}
-              <p className="text-xs text-slate-400 mt-0.5">
-                {new Date(p.created_at).toLocaleDateString("fr-FR", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[p.status]}`}
+        {payments?.map((p) => {
+          const badge = paymentBadge(p.status);
+          return (
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-3 rounded-[16px] px-4 py-[14px]"
+              style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
             >
-              {STATUS_LABEL[p.status]}
-            </span>
-          </div>
-        ))}
+              <div>
+                <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
+                  Abonnement individuel
+                  {p.plan ? ` — ${PLAN_LABEL[p.plan]}` : ""}
+                </p>
+                {p.revolut_reference && (
+                  <p className="font-mono mt-0.5" style={{ color: "#8B857A", fontSize: 11 }}>
+                    Réf. {p.revolut_reference}
+                  </p>
+                )}
+                <p className="mt-0.5" style={{ color: "#A8A29E", fontSize: 11 }}>
+                  {new Date(p.created_at).toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+              <StatusBadge hue={badge.hue} label={badge.label} />
+            </div>
+          );
+        })}
       </section>
     </div>
   );

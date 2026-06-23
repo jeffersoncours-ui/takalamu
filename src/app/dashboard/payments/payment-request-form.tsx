@@ -8,7 +8,10 @@ export function PaymentRequestForm() {
 
   if (state.success) {
     return (
-      <div className="rounded-lg bg-emerald-100 px-4 py-3 text-sm text-emerald-800">
+      <div
+        className="rounded-[14px] px-4 py-3"
+        style={{ background: "#ECFAF4", border: "1px solid #C8EBDB", color: "#0A6B4E", fontSize: 13 }}
+      >
         Demande envoyée. Contacte ton enseignant pour finaliser le paiement via Revolut.
       </div>
     );
@@ -16,14 +19,21 @@ export function PaymentRequestForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      {state.error && (
-        <p className="text-sm text-red-600">{state.error}</p>
-      )}
+      {state.error && <p style={{ color: "#B4292E", fontSize: 13 }}>{state.error}</p>}
       <select
         name="plan"
         required
         defaultValue=""
-        className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+        className="outline-none"
+        style={{
+          height: 46,
+          borderRadius: 13,
+          border: "1.5px solid #E9E3D8",
+          background: "#fff",
+          padding: "0 14px",
+          fontSize: 14,
+          color: "#1C1A17",
+        }}
       >
         <option value="" disabled>
           Choisir un plan…
@@ -36,9 +46,10 @@ export function PaymentRequestForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition"
+        className="font-bold text-white disabled:opacity-50"
+        style={{ height: 46, borderRadius: 13, background: "#0F9D6E", fontSize: 14, boxShadow: "0 8px 18px rgba(15,157,110,.30)" }}
       >
-        {pending ? "Envoi…" : "Demander"}
+        {pending ? "Envoi…" : "Demander un abonnement"}
       </button>
     </form>
   );
