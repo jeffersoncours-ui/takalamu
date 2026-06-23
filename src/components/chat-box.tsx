@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Message = {
@@ -14,7 +14,7 @@ type Message = {
 type ActionFn = (
   prev: { error?: string },
   formData: FormData,
-) => Promise<{ error?: string }>;
+) => Promise<{ error?: string; message?: Message }>;
 
 type Props = {
   conversationId: string;
@@ -32,31 +32,44 @@ export function ChatBox({
   markReadAction,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [state, formAction, pending] = useActionState(sendAction, {});
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+    messages,
+    (state: Message[], newMsg: Message) => [...state, newMsg],
+  );
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>();
   const bottomRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  // Fix 3 : client créé une seule fois (useRef, pas dans useEffect)
+  const supabaseRef = useRef(createClient());
+  const markReadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Fix 4 : distinguer montage (auto) de nouveaux messages (smooth)
+  const isFirstRender = useRef(true);
 
-  // Scroll automatique vers le bas
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const behavior = isFirstRender.current ? "auto" : "smooth";
+    isFirstRender.current = false;
+    bottomRef.current?.scrollIntoView({ behavior });
+  }, [optimisticMessages]);
 
   // Marquer comme lu au montage
   useEffect(() => {
     markReadAction();
+    return () => {
+      if (markReadTimer.current) clearTimeout(markReadTimer.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Réinitialiser le formulaire après envoi réussi
-  useEffect(() => {
-    if (!pending && !state.error) {
-      formRef.current?.reset();
-    }
-  }, [pending, state.error]);
+  // Fix 2 : markRead debounced (600 ms) pour éviter N appels en rafale
+  const debouncedMarkRead = () => {
+    if (markReadTimer.current) clearTimeout(markReadTimer.current);
+    markReadTimer.current = setTimeout(() => markReadAction(), 600);
+  };
 
-  // Supabase Realtime — nouveaux messages
+  // Realtime — uniquement les messages entrants (les nôtres sont gérés via startTransition)
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = supabaseRef.current;
     const channel = supabase
       .channel(`conv:${conversationId}`)
       .on(
@@ -69,14 +82,12 @@ export function ChatBox({
         },
         (payload) => {
           const msg = payload.new as Message;
+          if (msg.sender_id === currentUserId) return; // déjà ajouté en optimistic
           setMessages((prev) => {
             if (prev.some((m) => m.id === msg.id)) return prev;
             return [...prev, msg];
           });
-          // Marquer lu si c'est un message entrant
-          if (msg.sender_id !== currentUserId) {
-            markReadAction();
-          }
+          debouncedMarkRead();
         },
       )
       .subscribe();
@@ -87,17 +98,48 @@ export function ChatBox({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, currentUserId]);
 
+  // Fix 1 : envoi optimiste — le message apparaît avant la réponse serveur
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const body = (formData.get("body") as string)?.trim();
+    if (!body) return;
+
+    formRef.current?.reset();
+
+    startTransition(async () => {
+      addOptimisticMessage({
+        id: `opt-${Date.now()}`,
+        sender_id: currentUserId,
+        body,
+        sent_at: new Date().toISOString(),
+        read_at: null,
+      });
+      const result = await sendAction({}, formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Ajouter le vrai message retourné par le serveur avant que l'optimistic se dissipe
+        if (result.message) {
+          setMessages((prev) => [...prev, result.message!]);
+        }
+        setError(undefined);
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col h-[64vh] min-h-[340px]">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto flex flex-col gap-3 pb-2">
-        {messages.length === 0 && (
+        {optimisticMessages.length === 0 && (
           <p className="text-center py-8" style={{ color: "#A8A29E", fontSize: 14 }}>
             Aucun message pour l&apos;instant.
           </p>
         )}
-        {messages.map((msg) => {
+        {optimisticMessages.map((msg) => {
           const isMine = msg.sender_id === currentUserId;
+          const isOptimistic = msg.id.startsWith("opt-");
           return (
             <div
               key={msg.id}
@@ -108,6 +150,8 @@ export function ChatBox({
                 border: isMine ? "none" : "1px solid #EFEAE0",
                 borderRadius: isMine ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
                 padding: "12px 15px",
+                opacity: isOptimistic ? 0.7 : 1,
+                transition: "opacity 0.15s",
               }}
             >
               <p
@@ -126,11 +170,13 @@ export function ChatBox({
                 }}
                 suppressHydrationWarning
               >
-                {new Date(msg.sent_at).toLocaleTimeString("fr-FR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                {isMine && msg.read_at && " · Lu"}
+                {isOptimistic
+                  ? "…"
+                  : new Date(msg.sent_at).toLocaleTimeString("fr-FR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                {isMine && !isOptimistic && msg.read_at && " · Lu"}
               </p>
             </div>
           );
@@ -140,10 +186,10 @@ export function ChatBox({
 
       {/* Saisie */}
       <div className="pt-3" style={{ borderTop: "1px solid #EDE7DC" }}>
-        {state.error && (
-          <p className="mb-2" style={{ color: "#B4292E", fontSize: 12 }}>{state.error}</p>
+        {error && (
+          <p className="mb-2" style={{ color: "#B4292E", fontSize: 12 }}>{error}</p>
         )}
-        <form ref={formRef} action={formAction} className="flex gap-2.5 items-center">
+        <form ref={formRef} onSubmit={handleSubmit} className="flex gap-2.5 items-center">
           <input
             name="body"
             type="text"
@@ -162,7 +208,7 @@ export function ChatBox({
           />
           <button
             type="submit"
-            disabled={pending}
+            disabled={isPending}
             aria-label="Envoyer"
             className="flex shrink-0 items-center justify-center disabled:opacity-50"
             style={{

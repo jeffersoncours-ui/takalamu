@@ -4,7 +4,8 @@ import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type ActionState = { error?: string };
+type SentMessage = { id: string; sender_id: string; body: string; sent_at: string; read_at: string | null };
+type ActionState = { error?: string; message?: SentMessage };
 
 export async function sendMessageAsTeacher(
   conversationId: string,
@@ -25,12 +26,16 @@ export async function sendMessageAsTeacher(
 
   if (!conv) return { error: "Conversation introuvable." };
 
-  const { error } = await supabase.from("messages").insert({
-    conversation_id: conversationId,
-    sender_id: userId,
-    body,
-    sent_at: new Date().toISOString(),
-  });
+  const { data: message, error } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      sender_id: userId,
+      body,
+      sent_at: new Date().toISOString(),
+    })
+    .select("id, sender_id, body, sent_at, read_at")
+    .single();
 
   if (error) return { error: "Impossible d'envoyer le message." };
 
@@ -51,7 +56,7 @@ export async function sendMessageAsTeacher(
     });
   }
 
-  return {};
+  return { message };
 }
 
 export async function markMessagesReadAsTeacher(
