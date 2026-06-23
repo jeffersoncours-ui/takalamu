@@ -71,6 +71,20 @@ export async function requireStudent(): Promise<{
   return { userId: result.userId, profile: result.profile, studentId: student.id };
 }
 
+/**
+ * Garde-fou : exige le rôle admin. Redirige sinon
+ * (anon → /login, teacher → /teacher, élève → /dashboard).
+ */
+export async function requireAdmin() {
+  const result = await getProfile();
+  if (!result) redirect("/login");
+
+  if (result.profile?.role !== "admin") {
+    redirect(homePathForRole(result.profile?.role));
+  }
+  return result;
+}
+
 /** Chemin du tableau de bord adapté au rôle (pour les redirections post-login). */
 export function homePathForRole(role: Profile["role"] | undefined): string {
   return role === "teacher" || role === "admin" ? "/teacher" : "/dashboard";
