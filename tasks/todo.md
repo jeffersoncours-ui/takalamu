@@ -14,18 +14,34 @@
 - [x] Tests MCP : génération (quiz renvoyé sans bonne réponse), soumission (score recalculé côté serveur, tentative insérée), sécurité (étudiant A ne peut pas générer pour B)
 - [x] Build vert + push
 
-### Prochaines briques possibles (à valider)
-- [ ] **D1 — Soumission de devoir côté élève** : RPC `submit_homework` (SECURITY DEFINER, fixe la faille RLS actuelle où l'élève pourrait modifier grade/feedback), UI upload photo + texte
-- [ ] **D2 — Devoirs audio (voice message)** : bucket `homework-audio`, composant `AudioRecorder` (MediaRecorder API), lecture côté enseignant
-- [ ] **T1 — Exercices créés par le prof** : devoirs de type grammaire/phrases, saisis comme les devoirs normaux mais avec un champ `type` pour différencier
+### D1 — Soumission de devoir côté élève ✅
+- [x] Migration `22` : type notif `homework_submitted`
+- [x] Migration `23` : DROP policy `hw_update_student` (faille : élève pouvait modifier grade/feedback/status), RPC `submit_homework` SECURITY DEFINER (restreint à submission_file + status=rendu + submitted_at, notifie le prof), bucket `homework-submissions` + policies
+- [x] `database.types.ts` : `submit_homework` + enum `homework_submitted`
+- [x] Action `submitHomework` (upload bucket → RPC) + composant `HwSubmitForm`
+- [x] Page élève : upload photo sur `a_rendre`, indicateur "envoyé" sur `rendu`
+- [x] Page prof : lien URL signée pour voir la copie déposée
+- [x] Preuves : UPDATE direct élève = 0 ligne ✅ ; RPC dépose correctement ✅ ; notif prof ✅ ; non-propriétaire 42501 ✅
 
-### Review (Session 12 — Q1)
-**État au 2026-06-23 — Quiz vocabulaire auto-généré livré.**
-- 2 RPCs SECURITY DEFINER : `generate_individual_quiz` (FR↔AR, 4 choix shuffled, bonne réponse non transmise) et `submit_individual_quiz` (score recalculé server-side, anti-triche).
-- Page `/dashboard/evaluations` : compte le vocab, affiche le `QuizRunner` (client), historique des tentatives.
-- Lien "Évaluations" ajouté dans le menu Plus.
-- Preuves : 5 questions générées sans fuite de bonne réponse ✅ ; Omar bloqué pour Ali (42501) ✅ ; score 2/3 calculé correctement côté serveur ✅.
+### D2 — Devoirs audio (voice message WhatsApp) ✅
+- [x] `HwSubmitForm` : toggle photo/audio, MediaRecorder (enregistrer→arrêter→réécouter→refaire→envoyer), Blob → `submit_homework` (même RPC/bucket que D1)
+- [x] Page prof : détection audio par extension → lecteur `<audio>` inline
+- [x] Pas de migration (audio = fichier dans le même bucket, `allowed_mime_types` null)
+
+### Q2 — Évaluations de grammaire rédigées par le prof (à venir, validé par le propriétaire)
+> **Reclassement décidé le 2026-06-23** : les exercices de grammaire ne sont PAS des devoirs — ce sont des **évaluations** (comme le quiz), rédigées à la main par le prof (jamais auto-générées), QCM auto-corrigé.
+- [ ] Côté prof : CRUD `quizzes` (scope grammaire) + `quiz_questions` (prompt + correct_answer + distractors, saisis à la main)
+- [ ] Côté élève : passation dans `/dashboard/evaluations` (onglet/section grammaire), même `QuizRunner`, RPC de soumission qui masque la bonne réponse
+- [ ] Réutilise le schéma existant `quizzes`/`quiz_questions`/`quiz_attempts`
+
+### Review (Session 12 — Q1 + D1 + D2)
+**État au 2026-06-23 — Quiz vocab + soumission devoirs (photo & audio) livrés.**
+- **Q1** : 2 RPCs SECURITY DEFINER `generate_individual_quiz` (FR↔AR, 4 choix mélangés, bonne réponse jamais transmise) + `submit_individual_quiz` (score recalculé server-side). Page `/dashboard/evaluations` + `QuizRunner` + historique. Lien dans Plus.
+- **D1** : faille RLS fermée (`hw_update_student` supprimée — l'élève pouvait s'auto-noter). RPC `submit_homework` restreint le dépôt aux bons champs + notifie le prof. Bucket `homework-submissions`. Upload photo côté élève, URL signée côté prof.
+- **D2** : enregistrement audio façon WhatsApp (MediaRecorder), réutilise la même RPC/bucket. Lecteur `<audio>` côté prof. Zéro migration.
+- **Preuves** : Q1 (génération sans fuite, 42501 cross-élève, score 2/3) ; D1 (UPDATE élève=0 ligne, RPC OK, notif prof, 42501 non-propriétaire). Advisor : nouvelles RPC = même WARN SECURITY DEFINER que les RPC déjà acceptées, chacune auto-gardée.
 - Build 27 routes vert. Poussé sur les deux branches.
+- **Reste** : Q2 (grammaire prof), vitrine publique (révision offre/paiement — le propriétaire a des idées), vidéos Bunny.
 
 ---
 
