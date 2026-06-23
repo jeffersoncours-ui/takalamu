@@ -1,5 +1,4 @@
 import { requireStudent } from "@/lib/auth";
-import { signOut } from "@/app/login/actions";
 import { createClient } from "@/lib/supabase/server";
 import DashboardTabs from "./dashboard-tabs";
 import { NotifBell } from "@/components/notif-bell";
@@ -19,28 +18,31 @@ export default async function DashboardLayout({
     .limit(20);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+    <div className="flex min-h-full flex-1 flex-col" style={{ background: "#F7F4EE" }}>
+      <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#E9E3D8" }}>
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold text-slate-900">
-              Takalamu · Élève
+            <span
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "#8B857A", letterSpacing: ".06em", fontSize: "10px" }}
+            >
+              Takalamu
             </span>
-            <span className="text-xs text-slate-500">{profile.full_name ?? "—"}</span>
+            <span
+              className="text-lg font-semibold leading-tight"
+              style={{ color: "#1C1A17", fontFamily: "var(--font-spectral)" }}
+            >
+              {profile.full_name ?? "—"}
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <NotifBell userId={userId} initialNotifs={notifs ?? []} />
-            <form action={signOut}>
-              <button type="submit" className="text-sm text-slate-500 hover:text-slate-800">
-                Déconnexion
-              </button>
-            </form>
-          </div>
+          <NotifBell userId={userId} initialNotifs={notifs ?? []} />
         </div>
-        <DashboardTabs />
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">{children}</main>
+      {/* pb-28 pour laisser la place à la bottom tab bar */}
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-5 pb-28">{children}</main>
+
+      <DashboardTabs />
     </div>
   );
 }
