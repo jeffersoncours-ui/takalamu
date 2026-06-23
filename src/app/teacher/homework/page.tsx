@@ -108,23 +108,34 @@ export default async function HomeworkQueuePage() {
                 </div>
               )}
 
-              {submissionUrls.has(hw.id) && (
-                <a
-                  href={submissionUrls.get(hw.id)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-[14px] p-3 transition-opacity hover:opacity-80"
-                  style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                    <circle cx="12" cy="13" r="3" />
-                  </svg>
-                  <span className="font-semibold" style={{ color: "#2C4BB8", fontSize: 13 }}>
-                    Voir la copie déposée
-                  </span>
-                </a>
-              )}
+              {submissionUrls.has(hw.id) &&
+                (/\.(webm|mp4|m4a|ogg|mp3|wav)$/i.test(hw.submission_file ?? "") ? (
+                  <div
+                    className="rounded-[14px] p-3"
+                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                  >
+                    <p className="font-semibold uppercase mb-2" style={{ color: "#2C4BB8", fontSize: 11, letterSpacing: ".05em" }}>
+                      🎙 Réponse audio de l&apos;élève
+                    </p>
+                    <audio controls src={submissionUrls.get(hw.id)} className="w-full" style={{ height: 40 }} />
+                  </div>
+                ) : (
+                  <a
+                    href={submissionUrls.get(hw.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-[14px] p-3 transition-opacity hover:opacity-80"
+                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                      <circle cx="12" cy="13" r="3" />
+                    </svg>
+                    <span className="font-semibold" style={{ color: "#2C4BB8", fontSize: 13 }}>
+                      Voir la copie déposée
+                    </span>
+                  </a>
+                ))}
 
               <HwCorrectionForm homeworkId={hw.id} />
             </div>
