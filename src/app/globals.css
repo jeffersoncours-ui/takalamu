@@ -2,9 +2,73 @@
 
 :root {
   color-scheme: light;
+
+  /* Design tokens Takalamu */
+  --tk-accent: #0F9D6E;
+  --tk-accent-pressed: #0A8560;
+  --tk-accent-bg: #ECFAF4;
+  --tk-accent-border: #9FE3C8;
+  --tk-teal-deep: #0A553F;
+  --tk-teal-drawer: #0A4636;
+
+  --tk-page-bg: #F7F4EE;
+  --tk-surface: #FFFFFF;
+  --tk-surface-alt: #FBF9F5;
+  --tk-border: #E9E3D8;
+  --tk-border-alt: #EDE7DC;
+
+  --tk-ink: #1C1A17;
+  --tk-ink-soft: #4A463F;
+  --tk-muted: #8B857A;
+  --tk-faint: #A8A29E;
+
+  /* Ombres */
+  --tk-shadow-card: 0 6px 16px rgba(28,26,23,.04);
+  --tk-shadow-card-raised: 0 10px 26px rgba(28,26,23,.09);
+  --tk-shadow-hero: 0 16px 32px rgba(10,85,63,.32);
+  --tk-shadow-cta: 0 8px 18px rgba(15,157,110,.30);
+  --tk-shadow-nav: 0 12px 30px rgba(28,26,23,.12);
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Fonts */
+  --font-spectral: var(--font-spectral);
+  --font-jakarta: var(--font-jakarta);
+  --font-amiri: var(--font-amiri);
+  --font-sans: var(--font-jakarta);
+
+  /* Couleurs custom */
+  --color-page: var(--tk-page-bg);
+  --color-surface: var(--tk-surface);
+  --color-surface-alt: var(--tk-surface-alt);
+  --color-border: var(--tk-border);
+  --color-border-alt: var(--tk-border-alt);
+  --color-ink: var(--tk-ink);
+  --color-ink-soft: var(--tk-ink-soft);
+  --color-muted: var(--tk-muted);
+  --color-faint: var(--tk-faint);
+  --color-accent: var(--tk-accent);
+  --color-accent-pressed: var(--tk-accent-pressed);
+  --color-accent-bg: var(--tk-accent-bg);
+  --color-accent-border: var(--tk-accent-border);
+  --color-teal-deep: var(--tk-teal-deep);
+  --color-teal-drawer: var(--tk-teal-drawer);
+
+  /* Ombres custom */
+  --shadow-card: var(--tk-shadow-card);
+  --shadow-raised: var(--tk-shadow-card-raised);
+  --shadow-hero: var(--tk-shadow-hero);
+  --shadow-cta: var(--tk-shadow-cta);
+  --shadow-nav: var(--tk-shadow-nav);
+}
+
+/* Utilitaires typographiques */
+.font-title {
+  font-family: var(--font-spectral);
+}
+
+.font-arabic {
+  font-family: var(--font-amiri);
+  direction: rtl;
+  text-align: right;
 }
