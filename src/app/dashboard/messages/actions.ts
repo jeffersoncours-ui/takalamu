@@ -11,7 +11,7 @@ export async function sendMessage(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const { userId } = await requireStudent();
+  const { userId, profile, studentId } = await requireStudent();
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return {};
 
@@ -19,7 +19,7 @@ export async function sendMessage(
 
   const { data: conv } = await supabase
     .from("conversations")
-    .select("id, teacher_id, student_id")
+    .select("id, teacher_id")
     .eq("id", conversationId)
     .maybeSingle();
 
@@ -38,8 +38,7 @@ export async function sendMessage(
 
   if (error) return { error: "Impossible d'envoyer le message." };
 
-  // Notifier l'enseignant via RPC SECURITY DEFINER (pas de service_role nécessaire)
-  // teachers est lisible publiquement (vitrine), donc le client standard suffit
+  // teachers est lisible publiquement (vitrine)
   const { data: teacher } = await supabase
     .from("teachers")
     .select("profile_id")
@@ -50,7 +49,12 @@ export async function sendMessage(
     await supabase.rpc("insert_notification", {
       p_user_id: teacher.profile_id,
       p_type: "new_message",
-      p_payload: { conversation_id: conversationId },
+      p_payload: {
+        conversation_id: conversationId,
+        student_id: studentId,
+        url: `/teacher/messages/${studentId}`,
+        sender_name: profile.full_name ?? "Élève",
+      },
     });
   }
 

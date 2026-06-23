@@ -11,7 +11,7 @@ export async function sendMessageAsTeacher(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const { userId } = await requireTeacher();
+  const { userId, profile } = await requireTeacher();
   const body = String(formData.get("body") ?? "").trim();
   if (!body) return {};
 
@@ -38,7 +38,6 @@ export async function sendMessageAsTeacher(
 
   if (error) return { error: "Impossible d'envoyer le message." };
 
-  // Notifier l'élève via RPC SECURITY DEFINER (pas de service_role nécessaire)
   // Le teacher peut lire ses propres élèves via la policy owns_student
   const { data: student } = await supabase
     .from("students")
@@ -50,7 +49,11 @@ export async function sendMessageAsTeacher(
     await supabase.rpc("insert_notification", {
       p_user_id: student.profile_id,
       p_type: "new_message",
-      p_payload: { conversation_id: conversationId },
+      p_payload: {
+        conversation_id: conversationId,
+        url: "/dashboard/messages",
+        sender_name: profile?.full_name ?? "Enseignant",
+      },
     });
   }
 
