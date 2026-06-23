@@ -342,6 +342,50 @@ _(à remplir en fin d'étape)_
 
 ---
 
+## Session 9 (2026-06-23) — Corrections prod + Cockpit contextuel
+
+> **Statut : TERMINÉ.**
+
+### Fixes déployés
+- [x] **Bug `/dashboard/messages`** : suppression admin client — nouvelle RLS policy `conv_student_insert_own` (INSERT élève avec son enseignant) ; page passe par select + insert standard
+- [x] **Bug `/dashboard/bookings`** : suppression admin client — nouvelle RPC SECURITY DEFINER `get_teacher_booked_slots()` qui retourne uniquement `scheduled_at/status` des créneaux du prof, visible uniquement pour l'élève de ce prof
+- [x] **Bug paiements teacher** : policy `payments_select_admin` ajoutée (compte admin sans ligne `teachers` voyait page vide)
+- [x] Types TS mis à jour (`get_teacher_booked_slots`, `prep_notes` dans `bookings`)
+
+### Cockpit enseignant refactorisé
+- [x] Suppression du bouton "Fiche de fin de cours" permanent
+- [x] Section "À documenter" : bookings passés (7j) sans `lesson_record` → bouton "Documenter" (pré-sélectionne l'élève)
+- [x] Section "Prochains cours" : bookings à venir (7j) → bouton "Préparer" / "Voir prépa"
+- [x] Correction bornes UTC (anti-pattern timezone corrigé, Principe §7)
+
+### Nouvelle page : Préparer le cours
+- [x] Migration : colonne `prep_notes text` dans `bookings`
+- [x] Page `/teacher/session/prep/[bookingId]` : contexte élève (leçon en cours + dernier récap), textarea libre
+- [x] Server action `savePrepNotes` → sauvegarde dans `bookings.prep_notes`, redirect `?prep=ok`
+
+### Audit réalisé (3 agents parallèles)
+- [x] Chat lag identifié : 4 causes (pas d'optimistic update, markReadAction en boucle, createClient dans useEffect, scroll smooth au montage) — **correctif chat non encore implémenté**
+- [x] Fonctionnalités manquantes identifiées : `support_files` upload, `correction_file` upload, label paiement hardcodé, historique séances tronqué, liste chats enseignant
+
+### Reste à faire (prochaine session)
+- [ ] Chat lag : optimistic update + debounce markReadAction
+- [ ] `support_files` : upload fichiers après séance (champ absent du formulaire)
+- [ ] `correction_file` : upload copie corrigée dans la file de correction
+- [ ] Label paiement : afficher "Cours de groupe" vs "Abonnement individuel" selon `product`
+- [ ] Liste chats enseignant : page `/teacher/messages` avec liste de toutes les conversations
+- [ ] Bouton "Ajouter un enseignant" (admin)
+- [ ] Historique séances : pagination / "voir tout" au-delà de 8
+
+### Review (Session 9)
+**État au 2026-06-23 — Corrections prod + Cockpit contextuel livrés.**
+- Les deux pages élève (`bookings`, `messages`) ne crashent plus — admin client retiré, remplacé par RLS ciblées et RPC SECURITY DEFINER.
+- Bug paiements teacher (page blanche pour l'admin) corrigé via policy RLS.
+- Cockpit devenu contextuel : boutons apparaissent selon le contexte temporel (à documenter / à préparer) au lieu d'un bouton permanent.
+- Nouvelle page "Préparer le cours" : contexte élève + notes libres liées au booking.
+- Audit chat lag documenté, correctifs identifiés mais non encore implémentés.
+
+---
+
 ## Review — Refonte UI (session du 23 juin)
 
 **Fait & poussé** sur `claude/takalamu-dev-continuation-7u0xw3` :
