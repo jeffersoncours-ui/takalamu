@@ -2,6 +2,20 @@
 
 ---
 
+## Session 12 — Q1 Quiz vocabulaire auto-généré
+
+### Plan Q1 — QCM vocabulaire (brique 1/4)
+- [ ] Migration `21_quiz_rpcs` : RPC `generate_individual_quiz` + `submit_individual_quiz` (SECURITY DEFINER, anti-triche)
+- [ ] `database.types.ts` : ajouter les 2 nouvelles fonctions
+- [ ] Server actions `src/app/dashboard/evaluations/actions.ts` : `generateQuiz` + `submitQuiz`
+- [ ] Page `src/app/dashboard/evaluations/page.tsx` : SSR — compte le vocab, liste les tentatives, rend `QuizRunner`
+- [ ] Composant client `src/app/dashboard/evaluations/quiz-runner.tsx` : machine d'état idle→playing→done
+- [ ] `src/app/dashboard/more/page.tsx` : ajouter lien "Évaluations"
+- [ ] Tests MCP : génération (quiz renvoyé sans bonne réponse), soumission (score recalculé côté serveur, tentative insérée), sécurité (étudiant A ne peut pas générer pour B)
+- [ ] Build vert + push
+
+---
+
 ## Session 11 — Blocs 3, 4, 5, fin Bloc 6
 
 > **Statut : TERMINÉ.**

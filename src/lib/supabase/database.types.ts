@@ -1237,6 +1237,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_individual_quiz: {
+        Args: {
+          p_student_id: string
+          p_lesson_id?: string
+          p_size?: number
+        }
+        Returns: Json
+      }
+      submit_individual_quiz: {
+        Args: {
+          p_student_id: string
+          p_answers: Json
+        }
+        Returns: Json
+      }
       cancel_payment: {
         Args: { p_payment_id: string }
         Returns: undefined
