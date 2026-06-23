@@ -17,10 +17,14 @@ const PHASE_LABEL: Record<string, string> = {
 
 export default async function StudentCardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ all?: string }>;
 }) {
   const { id } = await params;
+  const { all } = await searchParams;
+  const showAll = all === "true";
   await requireTeacher();
   const supabase = await createClient();
 
@@ -41,10 +45,10 @@ export default async function StudentCardPage({
         .maybeSingle(),
       supabase
         .from("lesson_records")
-        .select("id, session_date, attendance, public_recap, lessons(title)")
+        .select("id, session_date, attendance, public_recap, lessons(title)", { count: "exact" })
         .eq("student_id", id)
         .order("session_date", { ascending: false })
-        .limit(8),
+        .limit(showAll ? 200 : 8),
       supabase
         .from("student_profile_notes")
         .select("content")
@@ -82,6 +86,7 @@ export default async function StudentCardPage({
       : progress.lessons
     : null;
   const records = recordsRes.data ?? [];
+  const totalRecords = recordsRes.count ?? records.length;
   const noteContent = noteRes.data?.content ?? "";
   const pendingHw = hwRes.data ?? [];
   const recentVocab = vocabRes.data ?? [];
@@ -138,7 +143,7 @@ export default async function StudentCardPage({
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "séances", value: records.length, accent: false },
+          { label: "séances", value: totalRecords, accent: false },
           { label: "abs. injust.", value: student.unjustified_absences_count, accent: false },
           { label: "mots", value: vocabCount, accent: false },
           { label: "règles", value: grammarCount, accent: false },
@@ -229,9 +234,28 @@ export default async function StudentCardPage({
 
       {/* Historique des séances */}
       <div className="space-y-2">
-        <p className="px-0.5 font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-          Historique des séances ({records.length})
-        </p>
+        <div className="flex items-center justify-between px-0.5">
+          <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
+            Historique des séances ({totalRecords})
+          </p>
+          {showAll ? (
+            <Link
+              href={`/teacher/students/${id}`}
+              className="font-semibold"
+              style={{ color: "#0F9D6E", fontSize: 12 }}
+            >
+              Voir moins
+            </Link>
+          ) : totalRecords > 8 ? (
+            <Link
+              href={`/teacher/students/${id}?all=true`}
+              className="font-semibold"
+              style={{ color: "#0F9D6E", fontSize: 12 }}
+            >
+              Voir tout ({totalRecords})
+            </Link>
+          ) : null}
+        </div>
         {records.length === 0 && (
           <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune séance enregistrée.</p>
         )}

@@ -11,7 +11,12 @@ const PLAN_LABEL: Record<PaymentPlan, string> = {
   "2x": "2× (2 versements)",
   "3x": "3× avec réduction",
   "12x": "12× mensuel",
-  single: "Paiement unique (groupe)",
+  single: "Paiement unique",
+};
+
+const PRODUCT_LABEL: Record<string, string> = {
+  individual_sub: "Abonnement individuel",
+  book: "Cours de groupe",
 };
 
 export default async function PaymentsPage() {
@@ -75,7 +80,7 @@ export default async function PaymentsPage() {
             >
               <div>
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                  Abonnement individuel
+                  {PRODUCT_LABEL[p.product] ?? p.product}
                   {p.plan ? ` — ${PLAN_LABEL[p.plan]}` : ""}
                 </p>
                 {p.revolut_reference && (
