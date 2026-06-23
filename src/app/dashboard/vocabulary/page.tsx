@@ -12,10 +12,18 @@ export default async function VocabulairePage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-900">
-        Mon vocabulaire{vocab?.length ? ` (${vocab.length})` : ""}
-      </h1>
+    <div className="space-y-5">
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        >
+          Mon glossaire
+        </h1>
+        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+          {vocab?.length ?? 0} mot{(vocab?.length ?? 0) > 1 ? "s" : ""} appris
+        </p>
+      </div>
       <VocabSearch items={vocab ?? []} />
     </div>
   );

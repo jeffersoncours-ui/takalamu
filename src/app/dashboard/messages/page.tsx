@@ -11,7 +11,7 @@ export default async function StudentMessagesPage() {
   // Récupérer l'enseignant de l'élève
   const { data: student } = await supabase
     .from("students")
-    .select("teacher_id")
+    .select("teacher_id, teachers:teacher_id(display_name)")
     .eq("id", studentId)
     .maybeSingle();
 
@@ -20,6 +20,11 @@ export default async function StudentMessagesPage() {
       <p className="text-sm text-slate-500">Profil élève introuvable.</p>
     );
   }
+
+  const teacher = Array.isArray(student.teachers)
+    ? student.teachers[0]
+    : student.teachers;
+  const teacherName = teacher?.display_name ?? "Mon enseignant";
 
   // Créer la conversation si elle n'existe pas (seul le teacher peut via RLS,
   // donc on passe par l'admin client)
@@ -54,8 +59,27 @@ export default async function StudentMessagesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">Messages</h1>
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      {/* En-tête prof */}
+      <div className="flex items-center gap-3 px-0.5">
+        <div
+          className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-semibold"
+          style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+        >
+          {teacherName[0]?.toUpperCase() ?? "?"}
+        </div>
+        <div>
+          <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{teacherName}</div>
+          <div className="flex items-center gap-1.5 font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
+            <span className="rounded-full" style={{ width: 7, height: 7, background: "#0F9D6E" }} />
+            En ligne
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="rounded-[20px] p-4"
+        style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+      >
         <ChatBox
           conversationId={conv.id}
           initialMessages={messages ?? []}

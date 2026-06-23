@@ -88,11 +88,11 @@ export function ChatBox({
   }, [conversationId, currentUserId]);
 
   return (
-    <div className="flex flex-col h-[60vh] min-h-[320px]">
+    <div className="flex flex-col h-[64vh] min-h-[340px]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 pb-2">
+      <div className="flex-1 overflow-y-auto flex flex-col gap-3 pb-2">
         {messages.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-8">
+          <p className="text-center py-8" style={{ color: "#A8A29E", fontSize: 14 }}>
             Aucun message pour l&apos;instant.
           </p>
         )}
@@ -101,29 +101,37 @@ export function ChatBox({
           return (
             <div
               key={msg.id}
-              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+              className="max-w-[78%]"
+              style={{
+                alignSelf: isMine ? "flex-end" : "flex-start",
+                background: isMine ? "#0F9D6E" : "#fff",
+                border: isMine ? "none" : "1px solid #EFEAE0",
+                borderRadius: isMine ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
+                padding: "12px 15px",
+              }}
             >
-              <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
-                  isMine
-                    ? "bg-emerald-600 text-white rounded-br-sm"
-                    : "bg-slate-100 text-slate-900 rounded-bl-sm"
-                }`}
+              <p
+                className="whitespace-pre-wrap break-words"
+                style={{ color: isMine ? "#fff" : "#1C1A17", fontSize: 14, lineHeight: 1.45 }}
               >
-                <p className="whitespace-pre-wrap break-words">{msg.body}</p>
-                <p
-                  className={`text-xs mt-1 ${
-                    isMine ? "text-emerald-200" : "text-slate-400"
-                  }`}
-                  suppressHydrationWarning
-                >
-                  {new Date(msg.sent_at).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  {isMine && msg.read_at && " · Lu"}
-                </p>
-              </div>
+                {msg.body}
+              </p>
+              <p
+                className="mt-1.5"
+                style={{
+                  color: isMine ? "#CFF0E2" : "#B7B0A2",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  textAlign: isMine ? "right" : "left",
+                }}
+                suppressHydrationWarning
+              >
+                {new Date(msg.sent_at).toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+                {isMine && msg.read_at && " · Lu"}
+              </p>
             </div>
           );
         })}
@@ -131,24 +139,44 @@ export function ChatBox({
       </div>
 
       {/* Saisie */}
-      <div className="border-t border-slate-200 pt-3">
+      <div className="pt-3" style={{ borderTop: "1px solid #EDE7DC" }}>
         {state.error && (
-          <p className="text-xs text-red-600 mb-2">{state.error}</p>
+          <p className="mb-2" style={{ color: "#B4292E", fontSize: 12 }}>{state.error}</p>
         )}
-        <form ref={formRef} action={formAction} className="flex gap-2">
+        <form ref={formRef} action={formAction} className="flex gap-2.5 items-center">
           <input
             name="body"
             type="text"
             placeholder="Écrire un message…"
             autoComplete="off"
-            className="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+            className="flex-1 outline-none"
+            style={{
+              height: 48,
+              borderRadius: 15,
+              border: "1.5px solid #E9E3D8",
+              background: "#fff",
+              padding: "0 16px",
+              fontSize: 14,
+              color: "#1C1A17",
+            }}
           />
           <button
             type="submit"
             disabled={pending}
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition"
+            aria-label="Envoyer"
+            className="flex shrink-0 items-center justify-center disabled:opacity-50"
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 15,
+              background: "#0F9D6E",
+              boxShadow: "0 6px 14px rgba(15,157,110,.26)",
+            }}
           >
-            {pending ? "…" : "Envoyer"}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
           </button>
         </form>
       </div>
