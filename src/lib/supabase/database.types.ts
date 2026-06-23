@@ -1234,6 +1234,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_teacher_booked_slots: {
+        Args: { p_from?: string; p_teacher_id: string }
+        Returns: {
+          scheduled_at: string
+          status: string
+        }[]
+      }
       submit_session_record: {
         Args: {
           p_advance_progress?: boolean

@@ -3,7 +3,6 @@ import { fr } from "date-fns/locale";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { checkBookingEligibility, generateAvailableSlots } from "@/lib/booking";
 import { BookingSlots } from "./booking-slots";
 import { JoinButton } from "./join-button";
@@ -22,10 +21,9 @@ export default async function BookingsPage() {
     return <p className="text-sm text-slate-500">Profil élève introuvable.</p>;
   }
 
-  const adminClient = createAdminClient();
   const now = new Date().toISOString();
 
-  const [eligibility, availsRes, myBookingsRes, teacherBookingsRes] =
+  const [eligibility, availsRes, myBookingsRes, teacherSlotsRes] =
     await Promise.all([
       checkBookingEligibility(studentId, supabase),
       supabase
@@ -41,18 +39,16 @@ export default async function BookingsPage() {
         .eq("status", "booked")
         .gte("scheduled_at", now)
         .order("scheduled_at"),
-      // Tous les créneaux déjà pris chez cet enseignant (via service role)
-      adminClient
-        .from("bookings")
-        .select("scheduled_at, status")
-        .eq("teacher_id", student.teacher_id)
-        .eq("status", "booked")
-        .gte("scheduled_at", now),
+      // Tous les créneaux déjà pris chez cet enseignant (via RPC sécurisée)
+      supabase.rpc("get_teacher_booked_slots", {
+        p_teacher_id: student.teacher_id,
+        p_from: now,
+      }),
     ]);
 
   const availabilities = availsRes.data ?? [];
   const upcomingBookings = myBookingsRes.data ?? [];
-  const allTeacherBookings = teacherBookingsRes.data ?? [];
+  const allTeacherBookings = teacherSlotsRes.data ?? [];
 
   const freeSlots = eligibility.eligible
     ? generateAvailableSlots(availabilities, allTeacherBookings)
