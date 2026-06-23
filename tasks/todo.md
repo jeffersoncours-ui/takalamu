@@ -4,15 +4,28 @@
 
 ## Session 12 — Q1 Quiz vocabulaire auto-généré
 
-### Plan Q1 — QCM vocabulaire (brique 1/4)
-- [ ] Migration `21_quiz_rpcs` : RPC `generate_individual_quiz` + `submit_individual_quiz` (SECURITY DEFINER, anti-triche)
-- [ ] `database.types.ts` : ajouter les 2 nouvelles fonctions
-- [ ] Server actions `src/app/dashboard/evaluations/actions.ts` : `generateQuiz` + `submitQuiz`
-- [ ] Page `src/app/dashboard/evaluations/page.tsx` : SSR — compte le vocab, liste les tentatives, rend `QuizRunner`
-- [ ] Composant client `src/app/dashboard/evaluations/quiz-runner.tsx` : machine d'état idle→playing→done
-- [ ] `src/app/dashboard/more/page.tsx` : ajouter lien "Évaluations"
-- [ ] Tests MCP : génération (quiz renvoyé sans bonne réponse), soumission (score recalculé côté serveur, tentative insérée), sécurité (étudiant A ne peut pas générer pour B)
-- [ ] Build vert + push
+### Plan Q1 — QCM vocabulaire (brique 1/4) ✅
+- [x] Migration `21_quiz_rpcs` : RPC `generate_individual_quiz` + `submit_individual_quiz` (SECURITY DEFINER, anti-triche)
+- [x] `database.types.ts` : ajouter les 2 nouvelles fonctions
+- [x] Server actions `src/app/dashboard/evaluations/actions.ts` : `generateQuiz` + `submitQuiz`
+- [x] Page `src/app/dashboard/evaluations/page.tsx` : SSR — compte le vocab, liste les tentatives, rend `QuizRunner`
+- [x] Composant client `src/app/dashboard/evaluations/quiz-runner.tsx` : machine d'état idle→playing→done
+- [x] `src/app/dashboard/more/page.tsx` : ajouter lien "Évaluations"
+- [x] Tests MCP : génération (quiz renvoyé sans bonne réponse), soumission (score recalculé côté serveur, tentative insérée), sécurité (étudiant A ne peut pas générer pour B)
+- [x] Build vert + push
+
+### Prochaines briques possibles (à valider)
+- [ ] **D1 — Soumission de devoir côté élève** : RPC `submit_homework` (SECURITY DEFINER, fixe la faille RLS actuelle où l'élève pourrait modifier grade/feedback), UI upload photo + texte
+- [ ] **D2 — Devoirs audio (voice message)** : bucket `homework-audio`, composant `AudioRecorder` (MediaRecorder API), lecture côté enseignant
+- [ ] **T1 — Exercices créés par le prof** : devoirs de type grammaire/phrases, saisis comme les devoirs normaux mais avec un champ `type` pour différencier
+
+### Review (Session 12 — Q1)
+**État au 2026-06-23 — Quiz vocabulaire auto-généré livré.**
+- 2 RPCs SECURITY DEFINER : `generate_individual_quiz` (FR↔AR, 4 choix shuffled, bonne réponse non transmise) et `submit_individual_quiz` (score recalculé server-side, anti-triche).
+- Page `/dashboard/evaluations` : compte le vocab, affiche le `QuizRunner` (client), historique des tentatives.
+- Lien "Évaluations" ajouté dans le menu Plus.
+- Preuves : 5 questions générées sans fuite de bonne réponse ✅ ; Omar bloqué pour Ali (42501) ✅ ; score 2/3 calculé correctement côté serveur ✅.
+- Build 27 routes vert. Poussé sur les deux branches.
 
 ---
 

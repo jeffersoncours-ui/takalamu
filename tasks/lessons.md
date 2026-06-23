@@ -27,6 +27,22 @@
 
 
 
+## Session 12 (2026-06-23) — Quiz vocabulaire auto-généré (Q1)
+
+### Décisions
+- **`generate_individual_quiz` retourne `{ vocab_id, direction, prompt, choices[] }` sans champ `correct`.** La bonne réponse est mélangée dans les choix à une position aléatoire. Le client ne peut pas déterminer quelle option est juste sans relire la DB. Anti-triche côté base, pas côté app.
+- **`submit_individual_quiz` relit la DB pour calculer le score.** Même si le client envoie `chosen`, le RPC SELECT la vraie valeur (`arabic_word` ou `french_definition`) depuis `vocabulary` pour comparer. Le client ne peut pas inflater le score.
+- **Une ligne `quizzes` créée à chaque soumission** (`scope=individual`, `source_type=glossary`). Pas de quiz "template" persistant par élève — chaque tentative = quiz unique. Simple et suffisant à cette échelle. Le lien `quiz_attempt.quiz_id` reste cohérent avec le schéma existant.
+- **`SECURITY DEFINER` pour contourner la policy `quizzes_write_teacher`** (INSERT dans `quizzes` interdit aux élèves). Le RPC vérifie lui-même `private.current_student_id() = p_student_id` en tête.
+- **Minimum 4 mots** pour générer un quiz (1 correct + 3 distracteurs). Contrôle via `CONTINUE WHEN array_length < 3` dans le loop SQL. La page affiche un état vide explicatif sous ce seuil.
+- **Résultat affiché en fin de quiz uniquement** (pas par question). Mais review complète à la fin : bonne réponse révélée pour chaque mauvaise réponse — utile pédagogiquement sans être de la gamification.
+- **Évaluations accessibles via le menu "Plus"** (pas un 6e onglet). La barre de navigation mobile est à 5 onglets max — au-delà c'est trop dense. Le menu Plus est prévu pour les fonctionnalités secondaires.
+
+### Pièges
+- **`RAISE NOTICE` dans `DO $$` n'est pas capturé par `execute_sql` MCP.** Utiliser des `SELECT` avec `FROM function()` à la place pour les tests empiriques.
+- **`FOR var IN SELECT value FROM jsonb_array_elements(...)` retourne un RECORD** avec un champ `.value`, pas un scalaire jsonb. Pour accéder directement à l'élément jsonb, utiliser `FOR idx IN 0..jsonb_array_length(arr)-1 LOOP` puis `arr->idx`. Plus lisible et sans ambiguïté.
+- **Loop variable `i` dans `FOR i IN 1..4`** : dans un block PL/pgSQL imbriqué dans un autre FOR LOOP, `i` est automatiquement déclaré par le FOR loop — pas besoin de `DECLARE i int`. Évite une erreur "variable already declared".
+
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
 ## Session 10 (2026-06-23) — Chat lag + Notifications cliquables + UX onglets
