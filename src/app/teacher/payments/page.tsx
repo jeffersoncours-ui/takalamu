@@ -14,6 +14,11 @@ const PLAN_LABEL: Record<PaymentPlan, string> = {
   single: "Unique",
 };
 
+const PRODUCT_LABEL: Record<string, string> = {
+  individual_sub: "Abonnement individuel",
+  book: "Cours de groupe",
+};
+
 export default async function TeacherPaymentsPage() {
   await requireTeacher();
   const supabase = await createClient();
@@ -127,7 +132,7 @@ export default async function TeacherPaymentsPage() {
               <div>
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>{studentName(p)}</p>
                 <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12 }}>
-                  Abonnement individuel
+                  {PRODUCT_LABEL[p.product] ?? p.product}
                   {p.plan ? ` · ${PLAN_LABEL[p.plan]}` : ""} ·{" "}
                   {new Date(p.created_at).toLocaleDateString("fr-FR")}
                 </p>
