@@ -18,44 +18,85 @@ const STATUS_LABEL: Record<StudentStatus, string> = {
 export default async function TeacherHome({
   searchParams,
 }: {
-  searchParams: Promise<{ session?: string }>;
+  searchParams: Promise<{ session?: string; prep?: string }>;
 }) {
-  const { session } = await searchParams;
+  const { session, prep } = await searchParams;
   await requireTeacher();
   const supabase = await createClient();
 
-  // Bornes du jour (heure serveur)
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
+  const now = new Date();
+  const nowISO = now.toISOString();
 
-  const [hwResult, suspendedResult, todayBookingsResult] = await Promise.all([
-    supabase
-      .from("homework")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "rendu"),
+  // Bornes UTC
+  const startOfDayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const endOfDayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const sevenDaysAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const [
+    hwResult,
+    suspendedResult,
+    todayCountResult,
+    pastBookingsResult,
+    recentRecordsResult,
+    upcomingBookingsResult,
+  ] = await Promise.all([
+    supabase.from("homework").select("id", { count: "exact", head: true }).eq("status", "rendu"),
     supabase
       .from("students")
       .select("id, status, profiles(full_name)")
       .in("status", ["suspended_payment", "suspended_absences"]),
     supabase
       .from("bookings")
-      .select("id, scheduled_at, status, students(profiles(full_name))")
-      .gte("scheduled_at", startOfDay.toISOString())
-      .lte("scheduled_at", endOfDay.toISOString())
-      .order("scheduled_at", { ascending: true }),
+      .select("id", { count: "exact", head: true })
+      .gte("scheduled_at", startOfDayUTC.toISOString())
+      .lte("scheduled_at", endOfDayUTC.toISOString())
+      .in("status", ["booked", "completed"]),
+    // Séances passées des 7 derniers jours
+    supabase
+      .from("bookings")
+      .select("id, scheduled_at, student_id, students(id, profiles(full_name))")
+      .lt("scheduled_at", nowISO)
+      .gte("scheduled_at", sevenDaysAgo.toISOString())
+      .eq("status", "booked")
+      .order("scheduled_at", { ascending: false })
+      .limit(10),
+    // Fiches existantes sur cette période
+    supabase
+      .from("lesson_records")
+      .select("student_id, session_date")
+      .gte("session_date", sevenDaysAgo.toISOString().split("T")[0])
+      .lte("session_date", nowISO.split("T")[0]),
+    // Prochains cours (7 jours)
+    supabase
+      .from("bookings")
+      .select("id, scheduled_at, prep_notes, student_id, students(id, profiles(full_name))")
+      .gte("scheduled_at", nowISO)
+      .lte("scheduled_at", sevenDaysAhead.toISOString())
+      .eq("status", "booked")
+      .order("scheduled_at", { ascending: true })
+      .limit(5),
   ]);
 
   const pendingHwCount = hwResult.count ?? 0;
   const suspended = suspendedResult.data ?? [];
-  const todayBookings = todayBookingsResult.data ?? [];
-  const coursToday = todayBookings.filter((b) => b.status === "booked" || b.status === "completed").length;
+  const coursToday = todayCountResult.count ?? 0;
+
+  // Séances passées sans fiche
+  const documentedKeys = new Set(
+    (recentRecordsResult.data ?? []).map((r) => `${r.student_id}-${r.session_date}`),
+  );
+  const toDocument = (pastBookingsResult.data ?? []).filter((b) => {
+    const dateStr = new Date(b.scheduled_at).toISOString().split("T")[0];
+    return !documentedKeys.has(`${b.student_id}-${dateStr}`);
+  });
+
+  const upcomingBookings = upcomingBookingsResult.data ?? [];
 
   return (
     <div className="space-y-4">
       <p className="px-0.5 font-semibold" style={{ color: "#8B857A", fontSize: 13 }}>
-        {format(new Date(), "EEEE d MMMM", { locale: fr })} · {coursToday} cours aujourd&apos;hui
+        {format(now, "EEEE d MMMM", { locale: fr })} · {coursToday} cours aujourd&apos;hui
       </p>
 
       {session === "ok" && (
@@ -67,29 +108,14 @@ export default async function TeacherHome({
         </div>
       )}
 
-      {/* Action vedette */}
-      <Link
-        href="/teacher/session/new"
-        className="flex items-center gap-[14px] rounded-[20px] p-[18px]"
-        style={{ background: "#0F9D6E", boxShadow: "0 14px 28px rgba(15,157,110,.30)" }}
-      >
-        <span
-          className="flex shrink-0 items-center justify-center rounded-[14px]"
-          style={{ width: 48, height: 48, background: "rgba(255,255,255,.20)" }}
+      {prep === "ok" && (
+        <div
+          className="rounded-[14px] px-4 py-3"
+          style={{ background: "#EEF4FF", border: "1px solid #C3D5FF", color: "#2B4CA8", fontSize: 13 }}
         >
-          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-          </svg>
-        </span>
-        <span className="flex-1">
-          <span className="block font-bold text-white" style={{ fontSize: 17 }}>Fiche de fin de cours</span>
-          <span className="block" style={{ color: "#CFF0E2", fontSize: 12 }}>Saisir la séance qui vient de finir</span>
-        </span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </Link>
+          Notes de préparation enregistrées.
+        </div>
+      )}
 
       {/* Grille stats */}
       <div className="grid grid-cols-2 gap-3">
@@ -159,55 +185,111 @@ export default async function TeacherHome({
         </Link>
       )}
 
-      {/* Cours du jour */}
-      <div
-        className="pt-2 pb-1 px-0.5"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 600, fontSize: 19, color: "#1C1A17" }}
-      >
-        Cours du jour
-      </div>
-
-      {todayBookings.length === 0 ? (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun cours programmé aujourd&apos;hui.</p>
-      ) : (
-        <div className="flex flex-col gap-[10px]">
-          {todayBookings.map((b) => {
+      {/* Séances à documenter */}
+      {toDocument.length > 0 && (
+        <section className="space-y-3">
+          <p
+            className="px-0.5 font-bold uppercase"
+            style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".06em" }}
+          >
+            À documenter
+          </p>
+          {toDocument.map((b) => {
             const student = Array.isArray(b.students) ? b.students[0] : b.students;
             const profile = student
-              ? Array.isArray(student.profiles)
-                ? student.profiles[0]
-                : student.profiles
+              ? Array.isArray((student as { profiles: unknown }).profiles)
+                ? ((student as { profiles: { full_name: string | null }[] }).profiles)[0]
+                : (student as { profiles: { full_name: string | null } | null }).profiles
               : null;
-            const isDone = b.status === "completed";
             return (
               <div
                 key={b.id}
                 className="flex items-center gap-[14px] rounded-[16px] p-[15px]"
                 style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
               >
-                <div className="shrink-0 text-center" style={{ width: 52 }}>
-                  <div style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 17, color: "#1C1A17" }} suppressHydrationWarning>
-                    {format(new Date(b.scheduled_at), "HH:mm")}
-                  </div>
-                  <div style={{ color: "#A8A29E", fontSize: 10 }}>60 min</div>
-                </div>
-                <div className="shrink-0" style={{ width: 1, height: 36, background: "#EDE7DC" }} />
                 <div className="flex-1 min-w-0">
                   <div className="font-bold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>
                     {profile?.full_name ?? "—"}
                   </div>
-                  <div className="font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
-                    Cours individuel
+                  <div className="font-medium" suppressHydrationWarning style={{ color: "#8B857A", fontSize: 12 }}>
+                    {format(new Date(b.scheduled_at), "EEE d MMM · HH:mm", { locale: fr })}
                   </div>
                 </div>
-                <StatusBadge
-                  hue={isDone ? "green" : "blue"}
-                  label={isDone ? "Terminé" : "À venir"}
-                />
+                <Link
+                  href={`/teacher/session/new?student_id=${b.student_id}`}
+                  className="flex items-center gap-1.5 rounded-[10px] px-3 py-2 font-semibold transition-opacity hover:opacity-80"
+                  style={{ background: "#0F9D6E", color: "#fff", fontSize: 13, whiteSpace: "nowrap" }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                  Documenter
+                </Link>
               </div>
             );
           })}
-        </div>
+        </section>
+      )}
+
+      {/* Prochains cours */}
+      {upcomingBookings.length > 0 && (
+        <section className="space-y-3">
+          <p
+            className="px-0.5 font-bold uppercase"
+            style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".06em" }}
+          >
+            Prochains cours
+          </p>
+          {upcomingBookings.map((b) => {
+            const student = Array.isArray(b.students) ? b.students[0] : b.students;
+            const profile = student
+              ? Array.isArray((student as { profiles: unknown }).profiles)
+                ? ((student as { profiles: { full_name: string | null }[] }).profiles)[0]
+                : (student as { profiles: { full_name: string | null } | null }).profiles
+              : null;
+            const hasPrepNotes = b.prep_notes && b.prep_notes.trim().length > 0;
+            return (
+              <div
+                key={b.id}
+                className="flex items-center gap-[14px] rounded-[16px] p-[15px]"
+                style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>
+                    {profile?.full_name ?? "—"}
+                  </div>
+                  <div className="font-medium" suppressHydrationWarning style={{ color: "#8B857A", fontSize: 12 }}>
+                    {format(new Date(b.scheduled_at), "EEE d MMM · HH:mm", { locale: fr })}
+                  </div>
+                </div>
+                <Link
+                  href={`/teacher/session/prep/${b.id}`}
+                  className="flex items-center gap-1.5 rounded-[10px] px-3 py-2 font-semibold transition-opacity hover:opacity-80"
+                  style={{
+                    background: hasPrepNotes ? "#F0FAF6" : "#F7F4EE",
+                    color: hasPrepNotes ? "#0A553F" : "#1C1A17",
+                    border: `1px solid ${hasPrepNotes ? "#C8EBDB" : "#DDD8D0"}`,
+                    fontSize: 13,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                  </svg>
+                  {hasPrepNotes ? "Voir prépa" : "Préparer"}
+                </Link>
+              </div>
+            );
+          })}
+        </section>
+      )}
+
+      {toDocument.length === 0 && upcomingBookings.length === 0 && (
+        <p style={{ color: "#8B857A", fontSize: 14, paddingTop: 4 }}>
+          Aucun cours à documenter ni à venir cette semaine.
+        </p>
       )}
     </div>
   );
