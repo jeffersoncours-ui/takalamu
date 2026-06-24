@@ -1136,6 +1136,9 @@ export type Database = {
           message: string | null
           scheduled_at: string | null
           status: Database["public"]["Enums"]["trial_status"]
+          trial_code: string | null
+          trial_code_expires_at: string | null
+          trial_code_used: boolean
           trial_paid: boolean
           updated_at: string
         }
@@ -1151,6 +1154,9 @@ export type Database = {
           message?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
+          trial_code?: string | null
+          trial_code_expires_at?: string | null
+          trial_code_used?: boolean
           trial_paid?: boolean
           updated_at?: string
         }
@@ -1166,6 +1172,9 @@ export type Database = {
           message?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
+          trial_code?: string | null
+          trial_code_expires_at?: string | null
+          trial_code_used?: boolean
           trial_paid?: boolean
           updated_at?: string
         }
