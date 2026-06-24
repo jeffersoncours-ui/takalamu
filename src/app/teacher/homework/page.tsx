@@ -13,12 +13,25 @@ export default async function HomeworkQueuePage() {
   const { data: homework } = await supabase
     .from("homework")
     .select(
-      "id, instructions, assigned_at, students(id, profiles(full_name)), lesson_records(session_date, lessons(title))",
+      "id, instructions, assigned_at, submission_file, students(id, profiles(full_name)), lesson_records(session_date, lessons(title))",
     )
     .eq("status", "rendu")
     .order("assigned_at", { ascending: true });
 
   const items = homework ?? [];
+
+  // URLs signées (1 h) pour les copies déposées par les élèves
+  const submissionUrls = new Map<string, string>();
+  await Promise.all(
+    items
+      .filter((hw) => hw.submission_file)
+      .map(async (hw) => {
+        const { data } = await supabase.storage
+          .from("homework-submissions")
+          .createSignedUrl(hw.submission_file as string, 3600);
+        if (data?.signedUrl) submissionUrls.set(hw.id, data.signedUrl);
+      }),
+  );
 
   return (
     <div className="space-y-5">
@@ -94,6 +107,35 @@ export default async function HomeworkQueuePage() {
                   <p style={{ color: "#4A463F", fontSize: 14 }}>{hw.instructions}</p>
                 </div>
               )}
+
+              {submissionUrls.has(hw.id) &&
+                (/\.(webm|mp4|m4a|ogg|mp3|wav)$/i.test(hw.submission_file ?? "") ? (
+                  <div
+                    className="rounded-[14px] p-3"
+                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                  >
+                    <p className="font-semibold uppercase mb-2" style={{ color: "#2C4BB8", fontSize: 11, letterSpacing: ".05em" }}>
+                      🎙 Réponse audio de l&apos;élève
+                    </p>
+                    <audio controls src={submissionUrls.get(hw.id)} className="w-full" style={{ height: 40 }} />
+                  </div>
+                ) : (
+                  <a
+                    href={submissionUrls.get(hw.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-[14px] p-3 transition-opacity hover:opacity-80"
+                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                      <circle cx="12" cy="13" r="3" />
+                    </svg>
+                    <span className="font-semibold" style={{ color: "#2C4BB8", fontSize: 13 }}>
+                      Voir la copie déposée
+                    </span>
+                  </a>
+                ))}
 
               <HwCorrectionForm homeworkId={hw.id} />
             </div>

@@ -18,6 +18,28 @@ export async function correctHomework(
   const grade = String(formData.get("grade") ?? "").trim() || null;
 
   const supabase = await createClient();
+
+  // Récupérer le student_id et profile_id avant la mise à jour
+  const { data: hw } = await supabase
+    .from("homework")
+    .select("id, student_id, students(profile_id)")
+    .eq("id", homeworkId)
+    .maybeSingle();
+
+  if (!hw) return { error: "Devoir introuvable." };
+
+  // Upload du fichier de correction si présent
+  let correctionFilePath: string | null = null;
+  const correctionFile = formData.get("correction_file");
+  if (correctionFile instanceof File && correctionFile.size > 0) {
+    const studentId = hw.student_id;
+    const storagePath = `${studentId}/${Date.now()}_${correctionFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const { error: uploadError } = await supabase.storage
+      .from("homework-corrections")
+      .upload(storagePath, correctionFile, { contentType: correctionFile.type || "application/octet-stream" });
+    if (!uploadError) correctionFilePath = storagePath;
+  }
+
   const { error } = await supabase
     .from("homework")
     .update({
@@ -25,10 +47,21 @@ export async function correctHomework(
       feedback,
       grade,
       corrected_at: new Date().toISOString(),
+      ...(correctionFilePath ? { correction_file: correctionFilePath } : {}),
     })
     .eq("id", homeworkId);
 
   if (error) return { error: "Échec de la correction." };
+
+  // Notifier l'élève via RPC SECURITY DEFINER
+  const student = Array.isArray(hw.students) ? hw.students[0] : hw.students;
+  if (student?.profile_id) {
+    await supabase.rpc("insert_notification", {
+      p_user_id: student.profile_id,
+      p_type: "homework_corrected",
+      p_payload: { url: "/dashboard/homework" },
+    });
+  }
 
   revalidatePath("/teacher/homework");
   revalidatePath("/teacher");

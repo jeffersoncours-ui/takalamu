@@ -1,5 +1,86 @@
 # Lessons
 
+## Session 14 (2026-06-24) — Audio assets leçons
+
+### Décisions
+- **`createSignedUrls` (pluriel) pour le batch.** La page dashboard élève liste N séances, chacune pouvant avoir un audio. Un appel `createSignedUrls(paths[], ttl)` remplace N appels `createSignedUrl`. Les `item.path` retournés peuvent être `string | null` (type Supabase) → guard `if (item.signedUrl && item.path)` avant `map.set(item.path, item.signedUrl)`.
+- **Upload remplace l'ancien asset de façon atomique.** Ordre : upload nouveau → INSERT `audio_assets` → UPDATE `lessons.audio_asset_id` → delete ancien asset + fichier. En cas d'échec entre les deux derniers, l'ancien est perdu mais le nouveau est lié. Acceptable à cette échelle.
+- **`ON DELETE SET NULL` sur `lessons.audio_asset_id`** : supprimer la ligne `audio_assets` dissocie automatiquement la leçon. `removeLessonAudio` n'a donc pas besoin de faire le `UPDATE lessons SET audio_asset_id = NULL` explicitement.
+- **Section audio séparée du `LessonForm`** : `AudioSection` est un composant client indépendant, rendu sous le formulaire de leçon. Évite d'alourdir le formulaire existant (qui gère déjà `useActionState`) avec un deuxième champ à état complexe.
+- **Audio côté élève = lecture seule, bucket-level.** Contrairement aux `homework-submissions` (dossier = student_id), les fichiers audio sont partagés (1 audio par leçon, visible pour tous les élèves de la même leçon). La policy `lesson_audio_student_select` n'a pas besoin de restriction par dossier.
+
+### Pièges
+- **`item.path` typé `string | null` dans `createSignedUrls`** — TypeScript refuse `audioUrlMap.set(item.path, ...)` sans le guard `&& item.path`. Le type Supabase est conservateur même si en pratique path n'est jamais null si l'item a un signedUrl.
+- **`encType="multipart/form-data"` obligatoire** sur un `<form>` avec `<input type="file">` dans un composant client avec `action={formAction}` (`useActionState`). Sans `encType`, le fichier n'est pas transmis dans le `FormData`.
+
+---
+
+## Session 11 (2026-06-23) — Liste chats enseignant + Storage uploads + Notifications + Admin invite
+
+### Décisions (Bloc 5 — admin invite)
+- **`auth.admin.inviteUserByEmail()` = seul usage légitime de `createAdminClient()`.** Créer un compte Supabase Auth + envoyer l'e-mail d'invitation n'a AUCUNE alternative RLS/RPC (on ne peut pas insérer dans `auth.users` ni déclencher l'e-mail depuis une fonction SECURITY DEFINER). Le commentaire de `admin.ts` le prévoit déjà ("création de comptes par l'admin"). Contrairement aux notifications/paiements, ici l'admin client est inévitable.
+- **Garde explicite `if (!process.env.SUPABASE_SERVICE_ROLE_KEY)`** avant d'appeler l'admin API → message d'erreur clair au lieu du crash silencieux décrit en sessions 9/10. Transforme le piège récurrent en feedback utilisateur.
+- **Le trigger `handle_new_user` fait le travail de création de profil.** En passant `data: { role: 'teacher', full_name, gender }` à `inviteUserByEmail`, ces valeurs deviennent `raw_user_meta_data` → le trigger `on_auth_user_created` crée le profil avec `role=teacher`. Il ne reste qu'à INSERT la ligne `teachers` (le profil n'est pas à créer à la main). Pattern réutilisable pour inviter des élèves.
+- **`requireAdmin()` réutilise `homePathForRole()`** pour rediriger proprement (teacher→/teacher, élève→/dashboard) au lieu d'un simple /login.
+- **Nav admin-only via prop + filtre** : `NavItem.adminOnly?: boolean` + `NAV_ITEMS.filter(i => !i.adminOnly || isAdmin)`. La prop `isAdmin` vient du layout serveur (`profile?.role === 'admin'`). Garder la logique de rôle côté serveur, le composant client ne fait que filtrer l'affichage.
+
+### Pièges (Bloc 5)
+- **Impersonation SQL + table temp** : sous `set_config('role','authenticated')`, le rôle `authenticated` ne peut pas écrire dans une table TEMP créée par `postgres` (permission denied). Solution : capturer le résultat dans une variable PL/pgSQL **pendant** l'impersonation, **remettre** `role=postgres`, **puis** INSERT dans la table de résultats.
+- **Preuve RLS d'un INSERT admin sans données valides** : utiliser un `profile_id` factice → si la RLS passe, l'INSERT échoue sur la FK (`teachers_profile_id_fkey`), ce qui PROUVE que la policy `teachers_admin_all` a autorisé l'écriture (l'erreur n'est pas RLS mais FK). Astuce pour tester une policy WITH CHECK sans seed complet.
+
+### Décisions (Blocs 3, 4, 6)
+- **Storage RLS via helpers `private.current_teacher_id()` / `private.current_student_id()`** : les policies Storage s'appuient sur les mêmes helpers que les tables Postgres. Teacher=ALL, student=SELECT uniquement sur son dossier (`storage.foldername(name))[1] = student_id`). Cohérent avec le reste du modèle d'accès.
+- **Path Storage = `{student_id}/{timestamp}_{nom_nettoyé}`** : le premier segment est le student_id pour que la policy student puisse filtrer via `foldername`. Pas de session_id dans le path pour simplifier (le lien DB → storage_path dans `lesson_records.support_files` fait la jointure).
+- **Upload avant la RPC** : les fichiers sont uploadés dans la server action avant d'appeler `submit_session_record`. Si l'upload échoue, on ignore le fichier silencieusement (pas d'erreur bloquante) et on continue. Si la RPC échoue après upload, les fichiers orphelins restent dans le bucket — acceptable à cette échelle.
+- **`DROP FUNCTION IF EXISTS` par signature exacte** pour remplacer une fonction avec une nouvelle signature. `CREATE OR REPLACE` seul échoue si plusieurs surcharges coexistent (erreur 42725). Pattern à retenir pour toutes les futures évolutions de RPC.
+- **Notification `payment_requested` via client standard (session élève)** : `requestPayment` utilise déjà `createAdminClient()` pour l'INSERT payment (RLS bloque élève). La notification elle, passe par `createClient()` (session élève authentifiée) pour appeler le RPC `insert_notification` SECURITY DEFINER. Les deux clients coexistent dans la même action — pas de problème.
+- **Liste chats enseignant** : query avec `messages(...)` embedded, tri JS côté serveur par date du dernier message. Unread count calculé en JS (filtre `sender_id !== userId && !read_at`). Suffisant à cette échelle.
+
+### Pièges
+- **`CREATE OR REPLACE FUNCTION` sur une fonction avec plusieurs surcharges existantes** → erreur `42725 function name is not unique`. Résoudre avec `DROP FUNCTION IF EXISTS <sig_exacte>` avant le `CREATE OR REPLACE`. Spécifier tous les types d'argument dans la signature DROP.
+- **`git cherry-pick` après merge dans todo.md** : si `tasks/todo.md` a été modifié par le cherry-pick lui-même (Auto-merging), ne pas re-lire le fichier — il a déjà l'état voulu. L'outil Edit détecte le conflit si on tente d'éditer sur l'ancien contenu.
+
+
+
+## Session 13 (2026-06-23) — Quiz de grammaire prof→élève (Q2)
+
+### Décisions
+- **`quiz_source = 'grammar'` plutôt qu'un nouveau scope.** Le scope `individual` est réutilisé ; seul `source_type` change (`glossary` vs `grammar`). `quizzes.teacher_id` (nullable) identifie l'auteur du quiz pour le filtrage côté élève et la vérification de propriété côté prof. Les quiz `book` continuent via `books.teacher_id` — pas de collision.
+- **`get_grammar_quiz_questions` : RPC SECURITY DEFINER pour masquer `correct_answer`.** La RLS `quiz_questions_teacher_all` interdit l'accès direct aux élèves. Le RPC vérifie `student.teacher_id == quiz.teacher_id` (cloisonnement prof/élève), mélange les choix à la volée (insert position aléatoire 1..N+1), retourne `[{ question_id, prompt, choices[] }]` — jamais `correct_answer`.
+- **`submit_grammar_quiz` : même anti-triche que Q1.** Relit `correct_answer` depuis la DB pour chaque réponse. Le client envoie `{ question_id, chosen }` — il ne connaît pas les bonnes réponses. Résultat `{ score, total, answers[] }` révèle la bonne réponse post-soumission pour la review pédagogique.
+- **CASCADE sur `quiz_questions.quiz_id` et `quiz_attempts.quiz_id`.** ALTER FOREIGN KEY → ON DELETE CASCADE. La suppression d'un quiz depuis la page prof nettoie questions + tentatives automatiquement. Plus sûr qu'une suppression manuelle en ordre dans le server action.
+- **Clé `ver` dans l'état `useActionState` pour reset du formulaire.** Incrémenter `state.ver` après succès → `<form key={state.ver}>` → React démonte/remonte le formulaire, effaçant tous les inputs. Plus propre que `formRef.current.reset()` et évite un `useEffect`.
+- **Grammar quizzes visibles à tous les élèves du prof sans assignation.** Pas de notion d'assignation individuelle (contrairement aux milestone videos). Visible dès création ; le bouton "Notifier mes élèves" envoie `eval_due` aux élèves actifs — notification optionnelle, pas un verrou d'accès.
+- **Historique grammar séparé du historique vocab** sur la page `/dashboard/evaluations`. Deux sections distinctes, chacune avec son propre historique de tentatives filtré par `source_type`. `quizzes.title` est affiché dans l'historique grammaire (le vocab n'a pas de titre lisible).
+
+### Pièges
+- **`array_length(arr, 1)` retourne NULL sur un tableau vide** (pas 0). Guard `IF array_length(...) IS NULL` avant le calcul de position d'insertion — sinon `floor(random() * (NULL + 1))` renvoie NULL et la position devient NULL → erreur de découpage.
+- **`quizzes.teacher_id` vs `books.teacher_id`** : les quiz de groupe utilisent `books.teacher_id` via FK `book_id`. Les quiz de grammaire utilisent `quizzes.teacher_id` directement. Ne pas confondre les deux chemins lors de requêtes de vérification de propriété.
+
+## Session 12 (2026-06-23) — Quiz vocabulaire auto-généré (Q1)
+
+### Décisions
+- **`generate_individual_quiz` retourne `{ vocab_id, direction, prompt, choices[] }` sans champ `correct`.** La bonne réponse est mélangée dans les choix à une position aléatoire. Le client ne peut pas déterminer quelle option est juste sans relire la DB. Anti-triche côté base, pas côté app.
+- **`submit_individual_quiz` relit la DB pour calculer le score.** Même si le client envoie `chosen`, le RPC SELECT la vraie valeur (`arabic_word` ou `french_definition`) depuis `vocabulary` pour comparer. Le client ne peut pas inflater le score.
+- **Une ligne `quizzes` créée à chaque soumission** (`scope=individual`, `source_type=glossary`). Pas de quiz "template" persistant par élève — chaque tentative = quiz unique. Simple et suffisant à cette échelle. Le lien `quiz_attempt.quiz_id` reste cohérent avec le schéma existant.
+- **`SECURITY DEFINER` pour contourner la policy `quizzes_write_teacher`** (INSERT dans `quizzes` interdit aux élèves). Le RPC vérifie lui-même `private.current_student_id() = p_student_id` en tête.
+- **Minimum 4 mots** pour générer un quiz (1 correct + 3 distracteurs). Contrôle via `CONTINUE WHEN array_length < 3` dans le loop SQL. La page affiche un état vide explicatif sous ce seuil.
+- **Résultat affiché en fin de quiz uniquement** (pas par question). Mais review complète à la fin : bonne réponse révélée pour chaque mauvaise réponse — utile pédagogiquement sans être de la gamification.
+- **Évaluations accessibles via le menu "Plus"** (pas un 6e onglet). La barre de navigation mobile est à 5 onglets max — au-delà c'est trop dense. Le menu Plus est prévu pour les fonctionnalités secondaires.
+
+### Décisions (D1 — soumission devoir + D2 — audio)
+- **Distinction produit clarifiée par le propriétaire** : la **grammaire** (former/analyser des phrases) n'est PAS un devoir — c'est une **évaluation** comme le quiz, **rédigée à la main par le prof** (jamais auto-générée). Seul le **vocabulaire** est auto-généré. Les **devoirs** (D1/D2) = rendu photo/audio corrigé à la main, sans score auto. Ne pas mélanger les deux dans l'UI : grammaire → section Évaluations, photo/audio → section Devoirs.
+- **Faille RLS `hw_update_student` fermée.** La policy d'origine laissait l'élève UPDATE n'importe quelle colonne de SES devoirs (y compris `grade`, `feedback`, `status`). Remplacée par RPC `submit_homework` SECURITY DEFINER qui ne touche que `submission_file/status/submitted_at`. **Leçon** : une policy UPDATE `USING (student_id = me)` sans restriction de colonnes est une faille — Postgres RLS ne sait pas restreindre les colonnes, il faut une RPC pour ça.
+- **D2 sans migration** : l'audio est juste un fichier `.webm`/`.mp4` dans le **même bucket** `homework-submissions` (pas de bucket `homework-audio` séparé — policies identiques, mime non restreint, 10 Mo suffisent). Réutilise la RPC `submit_homework` de D1. La distinction photo/audio se fait à l'affichage par extension. Principe « impact minimal » respecté.
+- **Blob MediaRecorder → server action** : un Blob enregistré ne peut pas peupler un `<input type=file>` programmatiquement de façon fiable. Solution : construire `FormData` à la main côté client (`fd.append("submission_file", blob, "recording.webm")`) et appeler la server action **directement** (`submitHomework(id, {}, fd)`) via `useTransition`, sans `<form action>`/`useActionState`. Le même composant gère photo (input file) et audio (blob) par cette voie unifiée.
+- **MIME MediaRecorder cross-navigateur** : Chrome=`audio/webm`, Safari=`audio/mp4`. Tester `MediaRecorder.isTypeSupported("audio/webm")` et nommer le fichier selon le type réel pour que la détection prof par extension marche.
+
+### Pièges
+- **`RAISE NOTICE` dans `DO $$` n'est pas capturé par `execute_sql` MCP.** Utiliser des `SELECT` avec `FROM function()` à la place pour les tests empiriques.
+- **Prouver qu'une faille UPDATE est fermée** : impersonner l'élève, tenter l'`UPDATE ... RETURNING id` dans un CTE et compter les lignes (`SELECT COUNT(*) FROM upd`). 0 ligne = aucune policy ne l'autorise = faille fermée. Plus parlant qu'attendre une erreur (un UPDATE sans policy ne lève pas d'erreur, il affecte juste 0 ligne).
+- **`FOR var IN SELECT value FROM jsonb_array_elements(...)` retourne un RECORD** avec un champ `.value`, pas un scalaire jsonb. Pour accéder directement à l'élément jsonb, utiliser `FOR idx IN 0..jsonb_array_length(arr)-1 LOOP` puis `arr->idx`. Plus lisible et sans ambiguïté.
+- **Loop variable `i` dans `FOR i IN 1..4`** : dans un block PL/pgSQL imbriqué dans un autre FOR LOOP, `i` est automatiquement déclaré par le FOR loop — pas besoin de `DECLARE i int`. Évite une erreur "variable already declared".
+
 > Décisions, enseignements et pièges. À lire au début de chaque session.
 
 ## Session 10 (2026-06-23) — Chat lag + Notifications cliquables + UX onglets

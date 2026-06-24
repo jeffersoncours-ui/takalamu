@@ -2,6 +2,119 @@
 
 ---
 
+## Session 14 — Audio assets leçons
+
+### Plan ✅
+- [x] Migration `25_lesson_audio_bucket` : bucket `lesson-audio` privé (50 Mo, audio MIME), policy `lesson_audio_teacher_all` (ALL) + `lesson_audio_student_select` (SELECT)
+- [x] Server actions `uploadLessonAudio` + `removeLessonAudio` dans `teacher/program/actions.ts` : upload → `audio_assets` INSERT → `lessons.audio_asset_id` link ; suppression propre avec nettoyage Storage
+- [x] Composant `AudioSection` (`teacher/program/[id]/edit/audio-section.tsx`) : lecteur + "Supprimer" si audio existe, sinon formulaire upload (titre optionnel + fichier)
+- [x] Page `/teacher/program/[id]/edit` : fetch `audio_asset_id + audio_assets(storage_path, title)`, URL signée 1h, rendu AudioSection
+- [x] Dashboard élève `src/app/dashboard/page.tsx` : query étendue aux `audio_assets`, batch signed URLs via `createSignedUrls`, lecteur `<audio>` inline dans les cartes de séance
+- [x] Build vert, migré en base, pushé
+
+### Review (Session 14)
+**État au 2026-06-24 — Audio leçons livré de bout en bout.**
+- Bucket `lesson-audio` privé créé (migration 25). RLS : teacher=ALL, student=SELECT-only. Pas de restriction par dossier (audio partagé par leçon, pas per-student).
+- Côté prof : `AudioSection` sous le formulaire d'édition de leçon. Upload remplace proprement l'ancien fichier (delete Storage + delete audio_assets avant de lier le nouveau). Suppression via cascade `ON DELETE SET NULL` sur `lessons.audio_asset_id`.
+- Côté élève : `createSignedUrls` batch (1 appel pour toutes les leçons de la page). Lecteur `<audio controls>` dans chaque carte de séance qui a un audio.
+- **Reste** : vitrine publique (le propriétaire a des idées sur l'offre + le paiement), vidéos Bunny Stream.
+
+---
+
+## Session 12 — Q1 Quiz vocabulaire auto-généré
+
+### Plan Q1 — QCM vocabulaire (brique 1/4) ✅
+- [x] Migration `21_quiz_rpcs` : RPC `generate_individual_quiz` + `submit_individual_quiz` (SECURITY DEFINER, anti-triche)
+- [x] `database.types.ts` : ajouter les 2 nouvelles fonctions
+- [x] Server actions `src/app/dashboard/evaluations/actions.ts` : `generateQuiz` + `submitQuiz`
+- [x] Page `src/app/dashboard/evaluations/page.tsx` : SSR — compte le vocab, liste les tentatives, rend `QuizRunner`
+- [x] Composant client `src/app/dashboard/evaluations/quiz-runner.tsx` : machine d'état idle→playing→done
+- [x] `src/app/dashboard/more/page.tsx` : ajouter lien "Évaluations"
+- [x] Tests MCP : génération (quiz renvoyé sans bonne réponse), soumission (score recalculé côté serveur, tentative insérée), sécurité (étudiant A ne peut pas générer pour B)
+- [x] Build vert + push
+
+### D1 — Soumission de devoir côté élève ✅
+- [x] Migration `22` : type notif `homework_submitted`
+- [x] Migration `23` : DROP policy `hw_update_student` (faille : élève pouvait modifier grade/feedback/status), RPC `submit_homework` SECURITY DEFINER (restreint à submission_file + status=rendu + submitted_at, notifie le prof), bucket `homework-submissions` + policies
+- [x] `database.types.ts` : `submit_homework` + enum `homework_submitted`
+- [x] Action `submitHomework` (upload bucket → RPC) + composant `HwSubmitForm`
+- [x] Page élève : upload photo sur `a_rendre`, indicateur "envoyé" sur `rendu`
+- [x] Page prof : lien URL signée pour voir la copie déposée
+- [x] Preuves : UPDATE direct élève = 0 ligne ✅ ; RPC dépose correctement ✅ ; notif prof ✅ ; non-propriétaire 42501 ✅
+
+### D2 — Devoirs audio (voice message WhatsApp) ✅
+- [x] `HwSubmitForm` : toggle photo/audio, MediaRecorder (enregistrer→arrêter→réécouter→refaire→envoyer), Blob → `submit_homework` (même RPC/bucket que D1)
+- [x] Page prof : détection audio par extension → lecteur `<audio>` inline
+- [x] Pas de migration (audio = fichier dans le même bucket, `allowed_mime_types` null)
+
+### Q2 — Évaluations de grammaire rédigées par le prof ✅
+> **Reclassement décidé le 2026-06-23** : les exercices de grammaire ne sont PAS des devoirs — ce sont des **évaluations** (comme le quiz), rédigées à la main par le prof (jamais auto-générées), QCM auto-corrigé.
+- [x] Migration `24_grammar_quiz` : `ALTER TYPE quiz_source ADD VALUE 'grammar'`, `quizzes.teacher_id`, CASCADE FK quiz→questions/attempts, RPC `get_grammar_quiz_questions` (SECURITY DEFINER, sans bonne réponse, choix mélangés), RPC `submit_grammar_quiz` (anti-triche)
+- [x] Côté prof : `/teacher/evaluations` (liste), `/teacher/evaluations/new` (créer), `/teacher/evaluations/[quizId]` (gérer questions + notifier élèves + supprimer). Lien "Évaluations" dans `DrawerNav`.
+- [x] Côté élève : `GrammarQuizRunner` (machine d'état idle→playing→done), section "Exercices de grammaire" dans `/dashboard/evaluations` (filtrés par enseignant), historique des tentatives grammaire
+- [x] `database.types.ts` : `quiz_source` + 'grammar', `quizzes.teacher_id`, 2 nouvelles fonctions
+- [x] Preuves MCP : questions renvoyées sans `correct_answer` ✅ ; score 1/2 recalculé server-side ✅ ; cross-teacher 42501 ✅ ; CASCADE delete questions = 0 ✅ ; build 30 routes vert ✅
+
+### Review (Session 13 — Q2)
+**État au 2026-06-23 — Quiz de grammaire prof → élève livré.**
+- **Q2** : teacher CRUD complet (`/teacher/evaluations`). 2 RPCs SECURITY DEFINER : `get_grammar_quiz_questions` (masque la bonne réponse, mélange les choix) + `submit_grammar_quiz` (score recalculé server-side, bonne réponse révélée post-soumission). Notification `eval_due` aux élèves. `GrammarQuizRunner` côté élève avec machine d'état identique au quiz vocab. Section grammaire dans `/dashboard/evaluations`, séparée de la section vocabulaire. Historique des tentatives par type.
+- **Reste** : vitrine publique (le propriétaire a des idées sur la révision offre/paiement), vidéos Bunny.
+
+### Review (Session 12 — Q1 + D1 + D2)
+**État au 2026-06-23 — Quiz vocab + soumission devoirs (photo & audio) livrés.**
+- **Q1** : 2 RPCs SECURITY DEFINER `generate_individual_quiz` (FR↔AR, 4 choix mélangés, bonne réponse jamais transmise) + `submit_individual_quiz` (score recalculé server-side). Page `/dashboard/evaluations` + `QuizRunner` + historique. Lien dans Plus.
+- **D1** : faille RLS fermée (`hw_update_student` supprimée — l'élève pouvait s'auto-noter). RPC `submit_homework` restreint le dépôt aux bons champs + notifie le prof. Bucket `homework-submissions`. Upload photo côté élève, URL signée côté prof.
+- **D2** : enregistrement audio façon WhatsApp (MediaRecorder), réutilise la même RPC/bucket. Lecteur `<audio>` côté prof. Zéro migration.
+- **Preuves** : Q1 (génération sans fuite, 42501 cross-élève, score 2/3) ; D1 (UPDATE élève=0 ligne, RPC OK, notif prof, 42501 non-propriétaire). Advisor : nouvelles RPC = même WARN SECURITY DEFINER que les RPC déjà acceptées, chacune auto-gardée.
+- Build 27 routes vert. Poussé sur les deux branches.
+- **Reste** : Q2 (grammaire prof), vitrine publique (révision offre/paiement — le propriétaire a des idées), vidéos Bunny.
+
+---
+
+## Session 11 — Blocs 3, 4, 5, fin Bloc 6
+
+> **Statut : TERMINÉ.**
+> Tous les blocs livrés (3, 4, 5, fin 6). Build vert 26 routes. Poussé sur les deux branches.
+
+### Bloc 3 — Liste chats enseignant ✅
+- [x] Ajouter "Messages" dans `DrawerNav` NAV_ITEMS → `/teacher/messages`
+- [x] Créer `/teacher/messages/page.tsx` : liste conversations (nom élève + dernier message + badge non-lu), triée par dernière activité
+
+### Fin Bloc 6 — Notifications (suite) ✅
+- [x] Migration `18_extend_notification_types` : ajouter `homework_corrected`, `payment_requested`, `payment_confirmed` à l'enum `notification_type`
+- [x] `database.types.ts` : mettre à jour `Enums.notification_type`
+- [x] Notification `homework_corrected` → student dans `correctHomework` (server action)
+- [x] Notification `payment_requested` → teacher dans `requestPayment` (server action)
+- [x] Notification `payment_confirmed` → student dans `confirmPayment` (server action)
+- [x] `NotifBell` : libellés pour les 3 nouveaux types (déjà présents depuis session 10)
+
+### Bloc 4 — Uploads fichiers ✅
+- [x] Migration `19_storage_buckets` : créer buckets `session-files` + `homework-corrections` + 4 policies RLS Storage
+- [x] Migration `20_extend_session_rpc` : ajouter `p_support_files jsonb DEFAULT '[]'` à `submit_session_record`
+- [x] `database.types.ts` : mettre à jour `Functions.submit_session_record`
+- [x] `session-form.tsx` : champ `<input type="file" multiple name="support_files">`
+- [x] `actions.ts` (session) : upload fichiers → Storage, passer paths à la RPC
+- [x] `hw-correction-form.tsx` : champ `<input type="file" name="correction_file">`
+- [x] `actions.ts` (homework) : upload fichier → Storage, stocker path dans `homework.correction_file`
+
+### Bloc 5 — Admin (inviter un enseignant) ✅
+- [x] `requireAdmin()` dans `auth.ts` (garde-fou rôle admin)
+- [x] Action `inviteTeacher` : `auth.admin.inviteUserByEmail()` (metadata role=teacher → trigger crée le profil) + INSERT ligne `teachers`. Garde si `SUPABASE_SERVICE_ROLE_KEY` absent.
+- [x] Page `/teacher/admin/teachers` : liste des enseignants (badge admin/genre) + formulaire d'invitation
+- [x] Lien "Enseignants" dans `DrawerNav` visible uniquement si `role === 'admin'`
+
+### Review (Session 11)
+**État au 2026-06-23 — Blocs 3, 4, 5, fin Bloc 6 livrés. Build vert (26 routes).**
+- **Bloc 3** : `/teacher/messages` liste toutes les conversations avec dernier message, date relative et badge non-lu. "Messages" ajouté dans DrawerNav.
+- **Fin Bloc 6** : 3 nouveaux types d'enum (`homework_corrected`, `payment_requested`, `payment_confirmed`). Notifications déclenchées dans `correctHomework`, `confirmPayment` et `requestPayment` via RPC SECURITY DEFINER (pas de createAdminClient).
+- **Bloc 4** : Buckets Storage `session-files` + `homework-corrections` (private, 10 Mo), 4 policies (teacher=ALL, student=SELECT/dossier propre). RPC étendue avec `p_support_files`. Champs upload dans le form de séance et dans la correction de devoir. Fichiers nommés `{student_id}/{timestamp}_{nom}`.
+- **Bloc 5** : `requireAdmin()` + page `/teacher/admin/teachers` (liste + invitation) + entrée DrawerNav admin-only. Invitation via `inviteUserByEmail` (service_role légitime — seule voie pour créer un compte auth + e-mail). Garde explicite si la clé manque.
+- Preuves SQL : enum 7 valeurs ✅, buckets ✅, policies Storage ✅, RPC signature ✅, 3 types insertables ✅, RLS teachers (non-admin bloqué / admin autorisé) ✅, `confirm_payment` étanche élève (§8.1) ✅, advisor 0 nouveau lint ✅.
+- **Note exploitation** : la fonctionnalité d'invitation requiert `SUPABASE_SERVICE_ROLE_KEY` dans les env vars Vercel (sinon message d'erreur clair, pas de crash). À vérifier côté propriétaire.
+- **Reste possible (prochaines sessions)** : vidéos Bunny Stream, vitrine publique, quiz auto-générés, soumission de devoir côté élève (upload `submission_file`).
+
+---
+
 ## Session 10 — Corrections prod + Fonctionnalités manquantes
 
 > **Statut : TERMINÉ (blocs 1, 2, 6-partiel). Blocs 3, 4, 5 à continuer.**

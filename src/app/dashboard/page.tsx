@@ -15,7 +15,7 @@ export default async function CoursPage() {
   const [recordsRes, studentRes, nextBookingRes] = await Promise.all([
     supabase
       .from("lesson_records")
-      .select("id, session_date, attendance, public_recap, lessons(title)")
+      .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets(storage_path, title))")
       .order("session_date", { ascending: false }),
     supabase
       .from("students")
@@ -35,6 +35,27 @@ export default async function CoursPage() {
 
   const records = recordsRes.data ?? [];
   const firstName = (profile.full_name ?? "").trim().split(" ")[0] || "—";
+
+  // Batch-generate signed URLs for lesson audio (1 h TTL)
+  const audioPaths = records
+    .map((r) => {
+      const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
+      const asset = lesson?.audio_assets
+        ? (Array.isArray(lesson.audio_assets) ? lesson.audio_assets[0] : lesson.audio_assets)
+        : null;
+      return (asset as { storage_path?: string } | null)?.storage_path ?? null;
+    })
+    .filter((p): p is string => p !== null);
+
+  const audioUrlMap = new Map<string, string>();
+  if (audioPaths.length > 0) {
+    const { data: signedList } = await supabase.storage
+      .from("lesson-audio")
+      .createSignedUrls(audioPaths, 3600);
+    signedList?.forEach((item) => {
+      if (item.signedUrl && item.path) audioUrlMap.set(item.path, item.signedUrl);
+    });
+  }
 
   // Stats parcours
   const totalSessions = records.length;
@@ -147,6 +168,11 @@ export default async function CoursPage() {
           {records.map((r) => {
             const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
             const badge = attendanceBadge(r.attendance);
+            const rawAsset = lesson?.audio_assets
+              ? (Array.isArray(lesson.audio_assets) ? lesson.audio_assets[0] : lesson.audio_assets)
+              : null;
+            const audioAsset = rawAsset as { storage_path: string; title: string | null } | null;
+            const audioUrl = audioAsset ? audioUrlMap.get(audioAsset.storage_path) ?? null : null;
             return (
               <div
                 key={r.id}
@@ -163,6 +189,21 @@ export default async function CoursPage() {
                   {format(new Date(r.session_date), "EEE d MMM", { locale: fr })}
                   {r.public_recap ? ` · ${r.public_recap}` : ""}
                 </div>
+                {audioUrl && (
+                  <div className="mt-2.5">
+                    {audioAsset?.title && (
+                      <p className="mb-1 text-xs font-medium" style={{ color: "#8B857A" }}>
+                        {audioAsset.title}
+                      </p>
+                    )}
+                    <audio
+                      src={audioUrl}
+                      controls
+                      className="w-full rounded-lg"
+                      style={{ height: 36 }}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

@@ -8,6 +8,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ReactNode;
+  adminOnly?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
@@ -87,6 +88,15 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    href: "/teacher/messages",
+    label: "Messages",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
     href: "/teacher/program",
     label: "Programme",
     icon: (
@@ -100,18 +110,46 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
   },
+  {
+    href: "/teacher/evaluations",
+    label: "Évaluations",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <line x1="9" y1="12" x2="15" y2="12" />
+        <polyline points="9 16 11 18 15 14" />
+      </svg>
+    ),
+  },
+  {
+    href: "/teacher/admin/teachers",
+    label: "Enseignants",
+    adminOnly: true,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="19" y1="8" x2="19" y2="14" />
+        <line x1="22" y1="11" x2="16" y2="11" />
+      </svg>
+    ),
+  },
 ];
 
 type Props = {
   profileName: string;
   signOutAction: () => Promise<void>;
+  isAdmin?: boolean;
 };
 
-export function DrawerNav({ profileName, signOutAction }: Props) {
+export function DrawerNav({ profileName, signOutAction, isAdmin = false }: Props) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   // Close on route change
   useEffect(() => {
@@ -131,7 +169,7 @@ export function DrawerNav({ profileName, signOutAction }: Props) {
   }, [open]);
 
   const currentLabel =
-    NAV_ITEMS.find((item) =>
+    navItems.find((item) =>
       item.href === "/teacher"
         ? pathname === "/teacher"
         : pathname.startsWith(item.href),
@@ -206,7 +244,7 @@ export function DrawerNav({ profileName, signOutAction }: Props) {
             Mon espace
           </p>
           <ul className="space-y-1">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active =
                 item.href === "/teacher"
                   ? pathname === "/teacher"

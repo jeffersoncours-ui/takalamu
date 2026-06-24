@@ -96,6 +96,107 @@ export async function updateLesson(
   redirect("/teacher/program");
 }
 
+export async function uploadLessonAudio(
+  lessonId: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireTeacher();
+  const file = formData.get("audio_file") as File | null;
+  if (!file || file.size === 0) return { error: "Aucun fichier sélectionné." };
+  if (file.size > 52_428_800) return { error: "Fichier trop volumineux (max 50 Mo)." };
+
+  const supabase = await createClient();
+
+  // Fetch existing audio_asset_id to remove it if present
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select("audio_asset_id, audio_assets(id, storage_path)")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  const existingAsset = lesson?.audio_asset_id
+    ? (Array.isArray(lesson.audio_assets)
+        ? lesson.audio_assets[0]
+        : lesson.audio_assets) as { id: string; storage_path: string } | null
+    : null;
+
+  // Upload new file
+  const ext = file.name.split(".").pop() ?? "mp3";
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const storagePath = `${lessonId}/${Date.now()}_${safeName}`;
+  const bytes = await file.arrayBuffer();
+
+  const { error: uploadError } = await supabase.storage
+    .from("lesson-audio")
+    .upload(storagePath, bytes, { contentType: file.type, upsert: false });
+
+  if (uploadError) return { error: "Échec de l'envoi du fichier." };
+
+  // Insert audio_assets row
+  const titleRaw = String(formData.get("audio_title") ?? "").trim();
+  const title = titleRaw || file.name.replace(`.${ext}`, "");
+  const { data: asset, error: assetError } = await supabase
+    .from("audio_assets")
+    .insert({ lesson_id: lessonId, storage_path: storagePath, title })
+    .select("id")
+    .single();
+
+  if (assetError || !asset) {
+    await supabase.storage.from("lesson-audio").remove([storagePath]);
+    return { error: "Échec de l'enregistrement de l'audio." };
+  }
+
+  // Link to lesson
+  const { error: linkError } = await supabase
+    .from("lessons")
+    .update({ audio_asset_id: asset.id })
+    .eq("id", lessonId);
+
+  if (linkError) {
+    await supabase.from("audio_assets").delete().eq("id", asset.id);
+    await supabase.storage.from("lesson-audio").remove([storagePath]);
+    return { error: "Échec de la liaison à la leçon." };
+  }
+
+  // Remove old asset + file (after success so we don't lose data on failure)
+  if (existingAsset) {
+    await supabase.from("audio_assets").delete().eq("id", existingAsset.id);
+    await supabase.storage.from("lesson-audio").remove([existingAsset.storage_path]);
+  }
+
+  revalidatePath(`/teacher/program/${lessonId}/edit`);
+  return {};
+}
+
+export async function removeLessonAudio(
+  lessonId: string,
+  _formData: FormData,
+): Promise<void> {
+  await requireTeacher();
+  const supabase = await createClient();
+
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select("audio_asset_id, audio_assets(id, storage_path)")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  const asset = lesson?.audio_asset_id
+    ? (Array.isArray(lesson.audio_assets)
+        ? lesson.audio_assets[0]
+        : lesson.audio_assets) as { id: string; storage_path: string } | null
+    : null;
+
+  if (!asset) return;
+
+  // SET NULL via cascade happens when we delete the audio_assets row
+  await supabase.from("audio_assets").delete().eq("id", asset.id);
+  await supabase.storage.from("lesson-audio").remove([asset.storage_path]);
+
+  revalidatePath(`/teacher/program/${lessonId}/edit`);
+}
+
 export async function deleteLesson(formData: FormData): Promise<void> {
   await requireTeacher();
   const id = String(formData.get("id") ?? "");

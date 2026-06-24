@@ -826,6 +826,7 @@ export type Database = {
           id: string
           scope: Database["public"]["Enums"]["quiz_scope"]
           source_type: Database["public"]["Enums"]["quiz_source"]
+          teacher_id: string | null
           title: string | null
           updated_at: string
         }
@@ -835,6 +836,7 @@ export type Database = {
           id?: string
           scope: Database["public"]["Enums"]["quiz_scope"]
           source_type: Database["public"]["Enums"]["quiz_source"]
+          teacher_id?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -844,6 +846,7 @@ export type Database = {
           id?: string
           scope?: Database["public"]["Enums"]["quiz_scope"]
           source_type?: Database["public"]["Enums"]["quiz_source"]
+          teacher_id?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -853,6 +856,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -1237,6 +1247,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_individual_quiz: {
+        Args: {
+          p_student_id: string
+          p_lesson_id?: string
+          p_size?: number
+        }
+        Returns: Json
+      }
+      submit_individual_quiz: {
+        Args: {
+          p_student_id: string
+          p_answers: Json
+        }
+        Returns: Json
+      }
+      get_grammar_quiz_questions: {
+        Args: { p_quiz_id: string }
+        Returns: Json
+      }
+      submit_grammar_quiz: {
+        Args: {
+          p_student_id: string
+          p_quiz_id: string
+          p_answers: Json
+        }
+        Returns: Json
+      }
       cancel_payment: {
         Args: { p_payment_id: string }
         Returns: undefined
@@ -1260,6 +1297,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_homework: {
+        Args: {
+          p_homework_id: string
+          p_submission_file: string
+        }
+        Returns: undefined
+      }
       submit_session_record: {
         Args: {
           p_advance_progress?: boolean
@@ -1272,6 +1316,7 @@ export type Database = {
           p_session_date: string
           p_student_id: string
           p_vocab?: Json
+          p_support_files?: Json
         }
         Returns: string
       }
@@ -1292,11 +1337,15 @@ export type Database = {
         | "homework_due"
         | "eval_due"
         | "video_assigned"
+        | "homework_corrected"
+        | "payment_requested"
+        | "payment_confirmed"
+        | "homework_submitted"
       payment_plan: "1x" | "2x" | "3x" | "12x" | "single"
       payment_product: "individual_sub" | "book"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual" | "group"
-      quiz_source: "glossary" | "book"
+      quiz_source: "glossary" | "book" | "grammar"
       student_status: "active" | "suspended_payment" | "suspended_absences"
       user_role: "admin" | "teacher" | "student"
       video_type: "welcome" | "milestone"

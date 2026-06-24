@@ -290,6 +290,25 @@ export function SessionForm({
         />
       </div>
 
+      {/* Supports de séance */}
+      <div className="space-y-1.5">
+        <label htmlFor="support_files" style={sectionLabel}>
+          Supports (optionnel)
+        </label>
+        <input
+          id="support_files"
+          name="support_files"
+          type="file"
+          multiple
+          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.mp3,.mp4"
+          className="block w-full text-sm file:mr-3 file:rounded-[10px] file:border-0 file:px-3 file:py-1.5 file:font-semibold file:cursor-pointer"
+          style={{ color: "#4A463F" }}
+        />
+        <p style={{ color: "#A8A29E", fontSize: 11 }}>
+          PDF, Word, image ou audio — max 10 Mo par fichier
+        </p>
+      </div>
+
       {state?.error ? (
         <p style={{ color: "#B4292E", fontSize: 14 }} role="alert">
           {state.error}

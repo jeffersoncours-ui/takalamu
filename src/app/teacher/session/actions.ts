@@ -9,23 +9,15 @@ import { isAttendanceStatus } from "@/lib/attendance";
 
 type ActionState = { error?: string };
 
-/** Aligne les colonnes saisies (même longueur) en lignes, filtre les vides. */
 function zipVocab(formData: FormData) {
   const arabic = formData.getAll("vocab_arabic").map((v) => String(v).trim());
-  const french = formData
-    .getAll("vocab_french")
-    .map((v) => String(v).trim());
+  const french = formData.getAll("vocab_french").map((v) => String(v).trim());
   const root = formData.getAll("vocab_root").map((v) => String(v).trim());
 
-  const rows: { arabic_word: string; french_definition: string; root: string }[] =
-    [];
+  const rows: { arabic_word: string; french_definition: string; root: string }[] = [];
   for (let i = 0; i < arabic.length; i++) {
     if (arabic[i] && french[i]) {
-      rows.push({
-        arabic_word: arabic[i],
-        french_definition: french[i],
-        root: root[i] ?? "",
-      });
+      rows.push({ arabic_word: arabic[i], french_definition: french[i], root: root[i] ?? "" });
     }
   }
   return rows;
@@ -33,9 +25,7 @@ function zipVocab(formData: FormData) {
 
 function zipGrammar(formData: FormData) {
   const title = formData.getAll("grammar_title").map((v) => String(v).trim());
-  const content = formData
-    .getAll("grammar_content")
-    .map((v) => String(v).trim());
+  const content = formData.getAll("grammar_content").map((v) => String(v).trim());
 
   const rows: { title: string; content: string }[] = [];
   for (let i = 0; i < title.length; i++) {
@@ -68,25 +58,39 @@ export async function submitSession(
   const advanceProgress = formData.get("advance_progress") === "on";
   const publicRecap = String(formData.get("public_recap") ?? "").trim() || null;
   const privateNote = String(formData.get("private_note") ?? "").trim() || null;
-  const homework =
-    String(formData.get("homework_instructions") ?? "").trim() || null;
+  const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
 
   const supabase = await createClient();
-  const { data: recordId, error } = await supabase.rpc(
-    "submit_session_record",
-    {
-      p_student_id: studentId,
-      p_session_date: sessionDate,
-      p_attendance: attendance,
-      p_lesson_id: lessonId ?? undefined,
-      p_advance_progress: advanceProgress,
-      p_public_recap: publicRecap ?? undefined,
-      p_private_note: privateNote ?? undefined,
-      p_homework_instructions: homework ?? undefined,
-      p_vocab: zipVocab(formData),
-      p_grammar: zipGrammar(formData),
-    },
-  );
+
+  // Upload support files to Storage
+  const rawFiles = formData.getAll("support_files");
+  const supportFiles: { path: string; name: string }[] = [];
+
+  for (const raw of rawFiles) {
+    if (!(raw instanceof File) || raw.size === 0) continue;
+    const ext = raw.name.split(".").pop() ?? "";
+    const storagePath = `${studentId}/${Date.now()}_${raw.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+    const { error: uploadError } = await supabase.storage
+      .from("session-files")
+      .upload(storagePath, raw, { contentType: raw.type || `application/${ext}` });
+    if (!uploadError) {
+      supportFiles.push({ path: storagePath, name: raw.name });
+    }
+  }
+
+  const { data: recordId, error } = await supabase.rpc("submit_session_record", {
+    p_student_id: studentId,
+    p_session_date: sessionDate,
+    p_attendance: attendance,
+    p_lesson_id: lessonId ?? undefined,
+    p_advance_progress: advanceProgress,
+    p_public_recap: publicRecap ?? undefined,
+    p_private_note: privateNote ?? undefined,
+    p_homework_instructions: homework ?? undefined,
+    p_vocab: zipVocab(formData),
+    p_grammar: zipGrammar(formData),
+    p_support_files: supportFiles,
+  });
 
   if (error || !recordId) {
     return { error: "Échec de l'enregistrement de la séance." };
