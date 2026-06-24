@@ -2,6 +2,66 @@
 
 ---
 
+## Session 16 — Refonte tunnel de vente, pricing & règles métier
+
+> **Statut : VALIDÉ PAR LE PROPRIÉTAIRE (2026-06-24) — en cours.**
+> Cette session REMPLACE plusieurs décisions de la Session 15 (essai payant→gratuit, mensuel 60€→heure 15€, invite-driven→self-serve via Revolut).
+
+### Décisions validées (propriétaire)
+- **Essai = GRATUIT** (déjà fait début de session). Obligatoire AVANT tout paiement.
+- **Pricing = 2 produits seulement** :
+  - **Abonnement annuel** = 4 séances de 1 h/mois (48 h/an), 4 niveaux dégressifs :
+    - 1 paiement : **624 €** (1×624) — 52 €/mois équiv.
+    - 2 paiements : **648 €** (2×324) — 54 €/mois
+    - 3 paiements : **672 €** (3×224) — 56 €/mois
+    - 12 paiements : **696 €** (12×58) — 58 €/mois
+  - **Heure à la carte** : **15 €/h**, sans engagement.
+  - → Le **mensuel 60 €** disparaît. La carte d'essai n'est PLUS affichée dans les tarifs.
+- **Cours de groupe (Produit B)** : RETIRÉ du vitrine (back-end conservé).
+- **Tunnel essai** : genre → créneau réel (calendrier 1 mois depuis `teacher_availability`) → fiche (prénom/nom/email/niveau) → le prof confirme le créneau. Anti-doublon : créneaux pris = grisés (verrou base).
+- **Code d'essai obligatoire** : à la confirmation/complétion de l'essai, code à usage unique généré + envoyé par email (Resend), à saisir avant de payer.
+- **Compte créé UNIQUEMENT au paiement Revolut confirmé** (webhook). Dédup par email (déjà client → rattacher, pas de doublon).
+- **Email** : Resend (clé branchée plus tard — TODO dans le code).
+- **Paiement** : lien de paiement Revolut (checkout hébergé) + webhook.
+- **Règles métier** : retard 5 min → **10 min** ; lien Zoom rejoignable dès **−10 min** ; absence justifiée/créneau impossible → report (`moved`). Seuil 3 absences injustifiées : à rediscuter (laissé tel quel pour l'instant).
+
+### Phase 0 — Vitrine (aucun blocage) ✅
+- [x] Hero `/` : titre « Cours d'arabe individuel en distanciel » ; retiré islamique + « enseignant dédié selon ton genre »
+- [x] Retiré le tiret dans « cours d'essai gratuit » (partout)
+- [x] Étapes : « Laisse tes informations et choisis un créneau. On te recontacte par mail pour confirmer »
+- [x] Retiré la carte Produit B de l'accueil (carte A centrée)
+- [x] Supprimé la page `/groupe` (back-end conservé ; aucun lien nav/footer ne pointait dessus)
+
+### Phase 1 — Pricing (2 cartes) ✅
+- [x] Réécrit `src/lib/pricing.ts` : `ANNUAL_PLANS` (1x 624 / 2x 648 / 3x 672 / 12x 696) + `HOURLY_PRICE` 15 €, mensuel retiré
+- [x] Migration `29_hourly_product` appliquée (DB) : `payment_plan += 'hourly'` ; `payment_product += 'individual_hour'` ; types régénérés
+- [x] `/offres` : 2 cartes **cliquables** (annuel / heure) → `/essai?offre=…`, sans carte d'essai, bandeau « essai obligatoire »
+- [x] 3 consommateurs corrigés (offres, payment-request-form, dashboard actions) + `PLAN_LABEL` teacher/élève + prix vitrine 55→52 €
+- [x] Build vert (32 routes)
+
+### Phase 2 — Tunnel d'essai multi-étapes
+- [ ] `/essai` : genre → calendrier 1 mois (créneaux libres depuis `teacher_availability`, RLS lecture anon) → fiche → envoi
+- [ ] Verrou anti-double-réservation (créneau choisi grisé)
+- [ ] Côté prof : carte d'essai dédiée (créneau + infos) + bouton « Confirmer le créneau »
+
+### Phase 3 — Code d'essai
+- [ ] Migration : table `trial_codes` (code haché, expiry, email, single-use) ou colonne sur `trial_requests`
+- [ ] À la confirmation : génération + envoi email Resend (TODO clé)
+- [ ] Vérification code ↔ email à l'entrée du paiement
+
+### Phase 4 — Tunnel paiement self-serve + Revolut
+- [ ] `/inscription` (ou équivalent) : genre → plan → code essai + email → infos → lien Revolut
+- [ ] Route webhook `src/app/api/revolut/webhook` : à `paid` → créer compte auth + fiche élève (service_role), dédup email
+- [ ] Email Resend de définition de mot de passe
+
+### Phase 5 — Règles métier mises à jour
+- [ ] Retard 5 → 10 min (`join-button.tsx` + règle serveur)
+- [ ] Lien Zoom dispo dès −10 min
+- [ ] Quota : heures à la carte vs 4/mois annuel (compteur consommé/payé)
+- [ ] Report `moved` sur absence justifiée / créneau impossible
+
+---
+
 ## Session 15 — Vitrine publique + Parcours d'inscription révisé
 
 > **Statut : PLAN ÉCRIT — en attente de validation du propriétaire.**

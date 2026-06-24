@@ -102,7 +102,8 @@ export default function CoursArabePage() {
         style={{ borderColor: "#E9E3D8" }}
       >
         <p style={{ color: "#4A463F", fontSize: 16 }}>
-          À partir de <strong style={{ color: "#1C1A17" }}>55 €/mois</strong> en abonnement annuel.
+          À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
+          ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
           Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
         </p>
         <Link

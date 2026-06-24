@@ -2,11 +2,9 @@
 
 import { useActionState } from "react";
 import { requestPayment } from "./actions";
-import { PLANS, MONTHLY_PRICE_EUROS } from "@/lib/pricing";
+import { ANNUAL_PLANS, HOURLY_PRICE_EUROS } from "@/lib/pricing";
 
-type Props = { trialCreditCents?: number };
-
-export function PaymentRequestForm({ trialCreditCents: _trialCreditCents }: Props) {
+export function PaymentRequestForm() {
   const [state, formAction, pending] = useActionState(requestPayment, {});
 
   if (state.success) {
@@ -42,15 +40,17 @@ export function PaymentRequestForm({ trialCreditCents: _trialCreditCents }: Prop
         <option value="" disabled>
           Choisir un plan…
         </option>
-        <option value="monthly">
-          Mensuel — {MONTHLY_PRICE_EUROS} €/mois (sans engagement)
-        </option>
-        {PLANS.filter((p) => p.key !== "monthly").map((plan) => (
-          <option key={plan.key} value={plan.key}>
-            Annuel {plan.installments}× — {plan.installmentAmount} €{plan.installments > 1 ? ` × ${plan.installments}` : ""}{" "}
-            ({plan.pricePerMonth} €/mois)
-          </option>
-        ))}
+        <optgroup label="Abonnement annuel (48 séances)">
+          {ANNUAL_PLANS.map((plan) => (
+            <option key={plan.key} value={plan.key}>
+              Annuel {plan.label} — {plan.installmentAmount} €
+              {plan.installments > 1 ? ` × ${plan.installments}` : ""} ({plan.total} €)
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="À la carte">
+          <option value="hourly">1 heure — {HOURLY_PRICE_EUROS} € (sans engagement)</option>
+        </optgroup>
       </select>
 
       <button
@@ -59,7 +59,7 @@ export function PaymentRequestForm({ trialCreditCents: _trialCreditCents }: Prop
         className="font-bold text-white disabled:opacity-50"
         style={{ height: 46, borderRadius: 13, background: "#0F9D6E", fontSize: 14, boxShadow: "0 8px 18px rgba(15,157,110,.30)" }}
       >
-        {pending ? "Envoi…" : "Demander un abonnement"}
+        {pending ? "Envoi…" : "Demander"}
       </button>
 
       <p style={{ fontSize: 12, color: "#8B857A", textAlign: "center" }}>

@@ -1,78 +1,52 @@
-// Source of truth for all plan pricing (in euros and cents)
-// Trial: 10€, deducted from first month's payment
+// Source de vérité unique des prix (euros + cents). Session 16.
+// Deux produits seulement :
+//   1. Abonnement annuel — 4 séances de 1 h/mois (48 h/an), payé en 1 / 2 / 3 / 12 fois (dégressif).
+//   2. Heure à la carte — 15 €, sans engagement.
+// L'essai est GRATUIT et obligatoire avant tout paiement.
 
-export const TRIAL_PRICE_EUROS = 0;
-export const TRIAL_PRICE_CENTS = 0;
+// ── Heure à la carte ─────────────────────────────────────────────────────────
+export const HOURLY_PRICE_EUROS = 15;
+export const HOURLY_PRICE_CENTS = 1500;
 
-// Monthly standalone (no commitment)
-export const MONTHLY_PRICE_EUROS = 60;
-export const MONTHLY_PRICE_CENTS = 6000;
+// ── Volume de séances ────────────────────────────────────────────────────────
+export const SESSIONS_PER_MONTH = 4; // 1 h/semaine
+export const SESSIONS_PER_YEAR = 48; // quota de l'abonnement annuel
 
-// Annual plans (paid in 1 / 2 / 3 installments)
-// Total annual = 660€ (55€/mo × 12)
-export const ANNUAL_TOTAL_CENTS = 66000;
+// Référence : payer 48 séances à l'unité = 720 €. Les formules annuelles sont moins chères.
+export const PAYG_YEAR_EQUIV_EUROS = HOURLY_PRICE_EUROS * SESSIONS_PER_YEAR; // 720 €
 
-export type PlanKey = "monthly" | "1x" | "2x" | "3x";
+// ── Abonnement annuel (dégressif : moins de versements = moins cher) ──────────
+export type AnnualPlanKey = "1x" | "2x" | "3x" | "12x";
+export type PlanKey = AnnualPlanKey | "hourly";
 
-export interface Plan {
-  key: PlanKey;
-  label: string;
-  pricePerMonth: number; // display only, euros
-  total: number;         // what the student actually pays (per installment × nb installments), euros
+export interface AnnualPlan {
+  key: AnnualPlanKey;
+  label: string; // « 1 paiement », « 2 paiements », …
+  total: number; // total payé sur l'année (euros)
   installments: number;
-  installmentAmount: number; // euros per payment
-  savings?: number;          // euros saved vs monthly over 12 months
+  installmentAmount: number; // euros par versement
+  pricePerMonth: number; // affichage = total / 12
+  savings: number; // euros économisés vs 48 × 15 €
 }
 
-// 12 months at 60€ = 720€. Annual plans save vs that.
-const MONTHLY_ANNUAL_EQUIV = MONTHLY_PRICE_EUROS * 12; // 720€
-
-export const PLANS: Plan[] = [
-  {
-    key: "monthly",
-    label: "Mensuel",
-    pricePerMonth: 60,
-    total: 60,
-    installments: 1,
-    installmentAmount: 60,
-  },
-  {
-    key: "1x",
-    label: "Annuel — 1 paiement",
-    pricePerMonth: 55,
-    total: 660,
-    installments: 1,
-    installmentAmount: 660,
-    savings: MONTHLY_ANNUAL_EQUIV - 660, // 60
-  },
-  {
-    key: "2x",
-    label: "Annuel — 2 paiements",
-    pricePerMonth: 55,
-    total: 660,
-    installments: 2,
-    installmentAmount: 330,
-    savings: MONTHLY_ANNUAL_EQUIV - 660, // 60
-  },
-  {
-    key: "3x",
-    label: "Annuel — 3 paiements",
-    pricePerMonth: 55,
-    total: 660,
-    installments: 3,
-    installmentAmount: 220,
-    savings: MONTHLY_ANNUAL_EQUIV - 660, // 60
-  },
+export const ANNUAL_PLANS: AnnualPlan[] = [
+  { key: "1x",  label: "1 paiement",   total: 624, installments: 1,  installmentAmount: 624, pricePerMonth: 52, savings: PAYG_YEAR_EQUIV_EUROS - 624 },
+  { key: "2x",  label: "2 paiements",  total: 648, installments: 2,  installmentAmount: 324, pricePerMonth: 54, savings: PAYG_YEAR_EQUIV_EUROS - 648 },
+  { key: "3x",  label: "3 paiements",  total: 672, installments: 3,  installmentAmount: 224, pricePerMonth: 56, savings: PAYG_YEAR_EQUIV_EUROS - 672 },
+  { key: "12x", label: "12 paiements", total: 696, installments: 12, installmentAmount: 58,  pricePerMonth: 58, savings: PAYG_YEAR_EQUIV_EUROS - 696 },
 ];
 
-export function getPlan(key: PlanKey): Plan {
-  const plan = PLANS.find((p) => p.key === key);
-  if (!plan) throw new Error(`Unknown plan: ${key}`);
+export function getAnnualPlan(key: AnnualPlanKey): AnnualPlan {
+  const plan = ANNUAL_PLANS.find((p) => p.key === key);
+  if (!plan) throw new Error(`Unknown annual plan: ${key}`);
   return plan;
 }
 
-// Amount of first installment after trial credit deduction (cents)
-export function firstInstallmentCents(plan: Plan, trialCreditCents: number): number {
-  const installmentCents = Math.round((plan.installmentAmount / plan.total) * plan.total * 100);
-  return Math.max(0, installmentCents - trialCreditCents);
+export function isAnnualPlanKey(key: string): key is AnnualPlanKey {
+  return ANNUAL_PLANS.some((p) => p.key === key);
+}
+
+// Montant (cents) du 1er versement à débiter pour un plan annuel.
+export function installmentCents(key: AnnualPlanKey): number {
+  return Math.round(getAnnualPlan(key).installmentAmount * 100);
 }

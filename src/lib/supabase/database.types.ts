@@ -1382,8 +1382,8 @@ export type Database = {
         | "payment_confirmed"
         | "homework_submitted"
         | "trial_request"
-      payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly"
-      payment_product: "individual_sub" | "book"
+      payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly" | "hourly"
+      payment_product: "individual_sub" | "book" | "individual_hour"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual" | "group"
       quiz_source: "glossary" | "book" | "grammar"
@@ -1545,8 +1545,8 @@ export const Constants = {
         "homework_submitted",
         "trial_request",
       ],
-      payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly"],
-      payment_product: ["individual_sub", "book"],
+      payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly", "hourly"],
+      payment_product: ["individual_sub", "book", "individual_hour"],
       payment_status: ["pending", "paid", "failed", "cancelled"],
       quiz_scope: ["individual", "group"],
       quiz_source: ["glossary", "book", "grammar"],

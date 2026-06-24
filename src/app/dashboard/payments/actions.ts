@@ -5,64 +5,47 @@ import { revalidatePath } from "next/cache";
 import { requireStudent } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { PLANS, MONTHLY_PRICE_CENTS } from "@/lib/pricing";
-import type { Database } from "@/lib/supabase/database.types";
+import { HOURLY_PRICE_CENTS, installmentCents, isAnnualPlanKey, type AnnualPlanKey } from "@/lib/pricing";
 
-type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
 type ActionState = { error?: string; success?: boolean };
-
-const VALID_PLANS: PaymentPlan[] = ["monthly", "1x", "2x", "3x"];
-
-function planAmountCents(plan: PaymentPlan): number {
-  if (plan === "monthly") return MONTHLY_PRICE_CENTS;
-  const p = PLANS.find((p) => p.key === plan);
-  if (!p) throw new Error(`Unknown plan: ${plan}`);
-  // Amount of first installment
-  return Math.round((p.installmentAmount * 100));
-}
 
 export async function requestPayment(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   const { studentId } = await requireStudent();
-  const plan = String(formData.get("plan") ?? "") as PaymentPlan;
+  const plan = String(formData.get("plan") ?? "");
 
-  if (!VALID_PLANS.includes(plan)) {
+  const isHourly = plan === "hourly";
+  if (!isHourly && !isAnnualPlanKey(plan)) {
     return { error: "Plan invalide." };
   }
 
   const admin = createAdminClient();
 
-  // Vérifier doublon
-  const { data: existing } = await admin
-    .from("payments")
-    .select("id, status")
-    .eq("student_id", studentId)
-    .eq("product", "individual_sub")
-    .in("status", ["pending", "paid"])
-    .maybeSingle();
+  // Abonnement annuel : un seul actif/en attente à la fois.
+  // Heure à la carte : achats multiples autorisés (pas de verrou doublon).
+  if (!isHourly) {
+    const { data: existing } = await admin
+      .from("payments")
+      .select("id, status")
+      .eq("student_id", studentId)
+      .eq("product", "individual_sub")
+      .in("status", ["pending", "paid"])
+      .maybeSingle();
 
-  if (existing?.status === "paid") return { error: "Tu as déjà un abonnement actif." };
-  if (existing?.status === "pending") return { error: "Une demande est déjà en attente de confirmation." };
+    if (existing?.status === "paid") return { error: "Tu as déjà un abonnement actif." };
+    if (existing?.status === "pending") return { error: "Une demande est déjà en attente de confirmation." };
+  }
 
-  // Lire le crédit essai de l'élève
-  const { data: student } = await admin
-    .from("students")
-    .select("trial_credit_cents")
-    .eq("id", studentId)
-    .maybeSingle();
-
-  const trialCreditCents = student?.trial_credit_cents ?? 0;
-  const amountCents = planAmountCents(plan);
+  const amountCents = isHourly ? HOURLY_PRICE_CENTS : installmentCents(plan as AnnualPlanKey);
 
   const { error } = await admin.from("payments").insert({
     student_id: studentId,
-    product: "individual_sub",
-    plan,
+    product: isHourly ? "individual_hour" : "individual_sub",
+    plan: isHourly ? "hourly" : plan,
     status: "pending",
     amount_cents: amountCents,
-    trial_credit_cents: trialCreditCents,
   });
 
   if (error) return { error: "Impossible de créer la demande." };

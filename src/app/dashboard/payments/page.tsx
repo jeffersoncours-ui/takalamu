@@ -10,7 +10,8 @@ const PLAN_LABEL: Record<PaymentPlan, string> = {
   "1x": "Annuel 1×",
   "2x": "Annuel 2×",
   "3x": "Annuel 3×",
-  "12x": "12× mensuel",
+  "12x": "Annuel 12×",
+  hourly: "Heure à la carte",
   monthly: "Mensuel",
   single: "Paiement unique",
 };
@@ -24,18 +25,11 @@ export default async function PaymentsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const [{ data: payments }, { data: student }] = await Promise.all([
-    supabase
-      .from("payments")
-      .select("id, product, plan, status, created_at, revolut_reference, amount_cents, trial_credit_cents")
-      .eq("student_id", studentId)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("students")
-      .select("trial_credit_cents")
-      .eq("id", studentId)
-      .maybeSingle(),
-  ]);
+  const { data: payments } = await supabase
+    .from("payments")
+    .select("id, product, plan, status, created_at, revolut_reference, amount_cents")
+    .eq("student_id", studentId)
+    .order("created_at", { ascending: false });
 
   const hasActiveSub = payments?.some(
     (p) => p.product === "individual_sub" && ["paid", "pending"].includes(p.status),
@@ -57,13 +51,13 @@ export default async function PaymentsPage() {
           style={{ background: "#fff", border: "1px solid #C8EBDB", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
         >
           <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
-            Demander un abonnement individuel
+            Demander un paiement
           </p>
           <p style={{ color: "#8B857A", fontSize: 12 }}>
-            Choisis ton plan, puis transmets la référence générée à ton enseignant pour
-            confirmer le paiement via Revolut.
+            Choisis un abonnement annuel ou une heure à la carte. Ton enseignant confirme
+            le paiement via Revolut.
           </p>
-          <PaymentRequestForm trialCreditCents={student?.trial_credit_cents ?? 0} />
+          <PaymentRequestForm />
         </section>
       )}
 

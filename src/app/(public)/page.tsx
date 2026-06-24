@@ -3,13 +3,13 @@ import Link from "next/link";
 const STEPS = [
   {
     n: "1",
-    title: "Réserve un cours d'essai",
-    body: "Remplis le formulaire en 2 minutes. On te contacte pour fixer le créneau.",
+    title: "Choisis ton créneau d'essai",
+    body: "Laisse tes informations et choisis un créneau. On te recontacte par mail pour confirmer.",
   },
   {
     n: "2",
     title: "Le cours d'essai (1 h)",
-    body: "En visio, avec ton enseignant. On évalue ton niveau et on définit ensemble tes objectifs.",
+    body: "En visio, en 1-à-1 avec ton enseignant. On évalue ton niveau et on définit ensemble tes objectifs.",
   },
   {
     n: "3",
@@ -38,13 +38,10 @@ export default function HomePage() {
             color: "#1C1A17",
           }}
         >
-          Cours d&apos;arabe individuels
-          <br />
-          &amp; étude de texte islamique
+          Cours d&apos;arabe individuel en distanciel
         </h1>
         <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
-          Cours personnalisés en visio avec un suivi pédagogique complet.
-          Enseignant dédié selon ton genre.
+          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet.
         </p>
         <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
           <Link
@@ -52,7 +49,7 @@ export default function HomePage() {
             className="rounded-full font-bold text-white"
             style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
-            Réserver mon cours d&apos;essai — gratuit
+            Réserver mon cours d&apos;essai gratuit
           </Link>
           <Link
             href="/cours-arabe"
@@ -103,7 +100,7 @@ export default function HomePage() {
         >
           Nos offres
         </h2>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="max-w-md mx-auto">
           {/* Produit A */}
           <div
             className="rounded-2xl p-7 flex flex-col gap-4"
@@ -131,7 +128,7 @@ export default function HomePage() {
             </ul>
             <div className="mt-auto pt-2">
               <p className="text-sm mb-3" style={{ color: "#8B857A" }}>
-                À partir de <strong style={{ color: "#1C1A17" }}>55 €/mois</strong>
+                À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> ou 15 €/heure
               </p>
               <Link
                 href="/cours-arabe"
@@ -140,42 +137,6 @@ export default function HomePage() {
               >
                 En savoir plus →
               </Link>
-            </div>
-          </div>
-
-          {/* Produit B */}
-          <div
-            className="rounded-2xl p-7 flex flex-col gap-4"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 20px rgba(28,26,23,.07)" }}
-          >
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#7B6EAF" }}>Groupe</p>
-              <h3
-                className="font-bold mb-2"
-                style={{ fontFamily: "var(--font-spectral)", fontSize: 20, color: "#1C1A17" }}
-              >
-                Étude de texte islamique
-              </h3>
-              <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6 }}>
-                Conférences en groupe liées à un ouvrage islamique. Série de séances, heures fixes,
-                paiement unique. Notes de cours partagées.
-              </p>
-            </div>
-            <ul className="space-y-2">
-              {["Format conférence (Zoom Webinaire)", "~15 séances par cycle/livre", "Notes de cours partagées", "Évaluations liées au livre"].map((item) => (
-                <li key={item} className="flex items-center gap-2 text-sm" style={{ color: "#4A463F" }}>
-                  <span style={{ color: "#7B6EAF" }}>✓</span> {item}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-2">
-              <p className="text-sm mb-3" style={{ color: "#8B857A" }}>Paiement unique · Prochain cycle bientôt</p>
-              <span
-                className="inline-block rounded-full font-semibold text-sm"
-                style={{ color: "#8B857A", padding: "9px 18px", border: "1.5px solid #D8D1C4" }}
-              >
-                Bientôt disponible
-              </span>
             </div>
           </div>
         </div>

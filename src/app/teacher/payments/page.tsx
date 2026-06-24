@@ -10,13 +10,15 @@ const PLAN_LABEL: Record<PaymentPlan, string> = {
   "1x": "Annuel 1×",
   "2x": "Annuel 2×",
   "3x": "Annuel 3×",
-  "12x": "12× mensuel",
+  "12x": "Annuel 12×",
+  hourly: "Heure à la carte",
   monthly: "Mensuel",
   single: "Paiement unique",
 };
 
 const PRODUCT_LABEL: Record<string, string> = {
   individual_sub: "Abonnement individuel",
+  individual_hour: "Heure à la carte",
   book: "Cours de groupe",
 };
 
