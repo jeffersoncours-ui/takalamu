@@ -7,10 +7,11 @@ import type { Database } from "@/lib/supabase/database.types";
 type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
 
 const PLAN_LABEL: Record<PaymentPlan, string> = {
-  "1x": "Paiement unique",
-  "2x": "2× (2 versements)",
-  "3x": "3× avec réduction",
+  "1x": "Annuel 1×",
+  "2x": "Annuel 2×",
+  "3x": "Annuel 3×",
   "12x": "12× mensuel",
+  monthly: "Mensuel",
   single: "Paiement unique",
 };
 
@@ -23,11 +24,18 @@ export default async function PaymentsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const { data: payments } = await supabase
-    .from("payments")
-    .select("id, product, plan, status, created_at, revolut_reference")
-    .eq("student_id", studentId)
-    .order("created_at", { ascending: false });
+  const [{ data: payments }, { data: student }] = await Promise.all([
+    supabase
+      .from("payments")
+      .select("id, product, plan, status, created_at, revolut_reference, amount_cents, trial_credit_cents")
+      .eq("student_id", studentId)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("students")
+      .select("trial_credit_cents")
+      .eq("id", studentId)
+      .maybeSingle(),
+  ]);
 
   const hasActiveSub = payments?.some(
     (p) => p.product === "individual_sub" && ["paid", "pending"].includes(p.status),
@@ -55,7 +63,7 @@ export default async function PaymentsPage() {
             Choisis ton plan, puis transmets la référence générée à ton enseignant pour
             confirmer le paiement via Revolut.
           </p>
-          <PaymentRequestForm />
+          <PaymentRequestForm trialCreditCents={student?.trial_credit_cents ?? 0} />
         </section>
       )}
 

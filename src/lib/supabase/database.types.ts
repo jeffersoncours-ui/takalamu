@@ -661,6 +661,7 @@ export type Database = {
       }
       payments: {
         Row: {
+          amount_cents: number | null
           created_at: string
           id: string
           period: string | null
@@ -669,9 +670,11 @@ export type Database = {
           revolut_reference: string | null
           status: Database["public"]["Enums"]["payment_status"]
           student_id: string
+          trial_credit_cents: number
           updated_at: string
         }
         Insert: {
+          amount_cents?: number | null
           created_at?: string
           id?: string
           period?: string | null
@@ -680,9 +683,11 @@ export type Database = {
           revolut_reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_id: string
+          trial_credit_cents?: number
           updated_at?: string
         }
         Update: {
+          amount_cents?: number | null
           created_at?: string
           id?: string
           period?: string | null
@@ -691,6 +696,7 @@ export type Database = {
           revolut_reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_id?: string
+          trial_credit_cents?: number
           updated_at?: string
         }
         Relationships: [
@@ -999,6 +1005,7 @@ export type Database = {
           profile_id: string
           status: Database["public"]["Enums"]["student_status"]
           teacher_id: string | null
+          trial_credit_cents: number
           unjustified_absences_count: number
           updated_at: string
         }
@@ -1010,6 +1017,7 @@ export type Database = {
           profile_id: string
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
+          trial_credit_cents?: number
           unjustified_absences_count?: number
           updated_at?: string
         }
@@ -1021,6 +1029,7 @@ export type Database = {
           profile_id?: string
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
+          trial_credit_cents?: number
           unjustified_absences_count?: number
           updated_at?: string
         }
@@ -1110,6 +1119,56 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trial_requests: {
+        Row: {
+          assigned_teacher_id: string | null
+          created_at: string
+          email: string
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+          last_name: string
+          message: string | null
+          status: Database["public"]["Enums"]["trial_status"]
+          trial_paid: boolean
+          updated_at: string
+        }
+        Insert: {
+          assigned_teacher_id?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          last_name: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["trial_status"]
+          trial_paid?: boolean
+          updated_at?: string
+        }
+        Update: {
+          assigned_teacher_id?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          last_name?: string
+          message?: string | null
+          status?: Database["public"]["Enums"]["trial_status"]
+          trial_paid?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_requests_assigned_teacher_id_fkey"
+            columns: ["assigned_teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -1247,41 +1306,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_payment: { Args: { p_payment_id: string }; Returns: undefined }
+      confirm_payment: { Args: { p_payment_id: string }; Returns: undefined }
       generate_individual_quiz: {
-        Args: {
-          p_student_id: string
-          p_lesson_id?: string
-          p_size?: number
-        }
+        Args: { p_lesson_id?: string; p_size?: number; p_student_id: string }
         Returns: Json
       }
-      submit_individual_quiz: {
-        Args: {
-          p_student_id: string
-          p_answers: Json
-        }
-        Returns: Json
-      }
-      get_grammar_quiz_questions: {
-        Args: { p_quiz_id: string }
-        Returns: Json
-      }
-      submit_grammar_quiz: {
-        Args: {
-          p_student_id: string
-          p_quiz_id: string
-          p_answers: Json
-        }
-        Returns: Json
-      }
-      cancel_payment: {
-        Args: { p_payment_id: string }
-        Returns: undefined
-      }
-      confirm_payment: {
-        Args: { p_payment_id: string }
-        Returns: undefined
-      }
+      get_grammar_quiz_questions: { Args: { p_quiz_id: string }; Returns: Json }
       get_teacher_booked_slots: {
         Args: { p_from?: string; p_teacher_id: string }
         Returns: {
@@ -1290,19 +1321,28 @@ export type Database = {
         }[]
       }
       insert_notification: {
+        Args: { p_payload: Json; p_type: string; p_user_id: string }
+        Returns: undefined
+      }
+      notify_teachers_by_gender: {
         Args: {
-          p_user_id: string
+          p_gender: Database["public"]["Enums"]["gender_type"]
+          p_payload?: Json
           p_type: Database["public"]["Enums"]["notification_type"]
-          p_payload: Json
         }
         Returns: undefined
       }
+      submit_grammar_quiz: {
+        Args: { p_answers: Json; p_quiz_id: string; p_student_id: string }
+        Returns: Json
+      }
       submit_homework: {
-        Args: {
-          p_homework_id: string
-          p_submission_file: string
-        }
+        Args: { p_homework_id: string; p_submission_file: string }
         Returns: undefined
+      }
+      submit_individual_quiz: {
+        Args: { p_answers: Json; p_student_id: string }
+        Returns: Json
       }
       submit_session_record: {
         Args: {
@@ -1315,8 +1355,8 @@ export type Database = {
           p_public_recap?: string
           p_session_date: string
           p_student_id: string
-          p_vocab?: Json
           p_support_files?: Json
+          p_vocab?: Json
         }
         Returns: string
       }
@@ -1341,12 +1381,19 @@ export type Database = {
         | "payment_requested"
         | "payment_confirmed"
         | "homework_submitted"
-      payment_plan: "1x" | "2x" | "3x" | "12x" | "single"
+        | "trial_request"
+      payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly"
       payment_product: "individual_sub" | "book"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual" | "group"
       quiz_source: "glossary" | "book" | "grammar"
       student_status: "active" | "suspended_payment" | "suspended_absences"
+      trial_status:
+        | "pending"
+        | "contacted"
+        | "completed"
+        | "converted"
+        | "declined"
       user_role: "admin" | "teacher" | "student"
       video_type: "welcome" | "milestone"
     }
@@ -1492,13 +1539,25 @@ export const Constants = {
         "homework_due",
         "eval_due",
         "video_assigned",
+        "homework_corrected",
+        "payment_requested",
+        "payment_confirmed",
+        "homework_submitted",
+        "trial_request",
       ],
-      payment_plan: ["1x", "2x", "3x", "12x", "single"],
+      payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly"],
       payment_product: ["individual_sub", "book"],
       payment_status: ["pending", "paid", "failed", "cancelled"],
       quiz_scope: ["individual", "group"],
-      quiz_source: ["glossary", "book"],
+      quiz_source: ["glossary", "book", "grammar"],
       student_status: ["active", "suspended_payment", "suspended_absences"],
+      trial_status: [
+        "pending",
+        "contacted",
+        "completed",
+        "converted",
+        "declined",
+      ],
       user_role: ["admin", "teacher", "student"],
       video_type: ["welcome", "milestone"],
     },

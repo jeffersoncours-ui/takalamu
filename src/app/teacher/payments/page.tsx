@@ -7,11 +7,12 @@ import type { Database } from "@/lib/supabase/database.types";
 type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
 
 const PLAN_LABEL: Record<PaymentPlan, string> = {
-  "1x": "1×",
-  "2x": "2×",
-  "3x": "3×",
-  "12x": "12×",
-  single: "Unique",
+  "1x": "Annuel 1×",
+  "2x": "Annuel 2×",
+  "3x": "Annuel 3×",
+  "12x": "12× mensuel",
+  monthly: "Mensuel",
+  single: "Paiement unique",
 };
 
 const PRODUCT_LABEL: Record<string, string> = {

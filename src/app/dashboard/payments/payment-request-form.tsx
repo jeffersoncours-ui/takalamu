@@ -2,8 +2,11 @@
 
 import { useActionState } from "react";
 import { requestPayment } from "./actions";
+import { PLANS, MONTHLY_PRICE_EUROS, TRIAL_PRICE_EUROS } from "@/lib/pricing";
 
-export function PaymentRequestForm() {
+type Props = { trialCreditCents: number };
+
+export function PaymentRequestForm({ trialCreditCents }: Props) {
   const [state, formAction, pending] = useActionState(requestPayment, {});
 
   if (state.success) {
@@ -17,9 +20,22 @@ export function PaymentRequestForm() {
     );
   }
 
+  const hasCredit = trialCreditCents > 0;
+  const creditEuros = trialCreditCents / 100;
+
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      {hasCredit && (
+        <div
+          className="rounded-[14px] px-4 py-3 text-sm"
+          style={{ background: "#E8F7F1", border: "1px solid #C8EBDB", color: "#065F46" }}
+        >
+          ✓ Crédit essai de {creditEuros} € déduit de ton premier paiement.
+        </div>
+      )}
+
       {state.error && <p style={{ color: "#B4292E", fontSize: 13 }}>{state.error}</p>}
+
       <select
         name="plan"
         required
@@ -38,11 +54,17 @@ export function PaymentRequestForm() {
         <option value="" disabled>
           Choisir un plan…
         </option>
-        <option value="1x">Paiement unique</option>
-        <option value="2x">2 versements</option>
-        <option value="3x">3 versements (réduction)</option>
-        <option value="12x">12× mensuel</option>
+        <option value="monthly">
+          Mensuel — {MONTHLY_PRICE_EUROS} €/mois (sans engagement)
+        </option>
+        {PLANS.filter((p) => p.key !== "monthly").map((plan) => (
+          <option key={plan.key} value={plan.key}>
+            Annuel {plan.installments}× — {plan.installmentAmount} €{plan.installments > 1 ? ` × ${plan.installments}` : ""}{" "}
+            ({plan.pricePerMonth} €/mois)
+          </option>
+        ))}
       </select>
+
       <button
         type="submit"
         disabled={pending}
@@ -51,6 +73,10 @@ export function PaymentRequestForm() {
       >
         {pending ? "Envoi…" : "Demander un abonnement"}
       </button>
+
+      <p style={{ fontSize: 12, color: "#8B857A", textAlign: "center" }}>
+        Cours d&apos;essai {TRIAL_PRICE_EUROS} € · déduit du premier paiement
+      </p>
     </form>
   );
 }

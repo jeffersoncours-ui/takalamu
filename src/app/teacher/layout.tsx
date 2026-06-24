@@ -11,12 +11,18 @@ export default async function TeacherLayout({
 }) {
   const { profile, userId } = await requireTeacher();
   const supabase = await createClient();
-  const { data: notifs } = await supabase
-    .from("notifications")
-    .select("id, type, payload, read, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const [{ data: notifs }, { count: pendingTrials }] = await Promise.all([
+    supabase
+      .from("notifications")
+      .select("id, type, payload, read, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("trial_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+  ]);
 
   return (
     <div className="flex min-h-full flex-1 flex-col" style={{ background: "#F7F4EE" }}>
@@ -29,6 +35,7 @@ export default async function TeacherLayout({
             profileName={profile?.full_name ?? "Enseignant"}
             signOutAction={signOut}
             isAdmin={profile?.role === "admin"}
+            pendingTrials={pendingTrials ?? 0}
           />
           <div className="ml-auto">
             <NotifBell userId={userId} initialNotifs={notifs ?? []} />

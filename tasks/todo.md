@@ -2,6 +2,76 @@
 
 ---
 
+## Session 15 — Vitrine publique + Parcours d'inscription révisé
+
+> **Statut : PLAN ÉCRIT — en attente de validation du propriétaire.**
+> Décisions propriétaire (2026-06-24) :
+> - Modèle **B** (essai d'abord, puis self-service paiement). Pas d'achat direct anonyme pour le Produit A.
+> - **Produit B (groupe)** : la page est CODÉE mais NON liée dans la nav publique — activée plus tard à la demande.
+> - **Paiement = Revolut**, mais l'**intégration réelle (checkout/webhook) est différée**. Pour l'instant : demande de plan → `pending` → l'enseignant confirme manuellement (déjà construit).
+> - **Essai = payant, prix unique 10 €, déduit du 1er mois.**
+> - **Grille tarifaire validée** (montants à confirmer par le propriétaire au moment de coder) :
+>   - Mensuel sans engagement : **60 €/mois** (4 séances)
+>   - Annuel payé ×12 : **55 €/mois** (−8 %)
+>   - Annuel payé ×3 : **52 €/mois** équiv. (−13 %)
+>   - Annuel payé ×2 : **50 €/mois** équiv. (−17 %)
+>   - Annuel payé ×1 (comptant) : **576 €/an** (−20 %)
+
+### Phase 0 — Modèle de données (migrations + RLS, testées MCP) ✅
+- [x] Migration `26_trial_requests` : table `trial_requests`, RLS anon INSERT / teacher genre / admin all / student 0.
+- [x] Migration `27_pricing` : `payment_plan += 'monthly'` ; `payments.amount_cents` + `payments.trial_credit_cents` ; `students.trial_credit_cents`.
+- [x] Migration `28_public_read_teachers` : policy publique SELECT sur `teachers` pour la vitrine.
+- [x] `src/lib/pricing.ts` : source de vérité unique des plans + prix.
+- [x] `database.types.ts` régénéré.
+
+### Phase 1 — Vitrine publique ✅
+- [x] Layout public `src/app/(public)/layout.tsx` : header responsive + footer.
+- [x] `/` Accueil refait : hero, 3 étapes, offres A+B, CTA essai.
+- [x] `/cours-arabe` : Produit A détaillé + CTA essai.
+- [x] `/enseignants` : depuis `teachers` table (genre-based, public read).
+- [x] `/offres` : grille tarifaire complète depuis `pricing.ts`.
+- [x] `/essai` : formulaire `requestTrial` + confirmation.
+- [x] `/groupe` : codée, NON liée dans la nav.
+
+### Phase 2 — Parcours d'inscription (onboarding backend) ✅
+- [x] Server action `requestTrial` (anon) : INSERT + RPC `notify_teachers_by_gender`.
+- [x] Page `/teacher/trials` : liste filtrée par genre, pending en premier.
+- [x] `TrialCard` client component : transition de statut + bouton "Inviter".
+- [x] Server action `inviteStudent` : `inviteUserByEmail` + INSERT `students` (teacher_id, gender, trial_credit_cents) + mark `converted`.
+- [x] Badge "Essais" dans `DrawerNav` (count pending depuis `teacher/layout.tsx`).
+
+### Phase 3 — Paiement révisé ✅
+- [x] `PaymentRequestForm` refactorisée : Mensuel / Annuel ×1/×2/×3 depuis `pricing.ts`, crédit essai affiché.
+- [x] `requestPayment` : snapshots `amount_cents` + `trial_credit_cents`.
+- [x] `/teacher/payments` : libellé `monthly` ajouté.
+
+### Phase 4 — Build ✅
+- [x] `npm run build` vert (33 routes, 0 erreur TypeScript).
+
+### Différé (hors session, noté explicitement)
+- Intégration Revolut Checkout/webhook (paiement auto, confirmation par webhook).
+- Vidéos Bunny Stream (welcome + milestone).
+- Mise en avant du Produit B sur la vitrine (à la demande du propriétaire).
+- Reset `students.trial_credit_cents = 0` après première confirmation de paiement (dans `confirm_payment` RPC ou trigger).
+
+---
+
+### Review Session 15
+
+**Réalisé :**
+- Vitrine complète 6 pages dans le route group `(public)` : `/`, `/cours-arabe`, `/enseignants`, `/offres`, `/essai`, `/groupe`.
+- Parcours d'essai de bout en bout : prospect soumet `/essai` → RLS anon INSERT → notify teacher genre → teacher voit `/teacher/trials` → marque statuts → invite l'élève → compte créé avec `trial_credit_cents`.
+- 3 migrations appliquées (26, 27, 28) + types régénérés.
+- `pricing.ts` = source unique pour toutes les pages et actions.
+- Build vert, 33 routes.
+
+### Différé (hors session, noté explicitement)
+- Intégration Revolut Checkout/webhook (paiement auto, confirmation par webhook). Pour l'instant confirmation manuelle.
+- Vidéos Bunny Stream (welcome + milestone).
+- Mise en avant du Produit B sur la vitrine (à la demande du propriétaire).
+
+---
+
 ## Session 14 — Audio assets leçons
 
 ### Plan ✅

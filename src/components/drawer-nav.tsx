@@ -9,6 +9,7 @@ type NavItem = {
   label: string;
   icon: React.ReactNode;
   adminOnly?: boolean;
+  badge?: number;
 };
 
 const NAV_ITEMS: NavItem[] = [
@@ -19,6 +20,17 @@ const NAV_ITEMS: NavItem[] = [
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    ),
+  },
+  {
+    href: "/teacher/trials",
+    label: "Essais",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="8.5" cy="7" r="4" />
+        <polyline points="17 11 19 13 23 9" />
       </svg>
     ),
   },
@@ -141,9 +153,10 @@ type Props = {
   profileName: string;
   signOutAction: () => Promise<void>;
   isAdmin?: boolean;
+  pendingTrials?: number;
 };
 
-export function DrawerNav({ profileName, signOutAction, isAdmin = false }: Props) {
+export function DrawerNav({ profileName, signOutAction, isAdmin = false, pendingTrials = 0 }: Props) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -261,6 +274,14 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false }: Props
                   >
                     <span style={{ color: active ? "#FFFFFF" : "#9FE3C8" }}>{item.icon}</span>
                     <span className="text-sm font-medium">{item.label}</span>
+                    {item.href === "/teacher/trials" && pendingTrials > 0 && (
+                      <span
+                        className="ml-auto rounded-full font-bold text-white"
+                        style={{ background: "#E05E5E", fontSize: 10, padding: "1px 7px", minWidth: 18, textAlign: "center" }}
+                      >
+                        {pendingTrials}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );

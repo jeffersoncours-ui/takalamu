@@ -1,5 +1,25 @@
 # Lessons
 
+## Session 15 (2026-06-24) — Vitrine publique + parcours d'essai + paiement révisé
+
+### Décisions
+
+- **Route group `(public)` sans impact URL** : `src/app/(public)/page.tsx` sert bien `/`. Mais `src/app/page.tsx` (ancienne home) DOIT être supprimé — Next.js App Router interdit deux `page.tsx` au même segment, même avec route group. Supprimer l'ancien fichier avant de créer le nouveau.
+- **`notify_teachers_by_gender` (RPC SECURITY DEFINER GRANT TO anon)** : permet à une server action publique d'alerter les enseignants du bon genre sans `createAdminClient()`. Pattern : INSERT table (RLS anon allowed) + RPC SECURITY DEFINER pour traverser la barrière RLS en écriture.
+- **Migration 28 séparée pour `teachers_public_select`** : politique de lecture publique sur `teachers` nécessaire pour la page `/enseignants` (vitrine). À ajouter dès qu'on crée des pages publiques qui lisent des tables par défaut deny.
+- **`pricing.ts` comme source unique** : tous les libellés, montants et calculs passent par `src/lib/pricing.ts`. Évite la duplication entre la vitrine, le formulaire élève, et les server actions. Les types (`PlanKey`, `Plan`) sont définis ici, pas dans les types Supabase.
+- **Badge de count dans `DrawerNav`** : la prop `pendingTrials?: number` est fournie par le layout serveur (qui fait le `.count` Supabase). Le composant client `DrawerNav` ne fait que l'afficher conditionnellement sur l'item `/teacher/trials`. Pattern : count serveur → prop → composant client.
+- **`inviteStudent` = pattern identique à `inviteTeacher`** : `inviteUserByEmail(role='student', full_name, gender)` → trigger `handle_new_user` crée le profil → on INSERT manuellement la ligne `students` (teacher_id, gender, trial_credit_cents). TOUJOURS vérifier `SUPABASE_SERVICE_ROLE_KEY` en amont.
+- **`essai/page.tsx` en "use client"** : le formulaire `/essai` utilise `useActionState` (état React), donc "use client". Impossible d'exporter `metadata` depuis un composant client. La metadata SEO est portée par le layout parent. Pas de problème à ne pas avoir de metadata sur cette page spécifique.
+
+### Pièges
+
+- **`npm run build` échoue si `next` n'est pas installé** → `npm install` d'abord. En environnement remote (CI/container), les `node_modules` peuvent être absents même si `package.json` est là.
+- **`Record<PaymentPlan, string>` exhaustif** : dès qu'un nouveau membre est ajouté à l'enum `payment_plan` (ex. `monthly`), TOUTES les pages qui utilisent un `Record<PaymentPlan, string>` doivent être mises à jour. Chercher toutes occurrences de `Record<PaymentPlan` pour ne pas en rater.
+- **`useActionState` nécessite "use client"** mais `requestTrial` (server action) reste dans `actions.ts` séparé. La page est client, l'action est serveur. Pattern correct — ne pas mettre "use server" dans le composant client, l'import suffit.
+
+---
+
 ## Session 14 (2026-06-24) — Audio assets leçons
 
 ### Décisions
