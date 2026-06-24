@@ -26,11 +26,18 @@ export async function updateTrialStatus(
   trialId: string,
   status: TrialStatus,
 ): Promise<ActionState> {
-  await requireTeacher();
+  const { userId } = await requireTeacher();
   const supabase = await createClient();
 
-  // Quand l'essai est marqué "completed", générer et envoyer le code d'accès
+  // Quand l'essai est marqué "completed", générer + envoyer le code d'accès
   if (status === "completed") {
+    // Récupérer le teacher_id pour l'assigner sur la demande
+    const { data: teacher } = await supabase
+      .from("teachers")
+      .select("id")
+      .eq("profile_id", userId)
+      .maybeSingle();
+
     const { data: trial } = await supabase
       .from("trial_requests")
       .select("first_name, email, scheduled_at, trial_code")
@@ -45,7 +52,12 @@ export async function updateTrialStatus(
 
       const { error: updateErr } = await supabase
         .from("trial_requests")
-        .update({ status, trial_code: code, trial_code_expires_at: expiresAt })
+        .update({
+          status,
+          trial_code: code,
+          trial_code_expires_at: expiresAt,
+          assigned_teacher_id: teacher?.id ?? null,
+        })
         .eq("id", trialId);
 
       if (updateErr) return { error: "Impossible de confirmer l'essai." };

@@ -1126,6 +1126,8 @@ export type Database = {
       trial_requests: {
         Row: {
           assigned_teacher_id: string | null
+          chosen_plan: string | null
+          chosen_product: string | null
           created_at: string
           email: string
           first_name: string
@@ -1134,6 +1136,7 @@ export type Database = {
           last_name: string
           level: string | null
           message: string | null
+          revolut_order_id: string | null
           scheduled_at: string | null
           status: Database["public"]["Enums"]["trial_status"]
           trial_code: string | null
@@ -1144,6 +1147,8 @@ export type Database = {
         }
         Insert: {
           assigned_teacher_id?: string | null
+          chosen_plan?: string | null
+          chosen_product?: string | null
           created_at?: string
           email: string
           first_name: string
@@ -1152,6 +1157,7 @@ export type Database = {
           last_name: string
           level?: string | null
           message?: string | null
+          revolut_order_id?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_code?: string | null
@@ -1162,6 +1168,8 @@ export type Database = {
         }
         Update: {
           assigned_teacher_id?: string | null
+          chosen_plan?: string | null
+          chosen_product?: string | null
           created_at?: string
           email?: string
           first_name?: string
@@ -1170,6 +1178,7 @@ export type Database = {
           last_name?: string
           level?: string | null
           message?: string | null
+          revolut_order_id?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_code?: string | null
