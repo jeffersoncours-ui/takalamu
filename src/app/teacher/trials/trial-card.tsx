@@ -80,6 +80,34 @@ export function TrialCard({ trial }: { trial: Trial }) {
             )}
           </div>
           <p className="text-sm" style={{ color: "#8B857A" }}>{trial.email}</p>
+          {trial.level && (
+            <p className="text-xs mt-1 font-medium" style={{ color: "#6B6460" }}>
+              Niveau : {trial.level}
+            </p>
+          )}
+          {trial.scheduled_at && (
+            <div
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 mt-2"
+              style={{ background: "#E8F7F1" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="text-xs font-semibold" style={{ color: "#065F46" }}>
+                {new Date(trial.scheduled_at).toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "Europe/Paris",
+                })}
+              </span>
+            </div>
+          )}
           {trial.message && (
             <p className="text-sm mt-2" style={{ color: "#4A463F", lineHeight: 1.5 }}>
               {trial.message}

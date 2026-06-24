@@ -1132,7 +1132,9 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"]
           id: string
           last_name: string
+          level: string | null
           message: string | null
+          scheduled_at: string | null
           status: Database["public"]["Enums"]["trial_status"]
           trial_paid: boolean
           updated_at: string
@@ -1145,7 +1147,9 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"]
           id?: string
           last_name: string
+          level?: string | null
           message?: string | null
+          scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_paid?: boolean
           updated_at?: string
@@ -1158,7 +1162,9 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"]
           id?: string
           last_name?: string
+          level?: string | null
           message?: string | null
+          scheduled_at?: string | null
           status?: Database["public"]["Enums"]["trial_status"]
           trial_paid?: boolean
           updated_at?: string
@@ -1313,12 +1319,20 @@ export type Database = {
         Returns: Json
       }
       get_grammar_quiz_questions: { Args: { p_quiz_id: string }; Returns: Json }
+      get_teacher_availability_by_gender: {
+        Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
+        Returns: { day_of_week: number; start_time: string; end_time: string }[]
+      }
       get_teacher_booked_slots: {
         Args: { p_from?: string; p_teacher_id: string }
         Returns: {
           scheduled_at: string
           status: string
         }[]
+      }
+      get_trial_taken_slots: {
+        Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
+        Returns: { slot_at: string }[]
       }
       insert_notification: {
         Args: { p_payload: Json; p_type: string; p_user_id: string }

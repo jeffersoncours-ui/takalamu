@@ -4,10 +4,42 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
 type Gender = Database["public"]["Enums"]["gender_type"];
-type ActionState = { error?: string; success?: boolean };
+export type ActionState = { error?: string; success?: boolean };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export type AvailabilityRule = {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+};
+
+export type SlotData = {
+  availability: AvailabilityRule[];
+  takenSlots: string[];
+  error?: string;
+};
+
+/** Récupère les règles de dispo + créneaux pris pour un genre — appelable par anon. */
+export async function fetchTrialSlots(gender: Gender): Promise<SlotData> {
+  const supabase = await createClient();
+
+  const [availRes, takenRes] = await Promise.all([
+    supabase.rpc("get_teacher_availability_by_gender", { p_gender: gender }),
+    supabase.rpc("get_trial_taken_slots", { p_gender: gender }),
+  ]);
+
+  if (availRes.error) {
+    return { availability: [], takenSlots: [], error: "Impossible de charger les créneaux." };
+  }
+
+  return {
+    availability: (availRes.data ?? []) as AvailabilityRule[],
+    takenSlots: ((takenRes.data ?? []) as Array<{ slot_at: string }>).map((r) => r.slot_at),
+  };
+}
+
+/** Soumet une demande d'essai avec le créneau choisi. */
 export async function requestTrial(
   _prev: ActionState,
   formData: FormData,
@@ -16,14 +48,39 @@ export async function requestTrial(
   const lastName = String(formData.get("last_name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const gender = String(formData.get("gender") ?? "") as Gender;
+  const level = String(formData.get("level") ?? "").trim() || null;
   const message = String(formData.get("message") ?? "").trim() || null;
+  const scheduledAtStr = String(formData.get("scheduled_at") ?? "").trim();
 
   if (!firstName) return { error: "Le prénom est requis." };
   if (!lastName) return { error: "Le nom est requis." };
   if (!EMAIL_RE.test(email)) return { error: "Adresse e-mail invalide." };
   if (gender !== "m" && gender !== "f") return { error: "Merci d'indiquer ton genre." };
 
+  // scheduled_at est optionnel (si aucun créneau dispo, on envoie sans)
+  let scheduledAt: string | null = null;
+  if (scheduledAtStr) {
+    const d = new Date(scheduledAtStr);
+    if (isNaN(d.getTime())) return { error: "Créneau invalide." };
+    scheduledAt = d.toISOString();
+  }
+
   const supabase = await createClient();
+
+  // Anti-double-booking : vérifier que le créneau n'est pas déjà pris
+  if (scheduledAt) {
+    const { data: existing } = await supabase
+      .from("trial_requests")
+      .select("id")
+      .eq("gender", gender)
+      .eq("scheduled_at", scheduledAt)
+      .neq("status", "declined")
+      .maybeSingle();
+
+    if (existing) {
+      return { error: "Ce créneau vient d'être réservé. Merci d'en choisir un autre." };
+    }
+  }
 
   const { error: insertError } = await supabase.from("trial_requests").insert({
     first_name: firstName,
@@ -31,13 +88,14 @@ export async function requestTrial(
     email,
     gender,
     message,
+    level,
+    scheduled_at: scheduledAt,
   });
 
   if (insertError) {
     return { error: "Une erreur est survenue. Merci de réessayer." };
   }
 
-  // Notifier l'enseignant du bon genre (RPC SECURITY DEFINER, accessible par anon)
   await supabase.rpc("notify_teachers_by_gender", {
     p_gender: gender,
     p_type: "trial_request",
