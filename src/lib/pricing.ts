@@ -1,8 +1,8 @@
 // Source of truth for all plan pricing (in euros and cents)
 // Trial: 10€, deducted from first month's payment
 
-export const TRIAL_PRICE_EUROS = 10;
-export const TRIAL_PRICE_CENTS = 1000;
+export const TRIAL_PRICE_EUROS = 0;
+export const TRIAL_PRICE_CENTS = 0;
 
 // Monthly standalone (no commitment)
 export const MONTHLY_PRICE_EUROS = 60;

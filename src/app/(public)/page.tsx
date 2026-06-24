@@ -14,7 +14,7 @@ const STEPS = [
   {
     n: "3",
     title: "Tu choisis ton abonnement",
-    body: "Si tu veux continuer, tu sélectionnes une offre. Les 10 € de l'essai sont déduits de ton premier paiement.",
+    body: "Si tu veux continuer, tu sélectionnes une offre. Aucun engagement avant l'essai.",
   },
 ];
 
@@ -52,7 +52,7 @@ export default function HomePage() {
             className="rounded-full font-bold text-white"
             style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
-            Réserver mon cours d&apos;essai — 10 €
+            Réserver mon cours d&apos;essai — gratuit
           </Link>
           <Link
             href="/cours-arabe"
@@ -193,14 +193,14 @@ export default function HomePage() {
           Prêt(e) à commencer ?
         </h2>
         <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
-          Le cours d&apos;essai dure 1 heure. Les 10 € sont déduits de ton premier mois.
+          Le cours d&apos;essai dure 1 heure. Gratuit, sans engagement.
         </p>
         <Link
           href="/essai"
           className="rounded-full font-bold text-white inline-block"
           style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
         >
-          Réserver mon cours d&apos;essai
+          Réserver mon cours d&apos;essai gratuit
         </Link>
       </section>
     </div>

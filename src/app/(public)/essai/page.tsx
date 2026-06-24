@@ -49,7 +49,7 @@ export default function EssaiPage() {
             className="font-bold uppercase mb-3"
             style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
           >
-            Cours d&apos;essai · 10 €
+            Cours d&apos;essai · Gratuit
           </p>
           <h1
             className="leading-tight mb-3"
@@ -58,8 +58,8 @@ export default function EssaiPage() {
             Réserve ton cours d&apos;essai
           </h1>
           <p style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6 }}>
-            1 heure en visio avec ton enseignant. On te contacte pour fixer le créneau.
-            Les 10 € sont déduits de ton premier mois si tu t&apos;inscris.
+            1 heure en visio avec ton enseignant. Gratuit, sans engagement.
+            On te contacte pour fixer le créneau.
           </p>
         </div>
 

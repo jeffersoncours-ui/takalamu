@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { TRIAL_PRICE_CENTS } from "@/lib/pricing";
 import type { Database } from "@/lib/supabase/database.types";
 
 type TrialStatus = Database["public"]["Enums"]["trial_status"];
@@ -82,7 +81,7 @@ export async function inviteStudent(trialRequestId: string): Promise<ActionState
     profile_id: data.user.id,
     teacher_id: teacher.id,
     gender: req.gender,
-    trial_credit_cents: req.trial_paid ? TRIAL_PRICE_CENTS : 0,
+    trial_credit_cents: 0,
   });
 
   if (studentError) {

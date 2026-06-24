@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PLANS, TRIAL_PRICE_EUROS, MONTHLY_PRICE_EUROS } from "@/lib/pricing";
+import { PLANS, MONTHLY_PRICE_EUROS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Tarifs — Takalamu",
-  description: "Cours d'arabe individuel : mensuel 60 €/mois ou abonnement annuel à partir de 55 €/mois. Cours d'essai 10 €.",
+  description: "Cours d'arabe individuel : mensuel 60 €/mois ou abonnement annuel à partir de 55 €/mois. Cours d'essai gratuit.",
 };
 
 export default function OffresPage() {
@@ -25,8 +25,7 @@ export default function OffresPage() {
           Des offres simples et transparentes
         </h1>
         <p style={{ color: "#4A463F", fontSize: 16, lineHeight: 1.65, maxWidth: 480, margin: "0 auto" }}>
-          Un cours d&apos;essai de 1 h à {TRIAL_PRICE_EUROS} €, puis un abonnement mensuel ou annuel.
-          Les {TRIAL_PRICE_EUROS} € sont déduits de ton premier paiement.
+          Commence par un cours d&apos;essai gratuit d&apos;1 heure. Tu choisis ensuite ton abonnement, sans engagement.
         </p>
       </section>
 
@@ -48,14 +47,14 @@ export default function OffresPage() {
             </h3>
             <p style={{ color: "#4A463F", fontSize: 14 }}>
               1 heure en visio avec ton enseignant. Évaluation du niveau, découverte de la méthode.
-              Déduit de ton premier paiement si tu t&apos;inscris.
+              Sans engagement.
             </p>
           </div>
           <div className="text-right shrink-0">
             <p className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 26, color: "#0F9D6E" }}>
-              {TRIAL_PRICE_EUROS} €
+              Gratuit
             </p>
-            <p className="text-xs" style={{ color: "#6B6560" }}>unique</p>
+            <p className="text-xs" style={{ color: "#6B6560" }}>1 heure</p>
           </div>
         </div>
       </section>
@@ -142,7 +141,6 @@ export default function OffresPage() {
 
         <p className="mt-6 text-sm text-center" style={{ color: "#8B857A" }}>
           Toutes les offres incluent 4 séances d&apos;1 h par mois avec le même enseignant.
-          Les 10 € du cours d&apos;essai sont déduits du premier paiement.
         </p>
       </section>
 
@@ -162,7 +160,7 @@ export default function OffresPage() {
           className="rounded-full font-bold text-white inline-block"
           style={{ background: "#0F9D6E", padding: "13px 26px", fontSize: 15, boxShadow: "0 6px 16px rgba(15,157,110,.30)" }}
         >
-          Réserver mon cours d&apos;essai — 10 €
+          Réserver mon cours d&apos;essai gratuit
         </Link>
       </section>
     </div>

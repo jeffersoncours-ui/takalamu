@@ -2,11 +2,11 @@
 
 import { useActionState } from "react";
 import { requestPayment } from "./actions";
-import { PLANS, MONTHLY_PRICE_EUROS, TRIAL_PRICE_EUROS } from "@/lib/pricing";
+import { PLANS, MONTHLY_PRICE_EUROS } from "@/lib/pricing";
 
-type Props = { trialCreditCents: number };
+type Props = { trialCreditCents?: number };
 
-export function PaymentRequestForm({ trialCreditCents }: Props) {
+export function PaymentRequestForm({ trialCreditCents: _trialCreditCents }: Props) {
   const [state, formAction, pending] = useActionState(requestPayment, {});
 
   if (state.success) {
@@ -20,20 +20,8 @@ export function PaymentRequestForm({ trialCreditCents }: Props) {
     );
   }
 
-  const hasCredit = trialCreditCents > 0;
-  const creditEuros = trialCreditCents / 100;
-
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      {hasCredit && (
-        <div
-          className="rounded-[14px] px-4 py-3 text-sm"
-          style={{ background: "#E8F7F1", border: "1px solid #C8EBDB", color: "#065F46" }}
-        >
-          ✓ Crédit essai de {creditEuros} € déduit de ton premier paiement.
-        </div>
-      )}
-
       {state.error && <p style={{ color: "#B4292E", fontSize: 13 }}>{state.error}</p>}
 
       <select
@@ -75,7 +63,7 @@ export function PaymentRequestForm({ trialCreditCents }: Props) {
       </button>
 
       <p style={{ fontSize: 12, color: "#8B857A", textAlign: "center" }}>
-        Cours d&apos;essai {TRIAL_PRICE_EUROS} € · déduit du premier paiement
+        Cours d&apos;essai gratuit · sans engagement
       </p>
     </form>
   );

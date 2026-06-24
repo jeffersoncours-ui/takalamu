@@ -38,7 +38,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               className="hidden sm:flex rounded-full font-semibold text-white text-sm"
               style={{ background: "#0F9D6E", padding: "9px 18px", boxShadow: "0 4px 12px rgba(15,157,110,.28)" }}
             >
-              Cours d&apos;essai
+              Essai gratuit
             </Link>
             <Link
               href="/login"
