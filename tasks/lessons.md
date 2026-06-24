@@ -1,5 +1,20 @@
 # Lessons
 
+## Session 14 (2026-06-24) — Audio assets leçons
+
+### Décisions
+- **`createSignedUrls` (pluriel) pour le batch.** La page dashboard élève liste N séances, chacune pouvant avoir un audio. Un appel `createSignedUrls(paths[], ttl)` remplace N appels `createSignedUrl`. Les `item.path` retournés peuvent être `string | null` (type Supabase) → guard `if (item.signedUrl && item.path)` avant `map.set(item.path, item.signedUrl)`.
+- **Upload remplace l'ancien asset de façon atomique.** Ordre : upload nouveau → INSERT `audio_assets` → UPDATE `lessons.audio_asset_id` → delete ancien asset + fichier. En cas d'échec entre les deux derniers, l'ancien est perdu mais le nouveau est lié. Acceptable à cette échelle.
+- **`ON DELETE SET NULL` sur `lessons.audio_asset_id`** : supprimer la ligne `audio_assets` dissocie automatiquement la leçon. `removeLessonAudio` n'a donc pas besoin de faire le `UPDATE lessons SET audio_asset_id = NULL` explicitement.
+- **Section audio séparée du `LessonForm`** : `AudioSection` est un composant client indépendant, rendu sous le formulaire de leçon. Évite d'alourdir le formulaire existant (qui gère déjà `useActionState`) avec un deuxième champ à état complexe.
+- **Audio côté élève = lecture seule, bucket-level.** Contrairement aux `homework-submissions` (dossier = student_id), les fichiers audio sont partagés (1 audio par leçon, visible pour tous les élèves de la même leçon). La policy `lesson_audio_student_select` n'a pas besoin de restriction par dossier.
+
+### Pièges
+- **`item.path` typé `string | null` dans `createSignedUrls`** — TypeScript refuse `audioUrlMap.set(item.path, ...)` sans le guard `&& item.path`. Le type Supabase est conservateur même si en pratique path n'est jamais null si l'item a un signedUrl.
+- **`encType="multipart/form-data"` obligatoire** sur un `<form>` avec `<input type="file">` dans un composant client avec `action={formAction}` (`useActionState`). Sans `encType`, le fichier n'est pas transmis dans le `FormData`.
+
+---
+
 ## Session 11 (2026-06-23) — Liste chats enseignant + Storage uploads + Notifications + Admin invite
 
 ### Décisions (Bloc 5 — admin invite)

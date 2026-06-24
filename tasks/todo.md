@@ -2,6 +2,25 @@
 
 ---
 
+## Session 14 — Audio assets leçons
+
+### Plan ✅
+- [x] Migration `25_lesson_audio_bucket` : bucket `lesson-audio` privé (50 Mo, audio MIME), policy `lesson_audio_teacher_all` (ALL) + `lesson_audio_student_select` (SELECT)
+- [x] Server actions `uploadLessonAudio` + `removeLessonAudio` dans `teacher/program/actions.ts` : upload → `audio_assets` INSERT → `lessons.audio_asset_id` link ; suppression propre avec nettoyage Storage
+- [x] Composant `AudioSection` (`teacher/program/[id]/edit/audio-section.tsx`) : lecteur + "Supprimer" si audio existe, sinon formulaire upload (titre optionnel + fichier)
+- [x] Page `/teacher/program/[id]/edit` : fetch `audio_asset_id + audio_assets(storage_path, title)`, URL signée 1h, rendu AudioSection
+- [x] Dashboard élève `src/app/dashboard/page.tsx` : query étendue aux `audio_assets`, batch signed URLs via `createSignedUrls`, lecteur `<audio>` inline dans les cartes de séance
+- [x] Build vert, migré en base, pushé
+
+### Review (Session 14)
+**État au 2026-06-24 — Audio leçons livré de bout en bout.**
+- Bucket `lesson-audio` privé créé (migration 25). RLS : teacher=ALL, student=SELECT-only. Pas de restriction par dossier (audio partagé par leçon, pas per-student).
+- Côté prof : `AudioSection` sous le formulaire d'édition de leçon. Upload remplace proprement l'ancien fichier (delete Storage + delete audio_assets avant de lier le nouveau). Suppression via cascade `ON DELETE SET NULL` sur `lessons.audio_asset_id`.
+- Côté élève : `createSignedUrls` batch (1 appel pour toutes les leçons de la page). Lecteur `<audio controls>` dans chaque carte de séance qui a un audio.
+- **Reste** : vitrine publique (le propriétaire a des idées sur l'offre + le paiement), vidéos Bunny Stream.
+
+---
+
 ## Session 12 — Q1 Quiz vocabulaire auto-généré
 
 ### Plan Q1 — QCM vocabulaire (brique 1/4) ✅
