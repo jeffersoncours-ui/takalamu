@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { joinWindow } from "@/lib/join-window";
+
 export function JoinButton({
   scheduledAt,
   zoomLink,
@@ -18,9 +20,7 @@ export function JoinButton({
     return () => clearInterval(id);
   }, []);
 
-  const courseTime = new Date(scheduledAt);
-  const openAt = new Date(courseTime.getTime() - 30 * 60 * 1000);
-  const closeAt = new Date(courseTime.getTime() + 5 * 60 * 1000);
+  const { courseTime, openAt, closeAt } = joinWindow(scheduledAt);
   const timeStr = courseTime.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   // Placeholder stable pendant le SSR + avant la fenêtre d'ouverture

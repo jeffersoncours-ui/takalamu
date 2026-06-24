@@ -54,11 +54,14 @@
 - [ ] Route webhook `src/app/api/revolut/webhook` : à `paid` → créer compte auth + fiche élève (service_role), dédup email
 - [ ] Email Resend de définition de mot de passe
 
-### Phase 5 — Règles métier mises à jour
-- [ ] Retard 5 → 10 min (`join-button.tsx` + règle serveur)
-- [ ] Lien Zoom dispo dès −10 min
-- [ ] Quota : heures à la carte vs 4/mois annuel (compteur consommé/payé)
-- [ ] Report `moved` sur absence justifiée / créneau impossible
+### Phase 5 — Règles métier mises à jour (timing ✅ ; quota/report différés)
+- [x] Module partagé `src/lib/join-window.ts` (constantes centralisées, anti-duplication)
+- [x] Lien Zoom dispo dès −10 min (`JOIN_OPEN_MIN`) — `join-button.tsx` + `next-course-hero.tsx`
+- [x] Retard 5 → 10 min (`JOIN_LATE_MIN`) + libellé `attendance.ts` « Retard (> 10 min) »
+- [ ] **Différé (avec Phase 4)** Quota : heures à la carte vs 48/an (compteur consommé/payé)
+- [ ] **Différé** Report `moved` sur absence justifiée / créneau impossible
+- [ ] **À rediscuter** seuil 3 absences injustifiées (laissé tel quel)
+- [ ] **TODO connu** : le lien Zoom est livré en SSR → fenêtre purement visuelle. Couper réellement = RPC/route gardée temporellement.
 
 ---
 

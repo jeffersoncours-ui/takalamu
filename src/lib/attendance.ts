@@ -11,7 +11,7 @@ export const ATTENDANCE_STATUSES: {
   counts: boolean;
 }[] = [
   { value: "present", label: "Présent", counts: false },
-  { value: "late", label: "Retard (> 5 min)", counts: true },
+  { value: "late", label: "Retard (> 10 min)", counts: true },
   { value: "absent_justified", label: "Absent justifié", counts: false },
   { value: "absent_unjustified", label: "Absent injustifié", counts: true },
 ];

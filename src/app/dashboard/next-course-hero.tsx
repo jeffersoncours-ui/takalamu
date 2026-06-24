@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { joinWindow } from "@/lib/join-window";
+
 type Props = {
   scheduledAt: string;
   lessonTitle: string;
@@ -22,9 +24,7 @@ export function NextCourseHero({ scheduledAt, lessonTitle, teacherName, zoomLink
     return () => clearInterval(id);
   }, []);
 
-  const courseTime = new Date(scheduledAt);
-  const openAt = new Date(courseTime.getTime() - 30 * 60 * 1000);
-  const closeAt = new Date(courseTime.getTime() + 5 * 60 * 1000);
+  const { courseTime, openAt, closeAt } = joinWindow(scheduledAt);
   const heure = courseTime.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   // Compte à rebours (ms restantes avant le cours)
