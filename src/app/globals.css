@@ -3,6 +3,13 @@
 :root {
   color-scheme: light;
 
+  /* Variables du tweaker (homepage) */
+  --site-bg: #F7F4EE;
+  --site-title: #1C1A17;
+  --site-accent: #0F9D6E;
+  --site-h1-size: 48px;
+  --site-h2-size: 34px;
+
   /* Design tokens Takalamu */
   --tk-accent: #0F9D6E;
   --tk-accent-pressed: #0A8560;

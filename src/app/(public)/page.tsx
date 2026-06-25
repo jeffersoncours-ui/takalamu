@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
+import { ColorTweaker } from "./color-tweaker";
 
 function GreenLast({ text }: { text: string }) {
   const idx = text.lastIndexOf(" ");
-  if (idx === -1) return <span style={{ color: "#0F9D6E" }}>{text}</span>;
+  if (idx === -1) return <span style={{ color: "var(--site-accent)" }}>{text}</span>;
   return (
     <>
       {text.slice(0, idx)}{" "}
-      <span style={{ color: "#0F9D6E" }}>{text.slice(idx + 1)}</span>
+      <span style={{ color: "var(--site-accent)" }}>{text.slice(idx + 1)}</span>
     </>
   );
 }
@@ -109,7 +110,7 @@ const FAQ = [
 
 export default function HomePage() {
   return (
-    <div style={{ background: "#F7F4EE" }}>
+    <div style={{ background: "var(--site-bg)" }}>
       {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1
@@ -117,12 +118,12 @@ export default function HomePage() {
           style={{
             fontFamily: "var(--font-outfit)",
             fontWeight: 900,
-            fontSize: "clamp(36px, 6vw, 56px)",
-            color: "#1C1A17",
+            fontSize: "var(--site-h1-size)",
+            color: "var(--site-title)",
           }}
         >
           Cours d&apos;arabe individuel en{" "}
-          <span style={{ color: "#0F9D6E" }}>distanciel</span>
+          <span style={{ color: "var(--site-accent)" }}>distanciel</span>
         </h1>
         <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
           Cours personnalisés en visio, individuel, avec un suivi pédagogique complet.
@@ -131,14 +132,14 @@ export default function HomePage() {
           <Link
             href="/essai"
             className="rounded-full font-bold text-white text-center"
-            style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+            style={{ background: "var(--site-accent)", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
             Réserver mon cours d&apos;essai gratuit
           </Link>
           <Link
             href="/offres"
             className="rounded-full font-semibold border text-center"
-            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
+            style={{ padding: "13px 26px", fontSize: 15, color: "var(--site-accent)", borderColor: "var(--site-accent)", background: "#fff" }}
           >
             Choisis ta formule
           </Link>
@@ -150,10 +151,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
             Ton parcours, la méthode étape par{" "}
-            <span style={{ color: "#0F9D6E" }}>étape</span>
+            <span style={{ color: "var(--site-accent)" }}>étape</span>
           </h2>
           <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}>
             Pas de classe, pas de rythme imposé : tu avances à ta vitesse, tu es ton propre curseur de progression.
@@ -165,15 +166,15 @@ export default function HomePage() {
                 key={phase.n}
                 className="rounded-2xl p-6"
                 style={{
-                  background: idx === 0 ? "#E8F7F1" : idx === 1 ? "#F0EBE2" : "#F7F4EE",
+                  background: idx === 0 ? "#E8F7F1" : idx === 1 ? "#F0EBE2" : "var(--site-bg)",
                   border: `1.5px solid ${idx === 0 ? "#A8E8D0" : "#E9E3D8"}`,
                 }}
               >
                 <h3
                   className="font-bold mb-1"
-                  style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
+                  style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "var(--site-title)" }}
                 >
-                  Phase {phase.n} : <span style={{ color: "#0F9D6E" }}>{phase.title}</span>
+                  Phase {phase.n} : <span style={{ color: "var(--site-accent)" }}>{phase.title}</span>
                 </h3>
                 <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
                   {phase.body}
@@ -181,7 +182,7 @@ export default function HomePage() {
                 <ul className="space-y-1">
                   {phase.outcomes.map((o) => (
                     <li key={o} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 13.5 }}>
-                      <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
+                      <span style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
                       {o}
                     </li>
                   ))}
@@ -200,24 +201,24 @@ export default function HomePage() {
       </section>
 
       {/* ── Comment ça marche ── */}
-      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
-            Comment ça <span style={{ color: "#0F9D6E" }}>marche</span>
+            Comment ça <span style={{ color: "var(--site-accent)" }}>marche</span>
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map((s) => (
               <div key={s.n} className="flex flex-col items-center text-center gap-3">
                 <div
                   className="flex items-center justify-center rounded-full font-bold text-white"
-                  style={{ width: 42, height: 42, background: "#0F9D6E", fontSize: 17, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
+                  style={{ width: 42, height: 42, background: "var(--site-accent)", fontSize: 17, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
                 >
                   {s.n}
                 </div>
-                <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
+                <h3 className="font-semibold" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   <GreenLast text={s.title} />
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
@@ -228,10 +229,10 @@ export default function HomePage() {
       </section>
 
       {/* ── Évaluation sur-mesure (différenciateur) ── */}
-      <section className="px-4 pb-14" style={{ background: "#F7F4EE" }}>
+      <section className="px-4 pb-14" style={{ background: "var(--site-bg)" }}>
         <div
           className="mx-auto max-w-3xl rounded-2xl p-8"
-          style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
+          style={{ background: "var(--site-accent)", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
         >
           <h2
             className="text-center font-bold mb-4 leading-snug"
@@ -262,9 +263,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-3"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
-            Le cours d&apos;arabe <span style={{ color: "#0F9D6E" }}>individuel</span>
+            Le cours d&apos;arabe <span style={{ color: "var(--site-accent)" }}>individuel</span>
           </h2>
           <p
             className="text-center mb-10"
@@ -277,9 +278,9 @@ export default function HomePage() {
               <div
                 key={f.title}
                 className="rounded-2xl p-5"
-                style={{ background: "#F7F4EE", border: "1px solid #EFEAE0" }}
+                style={{ background: "var(--site-bg)", border: "1px solid #EFEAE0" }}
               >
-                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
+                <h3 className="font-semibold mb-2" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   <GreenLast text={f.title} />
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
@@ -290,16 +291,16 @@ export default function HomePage() {
       </section>
 
       {/* ── Tarifs teaser ── */}
-      <section className="py-12 px-4 text-center" style={{ background: "#F7F4EE" }}>
+      <section className="py-12 px-4 text-center" style={{ background: "var(--site-bg)" }}>
         <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
-          À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
-          ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
-          Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
+          À partir de <strong style={{ color: "var(--site-title)" }}>52 €/mois</strong> en abonnement annuel,
+          ou <strong style={{ color: "var(--site-title)" }}>15 €/heure</strong> à la carte.
+          Cours d&apos;essai <strong style={{ color: "var(--site-title)" }}>gratuit</strong>, sans engagement.
         </p>
         <Link
           href="/offres"
           className="inline-block mt-4 rounded-full font-semibold text-sm"
-          style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
+          style={{ color: "var(--site-accent)", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
         >
           Voir tous les tarifs →
         </Link>
@@ -310,22 +311,22 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
-            Ce que disent nos <span style={{ color: "#0F9D6E" }}>élèves</span>
+            Ce que disent nos <span style={{ color: "var(--site-accent)" }}>élèves</span>
           </h2>
           <TestimonialsStack />
         </div>
       </section>
 
       {/* ── Charte d'engagement ── */}
-      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
-            Notre engagement, et le <span style={{ color: "#0F9D6E" }}>tien</span>
+            Notre engagement, et le <span style={{ color: "var(--site-accent)" }}>tien</span>
           </h2>
           <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 40px" }}>
             Un suivi sérieux repose sur des règles claires, des deux côtés. Voici les nôtres.
@@ -346,7 +347,7 @@ export default function HomePage() {
                   "Évaluation et suivi adapté : on continue.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#1C5C41", fontSize: 14, lineHeight: 1.55 }}>
-                    <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
+                    <span style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
                     {item}
                   </li>
                 ))}
@@ -357,7 +358,7 @@ export default function HomePage() {
               className="rounded-2xl p-6"
               style={{ background: "#fff", border: "1.5px solid #E9E3D8" }}
             >
-              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
+              <p className="font-semibold mb-4" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                 Ce qu&apos;on te demande
               </p>
               <ul className="space-y-2.5">
@@ -367,7 +368,7 @@ export default function HomePage() {
                   "Au-delà de 3 absences non justifiées, l'accès à la réservation est suspendu ; ton historique et tes contenus restent consultables.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.55 }}>
-                    <span style={{ color: "#0F9D6E", marginTop: 1 }}>·</span>
+                    <span style={{ color: "var(--site-accent)", marginTop: 1 }}>·</span>
                     {item}
                   </li>
                 ))}
@@ -389,25 +390,25 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
           >
-            Les questions qu&apos;on nous <span style={{ color: "#0F9D6E" }}>pose</span>
+            Les questions qu&apos;on nous <span style={{ color: "var(--site-accent)" }}>pose</span>
           </h2>
           <div className="space-y-2">
             {FAQ.map((item) => (
               <details
                 key={item.q}
                 className="group rounded-xl"
-                style={{ border: "1px solid #E9E3D8", background: "#F7F4EE" }}
+                style={{ border: "1px solid #E9E3D8", background: "var(--site-bg)" }}
               >
                 <summary
                   className="flex items-center justify-between gap-4 cursor-pointer select-none px-5 py-4 font-semibold list-none"
-                  style={{ color: "#1C1A17", fontSize: 15 }}
+                  style={{ color: "var(--site-title)", fontSize: 15 }}
                 >
                   {item.q}
                   <span
                     className="shrink-0 transition-transform group-open:rotate-45"
-                    style={{ color: "#0F9D6E", fontSize: 22, lineHeight: 1 }}
+                    style={{ color: "var(--site-accent)", fontSize: 22, lineHeight: 1 }}
                   >
                     +
                   </span>
@@ -422,9 +423,9 @@ export default function HomePage() {
       </section>
 
       {/* ── Confidentialité ── */}
-      <section className="py-10 px-4" style={{ background: "#F7F4EE" }}>
+      <section className="py-10 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1px solid #E9E3D8" }}>
-          <p className="font-semibold mb-3" style={{ color: "#1C1A17", fontSize: 14 }}>
+          <p className="font-semibold mb-3" style={{ color: "var(--site-title)", fontSize: 14 }}>
             Tes données restent chez toi
           </p>
           <ul className="space-y-1.5">
@@ -433,7 +434,7 @@ export default function HomePage() {
               "Tes échanges et tes informations restent sur la plateforme, accessibles à toi et à ton enseignant.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "#6B6560", fontSize: 13.5 }}>
-                <span style={{ color: "#0F9D6E" }}>·</span>
+                <span style={{ color: "var(--site-accent)" }}>·</span>
                 {item}
               </li>
             ))}
@@ -442,12 +443,12 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-4 text-center" style={{ background: "#F7F4EE" }}>
+      <section className="py-14 px-4 text-center" style={{ background: "var(--site-bg)" }}>
         <h2
           className="font-bold mb-3"
-          style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
         >
-          Prêt(e) à <span style={{ color: "#0F9D6E" }}>commencer ?</span>
+          Prêt(e) à <span style={{ color: "var(--site-accent)" }}>commencer ?</span>
         </h2>
         <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
           Débute par le cours d&apos;essai gratuit, sans engagement.
@@ -456,19 +457,20 @@ export default function HomePage() {
           <Link
             href="/essai"
             className="rounded-full font-bold text-white inline-block text-center"
-            style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+            style={{ background: "var(--site-accent)", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
             Réserver mon cours d&apos;essai gratuit
           </Link>
           <Link
             href="/offres"
             className="rounded-full font-semibold border inline-block text-center"
-            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
+            style={{ padding: "13px 26px", fontSize: 15, color: "var(--site-accent)", borderColor: "var(--site-accent)", background: "#fff" }}
           >
             Choisis ta formule
           </Link>
         </div>
       </section>
+      <ColorTweaker />
     </div>
   );
 }
