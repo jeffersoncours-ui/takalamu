@@ -111,7 +111,7 @@ export default function HomePage() {
   return (
     <div style={{ background: "#F7F4EE" }}>
       {/* ── Hero ── */}
-      <section className="mx-auto max-w-3xl px-4 py-16">
+      <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1
           className="leading-tight mb-5"
           style={{
@@ -124,20 +124,20 @@ export default function HomePage() {
           Cours d&apos;arabe individuel en{" "}
           <span style={{ color: "#0F9D6E" }}>distanciel</span>
         </h1>
-        <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500 }}>
+        <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
           Cours personnalisés en visio, individuel, avec un suivi pédagogique complet.
         </p>
-        <div className="flex flex-col items-start gap-3 mt-8">
+        <div className="flex flex-col items-center gap-3 mt-8">
           <Link
             href="/essai"
-            className="rounded-full font-bold text-white"
+            className="rounded-full font-bold text-white text-center"
             style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
             Réserver mon cours d&apos;essai gratuit
           </Link>
           <Link
             href="/offres"
-            className="rounded-full font-semibold border"
+            className="rounded-full font-semibold border text-center"
             style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
           >
             Choisis ta formule
@@ -149,13 +149,13 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-2"
+            className="text-center font-bold mb-2"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Ton parcours, la méthode étape par{" "}
             <span style={{ color: "#0F9D6E" }}>étape</span>
           </h2>
-          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520 }}>
+          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}>
             Pas de classe, pas de rythme imposé : tu avances à ta vitesse, tu es ton propre curseur de progression.
           </p>
 
@@ -191,8 +191,8 @@ export default function HomePage() {
           </div>
 
           <p
-            className="mt-8 text-sm"
-            style={{ color: "#6B6560", lineHeight: 1.65, maxWidth: 480, fontStyle: "italic" }}
+            className="text-center mt-8"
+            style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.65, maxWidth: 480, margin: "32px auto 0", fontStyle: "italic" }}
           >
             Chaque brique en prépare une autre. On ne saute jamais une étape, et on n&apos;introduit jamais une difficulté avant que la précédente soit acquise.
           </p>
@@ -203,7 +203,7 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-10"
+            className="text-center font-bold mb-10"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Comment ça <span style={{ color: "#0F9D6E" }}>marche</span>
@@ -261,12 +261,15 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-3"
+            className="text-center font-bold mb-3"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Le cours d&apos;arabe <span style={{ color: "#0F9D6E" }}>individuel</span>
           </h2>
-          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520 }}>
+          <p
+            className="text-center mb-10"
+            style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}
+          >
             Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique complet : carnet de bord, glossaire, grammaire et évaluations. Quiz disponible après chaque cours.
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -293,28 +296,26 @@ export default function HomePage() {
       </section>
 
       {/* ── Tarifs teaser ── */}
-      <section className="py-12 px-4" style={{ background: "#F7F4EE" }}>
-        <div className="mx-auto max-w-3xl">
-          <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540 }}>
-            À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
-            ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
-            Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
-          </p>
-          <Link
-            href="/offres"
-            className="inline-block mt-4 rounded-full font-semibold text-sm"
-            style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
-          >
-            Voir tous les tarifs →
-          </Link>
-        </div>
+      <section className="py-12 px-4 text-center" style={{ background: "#F7F4EE" }}>
+        <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
+          À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
+          ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
+          Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
+        </p>
+        <Link
+          href="/offres"
+          className="inline-block mt-4 rounded-full font-semibold text-sm"
+          style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
+        >
+          Voir tous les tarifs →
+        </Link>
       </section>
 
       {/* ── Témoignages ── */}
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-10"
+            className="text-center font-bold mb-10"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Ce que disent nos <span style={{ color: "#0F9D6E" }}>élèves</span>
@@ -327,12 +328,12 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-2"
+            className="text-center font-bold mb-2"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Notre engagement, et le <span style={{ color: "#0F9D6E" }}>tien</span>
           </h2>
-          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480 }}>
+          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 40px" }}>
             Un suivi sérieux repose sur des règles claires, des deux côtés. Voici les nôtres.
           </p>
 
@@ -381,7 +382,7 @@ export default function HomePage() {
           </div>
 
           <p
-            className="mt-6 text-sm"
+            className="text-center mt-6 text-sm"
             style={{ color: "#8B857A", fontStyle: "italic" }}
           >
             Pas de paiement, pas de réservation : l&apos;accès au planning s&apos;ouvre une fois ton offre réglée.
@@ -393,7 +394,7 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="font-bold mb-10"
+            className="text-center font-bold mb-10"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
             Les questions qu&apos;on nous <span style={{ color: "#0F9D6E" }}>pose</span>
@@ -447,33 +448,31 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
-        <div className="mx-auto max-w-3xl">
-          <h2
-            className="font-bold mb-3"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+      <section className="py-14 px-4 text-center" style={{ background: "#F7F4EE" }}>
+        <h2
+          className="font-bold mb-3"
+          style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
+        >
+          Prêt(e) à <span style={{ color: "#0F9D6E" }}>commencer ?</span>
+        </h2>
+        <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
+          Débute par le cours d&apos;essai gratuit, sans engagement.
+        </p>
+        <div className="flex flex-col items-center gap-3">
+          <Link
+            href="/essai"
+            className="rounded-full font-bold text-white inline-block text-center"
+            style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
           >
-            Prêt(e) à <span style={{ color: "#0F9D6E" }}>commencer ?</span>
-          </h2>
-          <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
-            Débute par le cours d&apos;essai gratuit, sans engagement.
-          </p>
-          <div className="flex flex-col items-start gap-3">
-            <Link
-              href="/essai"
-              className="rounded-full font-bold text-white inline-block"
-              style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
-            >
-              Réserver mon cours d&apos;essai gratuit
-            </Link>
-            <Link
-              href="/offres"
-              className="rounded-full font-semibold border inline-block"
-              style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
-            >
-              Choisis ta formule
-            </Link>
-          </div>
+            Réserver mon cours d&apos;essai gratuit
+          </Link>
+          <Link
+            href="/offres"
+            className="rounded-full font-semibold border inline-block text-center"
+            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
+          >
+            Choisis ta formule
+          </Link>
         </div>
       </section>
     </div>
