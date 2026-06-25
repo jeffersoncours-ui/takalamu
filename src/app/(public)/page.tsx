@@ -1,15 +1,49 @@
 import Link from "next/link";
+import { TestimonialsStack } from "./testimonials";
+
+const PHASES = [
+  {
+    n: "1",
+    title: "Décodage",
+    body: "On installe les fondations : les lettres, les voyelles (harakât), puis l'assemblage en mots et en phrases courtes.",
+    outcomes: [
+      "Tu reconnais et prononces chaque lettre, isolée ou attachée.",
+      "Tu déchiffres n'importe quel mot entièrement voyellé.",
+      "Tu lis des phrases courtes sans buter sur les sons.",
+    ],
+  },
+  {
+    n: "2",
+    title: "Lecture & Oral",
+    body: "Tu passes du mot au texte. On travaille la lecture suivie, la fluidité et la compréhension à travers des textes et des dialogues.",
+    outcomes: [
+      "Tu lis un texte simple à voix haute, de façon fluide.",
+      "Tu commences à lire sans toutes les voyelles.",
+      "Tu comprends et réemplois le vocabulaire courant.",
+    ],
+  },
+  {
+    n: "3",
+    title: "Grammaire",
+    body: "La grammaire n'arrive pas en premier : elle arrive quand elle a du sens. Une fois la lecture installée, on met des règles sur ce que tu sais déjà reconnaître.",
+    outcomes: [
+      "Tu repères la structure d'une phrase (sujet, verbe, complément…).",
+      "Tu comprends pourquoi un mot prend telle terminaison.",
+      "Tu lis des textes non-voyellés avec de plus en plus d'autonomie.",
+    ],
+  },
+];
 
 const STEPS = [
   {
     n: "1",
-    title: "Choisis ton créneau d'essai",
+    title: "Réserve ton cours d'essai",
     body: "Laisse tes informations et choisis un créneau. On te recontacte par mail pour confirmer.",
   },
   {
     n: "2",
     title: "Le cours d'essai (1 h)",
-    body: "En visio, en 1-à-1 avec ton enseignant. On évalue ton niveau et on définit ensemble tes objectifs.",
+    body: "En visio, en 1-à-1 avec ton enseignant. Il évalue ton niveau et place ton curseur au bon endroit dans le parcours.",
   },
   {
     n: "3",
@@ -24,31 +58,54 @@ const FEATURES = [
     body: "Cours individuels sur Zoom ou Google Meet. Aucun déplacement, aucun matériel particulier requis.",
   },
   {
-    title: "Suivi pédagogique complet",
-    body: "Après chaque séance : récapitulatif, vocabulaire du jour, règle de grammaire, et devoir personnalisé.",
-  },
-  {
     title: "Enseignant dédié selon ton genre",
     body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes — conformément à l'éthique islamique.",
   },
   {
-    title: "Progression à ton rythme",
-    body: "Un programme structuré, du déchiffrage à la lecture orale en passant par la grammaire, avec un curseur de progression individuel.",
+    title: "Messagerie directe sans partager ton numéro",
+    body: "Chat en temps réel avec ton enseignant. Toute la communication passe par la plateforme.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Je n'ai jamais appris l'arabe, je peux commencer ?",
+    a: "Oui. Le parcours démarre à l'alphabet. Et si tu sais déjà lire, le cours d'essai sert justement à placer ton point de départ plus loin.",
   },
   {
-    title: "Devoirs et évaluations",
-    body: "Exercices corrigés, quiz auto-générés depuis ton propre glossaire. Aucune saisie en arabe — QCM uniquement.",
+    q: "Combien de temps avant de savoir lire ?",
+    a: "Ça dépend de ton point de départ et de ta régularité — c'est tout l'intérêt du curseur individuel. À raison d'une heure par semaine et d'un peu de travail entre les séances, la lecture des mots voyellés s'installe vite. On ne te promet pas un délai magique : on te promet une progression sans trou.",
   },
   {
-    title: "Messagerie directe",
-    body: "Chat en temps réel avec ton enseignant, sans avoir à partager ton numéro de téléphone.",
+    q: "Comment se passe un cours ?",
+    a: "En visio (Zoom ou Google Meet), en tête-à-tête, une heure par semaine. Aucun déplacement, aucun matériel particulier. Après chaque séance, tu retrouves dans ton espace : le récapitulatif, le vocabulaire du jour, la règle de grammaire éventuelle et un devoir personnalisé.",
+  },
+  {
+    q: "Homme ou femme — qui sera mon enseignant ?",
+    a: "Les élèves hommes sont suivis par un enseignant, les élèves femmes par une enseignante, conformément à l'éthique islamique. Tu choisis au moment de réserver, et tu gardes le même enseignant tout au long de ton parcours.",
+  },
+  {
+    q: "Et si je dois annuler ou que je rate une séance ?",
+    a: "Une séance annulée est reprogrammée dans tes créneaux disponibles, et une absence justifiée ne te pénalise pas.",
+  },
+  {
+    q: "Dois-je acheter des livres ou du matériel ?",
+    a: "Non. Tout le nécessaire — vocabulaire, règles, supports — est fourni au fil des séances dans ton espace personnel.",
+  },
+  {
+    q: "Comment je paie, et est-ce que je peux étaler ?",
+    a: "Le paiement se fait après le cours d'essai. L'abonnement annuel se règle en une fois ou de façon échelonnée (jusqu'à 12 fois) ; tu peux aussi prendre des heures à la carte, sans engagement.",
+  },
+  {
+    q: "Faut-il savoir taper en arabe ?",
+    a: "Jamais. Les évaluations sont à choix multiples — aucun clavier arabe à installer.",
   },
 ];
 
 export default function HomePage() {
   return (
     <div style={{ background: "#F7F4EE" }}>
-      {/* Hero */}
+      {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <p
           className="font-bold uppercase mb-4"
@@ -68,7 +125,7 @@ export default function HomePage() {
           Cours d&apos;arabe individuel en distanciel
         </h1>
         <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
-          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet.
+          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet. Du premier alphabet à la lecture autonome.
         </p>
         <div className="flex flex-col items-center gap-3 mt-8">
           <Link
@@ -88,11 +145,80 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Steps */}
+      {/* ── La méthode en 3 phases ── */}
       <section
         className="border-t border-b py-14 px-4"
         style={{ borderColor: "#E9E3D8", background: "#fff" }}
       >
+        <div className="mx-auto max-w-3xl">
+          <p
+            className="text-center font-bold uppercase mb-2"
+            style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
+          >
+            Ton parcours
+          </p>
+          <h2
+            className="text-center font-bold mb-2"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 26, color: "#1C1A17" }}
+          >
+            La méthode, étape par étape
+          </h2>
+          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}>
+            Un seul fil, du tout premier alphabet jusqu&apos;à la lecture autonome. Pas de classe, pas de rythme imposé : tu avances à ta vitesse, sur ton propre curseur de progression.
+          </p>
+
+          <div className="space-y-5">
+            {PHASES.map((phase, idx) => (
+              <div
+                key={phase.n}
+                className="rounded-2xl p-6"
+                style={{
+                  background: idx === 0 ? "#E8F7F1" : idx === 1 ? "#F0EBE2" : "#F7F4EE",
+                  border: `1.5px solid ${idx === 0 ? "#A8E8D0" : "#E9E3D8"}`,
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
+                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-spectral)" }}
+                  >
+                    {phase.n}
+                  </div>
+                  <div className="flex-1">
+                    <h3
+                      className="font-bold mb-1"
+                      style={{ fontFamily: "var(--font-spectral)", fontSize: 17, color: "#1C1A17" }}
+                    >
+                      Phase {phase.n} — {phase.title}
+                    </h3>
+                    <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
+                      {phase.body}
+                    </p>
+                    <ul className="space-y-1">
+                      {phase.outcomes.map((o) => (
+                        <li key={o} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 13.5 }}>
+                          <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
+                          {o}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p
+            className="text-center mt-8"
+            style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.65, maxWidth: 480, margin: "32px auto 0", fontStyle: "italic" }}
+          >
+            Chaque brique en prépare une autre. On ne saute jamais une étape, et on n&apos;introduit jamais une difficulté avant que la précédente soit acquise.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Comment ça marche ── */}
+      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
@@ -119,48 +245,85 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Présentation — features */}
-      <section className="mx-auto max-w-5xl px-4 py-16">
-        <h2
-          className="text-center font-bold mb-3"
-          style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+      {/* ── Évaluation sur-mesure (différenciateur) ── */}
+      <section className="px-4 pb-14">
+        <div
+          className="mx-auto max-w-3xl rounded-2xl p-8"
+          style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
         >
-          Le cours d&apos;arabe individuel
-        </h2>
-        <p
-          className="text-center mb-10"
-          style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 540, margin: "0 auto 40px" }}
-        >
-          Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique
-          complet : carnet de bord, glossaire, grammaire et évaluations.
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-2xl p-5"
-              style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 4px 14px rgba(28,26,23,.06)" }}
-            >
-              <div
-                className="flex items-center justify-center rounded-xl mb-4"
-                style={{ width: 40, height: 40, background: "#E8F7F1" }}
-              >
-                <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
-              </div>
-              <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
-                {f.title}
-              </h3>
-              <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
-            </div>
-          ))}
+          <p
+            className="font-bold uppercase mb-2"
+            style={{ color: "rgba(255,255,255,.7)", fontSize: 11, letterSpacing: ".14em" }}
+          >
+            Ce qui nous rend différents
+          </p>
+          <h2
+            className="font-bold mb-4 leading-snug"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 22, color: "#fff" }}
+          >
+            Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
+          </h2>
+          <p style={{ color: "rgba(255,255,255,.88)", fontSize: 15, lineHeight: 1.65, marginBottom: 20 }}>
+            La plupart des applications te font réviser une liste de mots que quelqu&apos;un d&apos;autre a choisie. Ici, c&apos;est l&apos;inverse. Chaque mot que ton enseignant t&apos;apprend entre automatiquement dans ton glossaire personnel. Tes quiz sont ensuite générés à partir de ce glossaire : tu ne révises jamais que ce que tu as réellement appris — ni plus, ni moins.
+          </p>
+          <ul className="space-y-2">
+            {[
+              "Un glossaire français-arabe qui se remplit séance après séance.",
+              "Des quiz à choix multiples auto-générés — aucune saisie en arabe requise.",
+              "Tu révises exactement ta matière, pas un programme générique.",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2" style={{ color: "rgba(255,255,255,.9)", fontSize: 14 }}>
+                <span style={{ color: "#A8F0D8", marginTop: 1 }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* Tarifs teaser */}
+      {/* ── Features (3) ── */}
       <section
-        className="border-t py-12 px-4 text-center"
+        className="border-t border-b py-14 px-4"
         style={{ borderColor: "#E9E3D8", background: "#fff" }}
       >
+        <div className="mx-auto max-w-3xl">
+          <h2
+            className="text-center font-bold mb-3"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+          >
+            Le cours d&apos;arabe individuel
+          </h2>
+          <p
+            className="text-center mb-10"
+            style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}
+          >
+            Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique complet : carnet de bord, glossaire, grammaire et évaluations.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-2xl p-5"
+                style={{ background: "#F7F4EE", border: "1px solid #EFEAE0" }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-xl mb-4"
+                  style={{ width: 40, height: 40, background: "#E8F7F1" }}
+                >
+                  <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
+                </div>
+                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                  {f.title}
+                </h3>
+                <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Tarifs teaser ── */}
+      <section className="py-12 px-4 text-center" style={{ background: "#F7F4EE" }}>
         <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
           À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
           ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
@@ -175,7 +338,161 @@ export default function HomePage() {
         </Link>
       </section>
 
-      {/* CTA bas de page */}
+      {/* ── Témoignages ── */}
+      <section
+        className="border-t py-14 px-4"
+        style={{ borderColor: "#E9E3D8", background: "#fff" }}
+      >
+        <div className="mx-auto max-w-3xl">
+          <p
+            className="text-center font-bold uppercase mb-2"
+            style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
+          >
+            Ils ont commencé
+          </p>
+          <h2
+            className="text-center font-bold mb-10"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+          >
+            Ce que disent nos élèves
+          </h2>
+          <TestimonialsStack />
+        </div>
+      </section>
+
+      {/* ── Charte d'engagement ── */}
+      <section
+        className="border-t py-14 px-4"
+        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
+      >
+        <div className="mx-auto max-w-3xl">
+          <h2
+            className="text-center font-bold mb-2"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+          >
+            Notre engagement, et le tien
+          </h2>
+          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 40px" }}>
+            Un suivi sérieux repose sur des règles claires, des deux côtés. Voici les nôtres.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div
+              className="rounded-2xl p-6"
+              style={{ background: "#E8F7F1", border: "1.5px solid #A8E8D0" }}
+            >
+              <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                Ce qu&apos;on s&apos;engage à faire
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  "Le même enseignant pour toi, tout au long de ton parcours.",
+                  "Un récapitulatif, du vocabulaire et un devoir après chaque séance.",
+                  "La correction de tes devoirs et une réponse à tes messages.",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2" style={{ color: "#1C5C41", fontSize: 14, lineHeight: 1.55 }}>
+                    <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div
+              className="rounded-2xl p-6"
+              style={{ background: "#fff", border: "1.5px solid #E9E3D8" }}
+            >
+              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                Ce qu&apos;on te demande
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  "Être présent et à l'heure : au-delà de 10 minutes de retard, l'accès au cours se ferme et la séance compte comme une absence.",
+                  "Prévenir en cas d'empêchement : une absence justifiée est sans conséquence, et la séance est reprogrammée.",
+                  "Au-delà de 3 absences non justifiées, l'accès à la réservation est suspendu — ton historique et tes contenus restent consultables.",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.55 }}>
+                    <span style={{ color: "#0F9D6E", marginTop: 1 }}>·</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <p
+            className="text-center mt-6 text-sm"
+            style={{ color: "#8B857A", fontStyle: "italic" }}
+          >
+            Pas de paiement, pas de réservation : l&apos;accès au planning s&apos;ouvre une fois ton offre réglée.
+          </p>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section
+        className="border-t py-14 px-4"
+        style={{ borderColor: "#E9E3D8", background: "#fff" }}
+      >
+        <div className="mx-auto max-w-3xl">
+          <h2
+            className="text-center font-bold mb-10"
+            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+          >
+            Les questions qu&apos;on nous pose
+          </h2>
+          <div className="space-y-2">
+            {FAQ.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-xl"
+                style={{ border: "1px solid #E9E3D8", background: "#F7F4EE" }}
+              >
+                <summary
+                  className="flex items-center justify-between gap-4 cursor-pointer select-none px-5 py-4 font-semibold list-none"
+                  style={{ color: "#1C1A17", fontSize: 15 }}
+                >
+                  {item.q}
+                  <span
+                    className="shrink-0 transition-transform group-open:rotate-45"
+                    style={{ color: "#0F9D6E", fontSize: 22, lineHeight: 1 }}
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="px-5 pb-5" style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.7 }}>
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Confidentialité ── */}
+      <section
+        className="border-t py-10 px-4"
+        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
+      >
+        <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1px solid #E9E3D8" }}>
+          <p className="font-semibold mb-3" style={{ color: "#1C1A17", fontSize: 14 }}>
+            Tes données restent chez toi
+          </p>
+          <ul className="space-y-1.5">
+            {[
+              "Ton numéro de téléphone n'est jamais partagé : toute la communication passe par la messagerie interne.",
+              "Tes échanges et tes informations restent sur la plateforme, accessibles à toi et à ton enseignant.",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2" style={{ color: "#6B6560", fontSize: 13.5 }}>
+                <span style={{ color: "#0F9D6E" }}>·</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── CTA final ── */}
       <section
         className="border-t py-14 px-4 text-center"
         style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
