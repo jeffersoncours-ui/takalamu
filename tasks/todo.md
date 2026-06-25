@@ -39,29 +39,58 @@
 - [x] 3 consommateurs corrigés (offres, payment-request-form, dashboard actions) + `PLAN_LABEL` teacher/élève + prix vitrine 55→52 €
 - [x] Build vert (32 routes)
 
-### Phase 2 — Tunnel d'essai multi-étapes
-- [ ] `/essai` : genre → calendrier 1 mois (créneaux libres depuis `teacher_availability`, RLS lecture anon) → fiche → envoi
-- [ ] Verrou anti-double-réservation (créneau choisi grisé)
-- [ ] Côté prof : carte d'essai dédiée (créneau + infos) + bouton « Confirmer le créneau »
+### Phase 2 — Tunnel d'essai multi-étapes ✅
+- [x] Migration 30 : `scheduled_at` + `level` sur `trial_requests` ; RPCs `get_teacher_availability_by_gender` + `get_trial_taken_slots` (SECURITY DEFINER, anon)
+- [x] `/essai` : wizard 3 étapes (genre → calendrier créneaux → fiche prénom/nom/email/niveau)
+- [x] Expansion des créneaux récurrents `teacher_availability` sur 35 jours UTC côté client
+- [x] Anti-double-booking côté serveur (re-vérification avant INSERT)
+- [x] Fallback « aucun créneau disponible » (passage direct à l'étape formulaire)
+- [x] Côté prof : carte d'essai affiche créneau + niveau
 
-### Phase 3 — Code d'essai
-- [ ] Migration : table `trial_codes` (code haché, expiry, email, single-use) ou colonne sur `trial_requests`
-- [ ] À la confirmation : génération + envoi email Resend (TODO clé)
-- [ ] Vérification code ↔ email à l'entrée du paiement
+### Phase 3 — Code d'essai ✅
+- [x] Migration 31 : `trial_code`, `trial_code_expires_at`, `trial_code_used` + index unique partiel
+- [x] `src/lib/resend.ts` : client Resend + `sendTrialCode()` — FROM configurable via `EMAIL_FROM`
+- [x] À la confirmation (→ Essai effectué) : code 8 chars généré (crypto.randomBytes, non-ambigu) + email envoyé automatiquement
+- [x] `assigned_teacher_id` stocké à la confirmation de l'essai
+- [x] Bouton « Renvoyer le code » sur la fiche enseignant
+- [x] Code visible côté enseignant (support)
+- [ ] **TODO** : domaine OVH → vérifier dans Resend → `EMAIL_FROM=noreply@takalamu.com` dans Vercel
 
-### Phase 4 — Tunnel paiement self-serve + Revolut
-- [ ] `/inscription` (ou équivalent) : genre → plan → code essai + email → infos → lien Revolut
-- [ ] Route webhook `src/app/api/revolut/webhook` : à `paid` → créer compte auth + fiche élève (service_role), dédup email
-- [ ] Email Resend de définition de mot de passe
+### Phase 4 — Tunnel paiement self-serve ✅ (mode manuel — Revolut différé)
+- [x] Migration 32 : `chosen_plan`, `chosen_product`, `revolut_order_id` sur `trial_requests`
+- [x] `src/lib/revolut.ts` : `createRevolutOrder()` + `verifyRevolutSignature()` (TODO clés)
+- [x] `/inscription` : wizard 3 étapes (code → plan → confirmation) + re-vérification serveur
+- [x] Mode auto : si `REVOLUT_MERCHANT_API_KEY` → crée ordre Revolut → redirige élève
+- [x] Mode manuel (actuel) : génère référence `TK-XXXXXXXX`, message « lien envoyé par email »
+- [x] `/api/webhooks/revolut` : HMAC-SHA256, créé compte auth + students + payments, dedup email
+- [x] Nav : lien « J'ai un code » → `/inscription`
+- [ ] **TODO (après création société)** : configurer `REVOLUT_MERCHANT_API_KEY` + `REVOLUT_WEBHOOK_SECRET` dans Vercel
+- [ ] **TODO** : URL webhook à déclarer dans Revolut Merchant → Webhooks : `/api/webhooks/revolut`
+- [ ] **Différé** : email de bienvenue Resend plus riche après création de compte (actuellement Supabase invite)
 
 ### Phase 5 — Règles métier mises à jour (timing ✅ ; quota/report différés)
 - [x] Module partagé `src/lib/join-window.ts` (constantes centralisées, anti-duplication)
 - [x] Lien Zoom dispo dès −10 min (`JOIN_OPEN_MIN`) — `join-button.tsx` + `next-course-hero.tsx`
 - [x] Retard 5 → 10 min (`JOIN_LATE_MIN`) + libellé `attendance.ts` « Retard (> 10 min) »
-- [ ] **Différé (avec Phase 4)** Quota : heures à la carte vs 48/an (compteur consommé/payé)
+- [ ] **Différé** Quota : heures à la carte vs 48/an (compteur consommé/payé)
 - [ ] **Différé** Report `moved` sur absence justifiée / créneau impossible
 - [ ] **À rediscuter** seuil 3 absences injustifiées (laissé tel quel)
 - [ ] **TODO connu** : le lien Zoom est livré en SSR → fenêtre purement visuelle. Couper réellement = RPC/route gardée temporellement.
+
+### Review Session 16
+
+**Réalisé :**
+- **Phase 2** — Tunnel d'essai 3 étapes : migration 30 (créneaux + niveau), RPCs SECURITY DEFINER pour anon, wizard genre→créneau→fiche, expansion récurrente sur 35 jours UTC, anti-double-booking serveur.
+- **Phase 3** — Code d'essai : migration 31, `resend.ts`, code 8 chars non-ambigu auto-généré et envoyé à la confirmation, bouton "Renvoyer" côté prof, `assigned_teacher_id` stocké.
+- **Phase 4** — Tunnel paiement self-serve : migration 32, `revolut.ts`, wizard `/inscription` (code → plan → confirmation), webhook HMAC-SHA256 `/api/webhooks/revolut`, mode manuel TK-XXXXXXXX actif, nav "J'ai un code".
+- **Phase 5 (partiel)** — Timing : module `join-window.ts`, lien Zoom dès −10 min, retard 10 min.
+- Build vert, push sur `claude/takalamu-platform-setup-f8szt8`.
+
+**En attente / différé :**
+- Domaine OVH → Resend → `EMAIL_FROM=noreply@takalamu.com` dans Vercel.
+- Revolut Merchant API (après création société) : clés Vercel + URL webhook.
+- Phase 5 quota (heures à la carte vs 48/an), report `moved`, seuil absences.
+- Zoom link temporellement gardé côté serveur (actuellement fenêtre SSR visuelle seulement).
 
 ---
 

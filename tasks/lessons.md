@@ -1,5 +1,30 @@
 # Lessons
 
+## Session 16 (2026-06-25) — Tunnel essai multi-étapes, code d'essai, tunnel paiement self-serve
+
+### Décisions
+
+- **SECURITY DEFINER pour l'accès anon aux créneaux.** La table `teacher_availability` a une policy `SELECT` pour `authenticated` uniquement. Pour permettre au formulaire d'essai (anon) d'afficher les créneaux, on crée des RPCs SECURITY DEFINER (`get_teacher_availability_by_gender`, `get_trial_taken_slots`) grantées à `anon, authenticated`. Pattern systématique : ne jamais ouvrir la table brute à `anon` → encapsuler dans une RPC avec SECURITY DEFINER qui projette exactement ce qu'on veut exposer.
+- **`createAdminClient()` pour la vérification de code côté serveur.** `verifyTrialCode` dans `/inscription/actions.ts` utilise `createAdminClient()` (service_role) car `trial_requests` n'a aucune policy SELECT pour `anon`. Légitime : c'est une server action (jamais côté client), la clé service_role reste serveur-only. Pattern : toujours préférer la RPC SECURITY DEFINER quand l'opération est un SELECT simple ; recourir à `createAdminClient()` uniquement quand la RPC serait disproportionnée ou impossible.
+- **Expansion des créneaux UTC en JS.** `teacher_availability` stocke `day_of_week` (0=dim) et `start_time`/`end_time` en UTC. L'expansion sur 35 jours utilise `getUTCDay()` (jamais `getDay()`) pour matcher le jour stocké. Calcul du prochain occurrence : itérer j de 0..34, pour chaque j construire `Date.UTC(year, month, day+j, h, m)`, filtrer par `getUTCDay() === slot.day_of_week`. Anti-doublon par clé UTC ISO.
+- **Mode manuel Revolut.** Revolut Merchant API configuré côté code mais clés absentes tant que la société n'est pas créée. Comportement branché : si `REVOLUT_MERCHANT_API_KEY` présent → appel API → URL checkout Revolut. Si absent → génère référence `TK-{randomHex8}`, stocke sur `trial_requests.revolut_order_id`, affiche instructions de virement manuel. Zéro if/else dans l'UI : la logique est dans la server action.
+- **`assigned_teacher_id` stocké à la confirmation de l'essai.** Dans `updateTrialStatus` (côté teacher, quand on marque "Essai effectué"), on stocke `assigned_teacher_id = teacher.id`. Le webhook Revolut peut ainsi retrouver le teacher_id sans requête supplémentaire, même semaines plus tard.
+- **Resend : lazy singleton + FROM configurable.** `src/lib/resend.ts` : `new Resend(process.env.RESEND_API_KEY)` instantié au module level (singleton sans coût côté client car server-only). `FROM = process.env.EMAIL_FROM ?? "onboarding@resend.dev"` permet de tester sans domaine vérifié ; sera mis à jour quand OVH → Resend domain verification sera faite.
+- **Code d'essai : `crypto.randomBytes` + alphabet non-ambigu.** `chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"` (sans 0/O/I/1/L/B). 8 chars via `randomBytes(8).map(b => chars[b % chars.length])`. Index unique partiel `WHERE trial_code IS NOT NULL` → collision impossible sans bloquer le schema. Expiration 30 jours.
+- **Webhook HMAC-SHA256 Revolut.** Header `Revolut-Signature: v1=<hex>`. Vérification : lire le body en `text()` AVANT `json()` pour avoir la string exacte signée, puis `crypto.createHmac('sha256', secret).update(rawBody).digest('hex')`. Une fois confirmé : `inviteUserByEmail` (admin) → INSERT `students` + `payments` → marquer `trial_code_used = true` + `status = converted`.
+- **Dédup email au webhook.** Avant `inviteUserByEmail`, lister les users auth (`admin.auth.admin.listUsers()`) et vérifier si l'email existe. Si oui, rattacher la ligne `students` à l'user existant plutôt que de créer un doublon. Pattern nécessaire pour re-soumissions Revolut ou tests répétés.
+- **Wizard 3 étapes : wrapper serveur + funnel client.** `page.tsx` (server) exporte uniquement les `metadata` et rend `<Funnel />`. `funnel.tsx` (client) porte tout l'état de l'assistant (étape, données collectées). Server actions dans `actions.ts` séparé. Ce split évite le bug "metadata interdit en client component" tout en gardant le formulaire interactif.
+
+### Pièges
+
+- **`getDay()` vs `getUTCDay()` pour les créneaux.** `teacher_availability.day_of_week` est en UTC (ex. jeudi UTC peut être mercredi soir Paris). Utiliser `getDay()` sur une date JavaScript prend la timezone locale du serveur Vercel (potentiellement Paris, potentiellement UTC). Toujours utiliser `getUTCDay()` pour matcher exactement ce qui est en base.
+- **`rawBody` avant `json()` dans le handler webhook.** Si on fait `request.json()` puis essaie de relire le body, le stream est consommé → erreur. Toujours `const rawBody = await request.text(); const payload = JSON.parse(rawBody)` dans l'ordre. Ensuite seulement vérifier la signature.
+- **`inviteUserByEmail` dans le webhook = double email.** Supabase envoie un email d'invitation automatiquement. Si le webhook est appelé deux fois (retry Revolut), le second appel sera bloqué par le dédup email → pas de doublon. Mais l'élève reçoit deux emails d'invitation si le retry est très rapide (avant le dédup). Acceptable à cette échelle.
+- **`revolut_order_id` = mode manuel reference.** La référence `TK-XXXXXXXX` est stockée dans `trial_requests.revolut_order_id`. En mode Revolut réel, ce champ contiendra l'UUID Revolut. Ne pas mélanger les deux formats dans les requêtes de lookup webhook.
+- **`RESEND_API_KEY` ne doit jamais être committé.** Stocker dans `.env.local` (gitignored) et dans Vercel Env Vars. Si jamais committé par erreur : révoquer immédiatement dans le dashboard Resend et générer une nouvelle clé.
+
+---
+
 ## Session 15 (2026-06-24) — Vitrine publique + parcours d'essai + paiement révisé
 
 ### Décisions
