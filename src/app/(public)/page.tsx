@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
 
+function GreenLast({ text }: { text: string }) {
+  const idx = text.lastIndexOf(" ");
+  if (idx === -1) return <span style={{ color: "#0F9D6E" }}>{text}</span>;
+  return (
+    <>
+      {text.slice(0, idx)}{" "}
+      <span style={{ color: "#0F9D6E" }}>{text.slice(idx + 1)}</span>
+    </>
+  );
+}
+
 const PHASES = [
   {
     n: "1",
@@ -13,8 +24,8 @@ const PHASES = [
   },
   {
     n: "2",
-    title: "Lecture & Oral",
-    body: "Tu passes du mot au texte. On travaille la lecture, la fluidité et la compréhension à travers des textes et des dialogues.",
+    title: "Lecture & Compréhension",
+    body: "Tu passes du mot au texte. On travaille la lecture, la fluidité et la compréhension à travers des textes. En plus, tu écris et traduis des textes en arabe.",
     outcomes: [
       "Tu lis un texte simple à voix haute, de façon fluide.",
       "Tu comprends et réemplois le vocabulaire courant.",
@@ -22,11 +33,12 @@ const PHASES = [
   },
   {
     n: "3",
-    title: "Grammaire",
-    body: "La grammaire n'arrive pas en premier : elle arrive quand elle a du sens. Une fois la lecture installée, on met des règles sur ce que tu sais déjà reconnaître.",
+    title: "Grammaire et expression",
+    body: "Ajout progressif de l'expression orale et de la grammaire, en plus du maintien de l'étude de texte.",
     outcomes: [
       "Tu repères la structure d'une phrase (sujet, verbe, complément…).",
       "Tu comprends pourquoi un mot prend telle terminaison.",
+      "Tu t'exprimes avec un vocabulaire de la vie de tous les jours.",
     ],
   },
 ];
@@ -40,11 +52,11 @@ const STEPS = [
   {
     n: "2",
     title: "Le cours d'essai",
-    body: "En visio, en 1-à-1 avec ton enseignant. Il évalue ton niveau et place ton curseur au bon endroit dans le parcours.",
+    body: "En visio, individuel avec ton enseignant. Il évalue ton niveau et place ton curseur au bon endroit dans le parcours.",
   },
   {
     n: "3",
-    title: "Tu choisis ton abonnement",
+    title: "Tu choisis ta formule",
     body: "Si tu veux continuer, tu sélectionnes une offre. Aucun engagement avant l'essai.",
   },
 ];
@@ -99,22 +111,23 @@ export default function HomePage() {
   return (
     <div style={{ background: "#F7F4EE" }}>
       {/* ── Hero ── */}
-      <section className="mx-auto max-w-3xl px-4 py-16 text-center">
+      <section className="mx-auto max-w-3xl px-4 py-16">
         <h1
           className="leading-tight mb-5"
           style={{
             fontFamily: "var(--font-outfit)",
             fontWeight: 900,
-            fontSize: "clamp(30px, 5vw, 46px)",
+            fontSize: "clamp(36px, 6vw, 56px)",
             color: "#1C1A17",
           }}
         >
-          Cours d&apos;arabe individuel en distanciel
+          Cours d&apos;arabe individuel en{" "}
+          <span style={{ color: "#0F9D6E" }}>distanciel</span>
         </h1>
-        <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
-          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet.
+        <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500 }}>
+          Cours personnalisés en visio, individuel, avec un suivi pédagogique complet.
         </p>
-        <div className="flex flex-col items-center gap-3 mt-8">
+        <div className="flex flex-col items-start gap-3 mt-8">
           <Link
             href="/essai"
             className="rounded-full font-bold text-white"
@@ -127,7 +140,7 @@ export default function HomePage() {
             className="rounded-full font-semibold border"
             style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
           >
-            S&apos;abonner
+            Choisis ta formule
           </Link>
         </div>
       </section>
@@ -135,20 +148,15 @@ export default function HomePage() {
       {/* ── La méthode en 3 phases ── */}
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
-          <p
-            className="text-center font-bold uppercase mb-2"
-            style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
-          >
-            Ton parcours
-          </p>
           <h2
-            className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
+            className="font-bold mb-2"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            La méthode, étape par étape
+            Ton parcours, la méthode étape par{" "}
+            <span style={{ color: "#0F9D6E" }}>étape</span>
           </h2>
-          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}>
-            Pas de classe, pas de rythme imposé : tu avances à ta vitesse, sur ton propre curseur de progression.
+          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520 }}>
+            Pas de classe, pas de rythme imposé : tu avances à ta vitesse, tu es ton propre curseur de progression.
           </p>
 
           <div className="space-y-5">
@@ -161,40 +169,30 @@ export default function HomePage() {
                   border: `1.5px solid ${idx === 0 ? "#A8E8D0" : "#E9E3D8"}`,
                 }}
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
-                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
-                  >
-                    {phase.n}
-                  </div>
-                  <div className="flex-1">
-                    <h3
-                      className="font-bold mb-1"
-                      style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
-                    >
-                      Phase {phase.n} : {phase.title}
-                    </h3>
-                    <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
-                      {phase.body}
-                    </p>
-                    <ul className="space-y-1">
-                      {phase.outcomes.map((o) => (
-                        <li key={o} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 13.5 }}>
-                          <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
-                          {o}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                <h3
+                  className="font-bold mb-1"
+                  style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
+                >
+                  Phase {phase.n} : <span style={{ color: "#0F9D6E" }}>{phase.title}</span>
+                </h3>
+                <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
+                  {phase.body}
+                </p>
+                <ul className="space-y-1">
+                  {phase.outcomes.map((o) => (
+                    <li key={o} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 13.5 }}>
+                      <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
+                      {o}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
 
           <p
-            className="text-center mt-8"
-            style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.65, maxWidth: 480, margin: "32px auto 0", fontStyle: "italic" }}
+            className="mt-8 text-sm"
+            style={{ color: "#6B6560", lineHeight: 1.65, maxWidth: 480, fontStyle: "italic" }}
           >
             Chaque brique en prépare une autre. On ne saute jamais une étape, et on n&apos;introduit jamais une difficulté avant que la précédente soit acquise.
           </p>
@@ -205,10 +203,10 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            className="font-bold mb-10"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Comment ça marche
+            Comment ça <span style={{ color: "#0F9D6E" }}>marche</span>
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map((s) => (
@@ -220,7 +218,7 @@ export default function HomePage() {
                   {s.n}
                 </div>
                 <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
-                  {s.title}
+                  <GreenLast text={s.title} />
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
               </div>
@@ -248,6 +246,7 @@ export default function HomePage() {
             {[
               "Un glossaire français-arabe qui se remplit séance après séance.",
               "Des quiz auto-générés depuis ton glossaire personnel, progressivement plus exigeants.",
+              "Des évaluations expression écrite et orale pour te pousser et que tu saches réellement où tu en es dans ton avancée.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "rgba(255,255,255,.9)", fontSize: 14 }}>
                 <span style={{ color: "#A8F0D8", marginTop: 1 }}>✓</span>
@@ -262,16 +261,13 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="text-center font-bold mb-3"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            className="font-bold mb-3"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Le cours d&apos;arabe individuel
+            Le cours d&apos;arabe <span style={{ color: "#0F9D6E" }}>individuel</span>
           </h2>
-          <p
-            className="text-center mb-10"
-            style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}
-          >
-            Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique complet : carnet de bord, glossaire, grammaire et évaluations.
+          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520 }}>
+            Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique complet : carnet de bord, glossaire, grammaire et évaluations. Quiz disponible après chaque cours.
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
             {FEATURES.map((f) => (
@@ -287,7 +283,7 @@ export default function HomePage() {
                   <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
                 </div>
                 <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
-                  {f.title}
+                  <GreenLast text={f.title} />
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
               </div>
@@ -297,35 +293,31 @@ export default function HomePage() {
       </section>
 
       {/* ── Tarifs teaser ── */}
-      <section className="py-12 px-4 text-center" style={{ background: "#F7F4EE" }}>
-        <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
-          À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
-          ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
-          Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
-        </p>
-        <Link
-          href="/offres"
-          className="inline-block mt-4 rounded-full font-semibold text-sm"
-          style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
-        >
-          Voir tous les tarifs →
-        </Link>
+      <section className="py-12 px-4" style={{ background: "#F7F4EE" }}>
+        <div className="mx-auto max-w-3xl">
+          <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540 }}>
+            À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
+            ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
+            Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
+          </p>
+          <Link
+            href="/offres"
+            className="inline-block mt-4 rounded-full font-semibold text-sm"
+            style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
+          >
+            Voir tous les tarifs →
+          </Link>
+        </div>
       </section>
 
       {/* ── Témoignages ── */}
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
-          <p
-            className="text-center font-bold uppercase mb-2"
-            style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
-          >
-            Ils ont commencé
-          </p>
           <h2
-            className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            className="font-bold mb-10"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Ce que disent nos élèves
+            Ce que disent nos <span style={{ color: "#0F9D6E" }}>élèves</span>
           </h2>
           <TestimonialsStack />
         </div>
@@ -335,12 +327,12 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            className="font-bold mb-2"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Notre engagement, et le tien
+            Notre engagement, et le <span style={{ color: "#0F9D6E" }}>tien</span>
           </h2>
-          <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 40px" }}>
+          <p className="mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 480 }}>
             Un suivi sérieux repose sur des règles claires, des deux côtés. Voici les nôtres.
           </p>
 
@@ -356,7 +348,7 @@ export default function HomePage() {
                 {[
                   "Le même enseignant pour toi, tout au long de ton parcours.",
                   "Un récapitulatif, du vocabulaire et un devoir après chaque séance.",
-                  "La correction de tes devoirs et une réponse à tes messages.",
+                  "Évaluation et suivi adapté : on continue.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#1C5C41", fontSize: 14, lineHeight: 1.55 }}>
                     <span style={{ color: "#0F9D6E", marginTop: 1 }}>✓</span>
@@ -389,7 +381,7 @@ export default function HomePage() {
           </div>
 
           <p
-            className="text-center mt-6 text-sm"
+            className="mt-6 text-sm"
             style={{ color: "#8B857A", fontStyle: "italic" }}
           >
             Pas de paiement, pas de réservation : l&apos;accès au planning s&apos;ouvre une fois ton offre réglée.
@@ -401,10 +393,10 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
-            className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            className="font-bold mb-10"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Les questions qu&apos;on nous pose
+            Les questions qu&apos;on nous <span style={{ color: "#0F9D6E" }}>pose</span>
           </h2>
           <div className="space-y-2">
             {FAQ.map((item) => (
@@ -455,31 +447,33 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-4 text-center" style={{ background: "#F7F4EE" }}>
-        <h2
-          className="font-bold mb-3"
-          style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
-        >
-          Prêt(e) à commencer ?
-        </h2>
-        <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
-          Le cours d&apos;essai dure 1 heure. Gratuit, sans engagement.
-        </p>
-        <div className="flex flex-col items-center gap-3">
-          <Link
-            href="/essai"
-            className="rounded-full font-bold text-white inline-block"
-            style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
+        <div className="mx-auto max-w-3xl">
+          <h2
+            className="font-bold mb-3"
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 34, color: "#1C1A17" }}
           >
-            Réserver mon cours d&apos;essai gratuit
-          </Link>
-          <Link
-            href="/offres"
-            className="rounded-full font-semibold border inline-block"
-            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
-          >
-            S&apos;abonner
-          </Link>
+            Prêt(e) à <span style={{ color: "#0F9D6E" }}>commencer ?</span>
+          </h2>
+          <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
+            Débute par le cours d&apos;essai gratuit, sans engagement.
+          </p>
+          <div className="flex flex-col items-start gap-3">
+            <Link
+              href="/essai"
+              className="rounded-full font-bold text-white inline-block"
+              style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+            >
+              Réserver mon cours d&apos;essai gratuit
+            </Link>
+            <Link
+              href="/offres"
+              className="rounded-full font-semibold border inline-block"
+              style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
+            >
+              Choisis ta formule
+            </Link>
+          </div>
         </div>
       </section>
     </div>
