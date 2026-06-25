@@ -446,10 +446,10 @@ function SuccessManual({ orderRef }: { orderRef: string }) {
 
 // ── Funnel principal ──────────────────────────────────────────────────────────
 
-export function InscriptionFunnel() {
+export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string | null }) {
   const [step, setStep] = useState<Step>(1);
   const [prospect, setProspect] = useState<ProspectInfo | null>(null);
-  const [plan, setPlan] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string | null>(initialPlan);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

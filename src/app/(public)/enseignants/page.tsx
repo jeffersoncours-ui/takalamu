@@ -9,10 +9,9 @@ export const metadata: Metadata = {
 
 export default async function EnseignantsPage() {
   const supabase = await createClient();
-  const { data: teachers } = await supabase
-    .from("teachers")
-    .select("id, display_name, bio, profiles(gender)")
-    .order("created_at");
+  // RPC SECURITY DEFINER : projette id/display_name/bio/gender pour la vitrine
+  // (anon ne peut pas lire profiles.gender via une jointure — RLS deny-by-default).
+  const { data: teachers } = await supabase.rpc("get_public_teachers");
 
   return (
     <div style={{ background: "#F7F4EE" }}>
@@ -39,8 +38,7 @@ export default async function EnseignantsPage() {
         {teachers && teachers.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2">
             {teachers.map((t) => {
-              const profile = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles;
-              const gender = profile?.gender;
+              const gender = t.gender;
               return (
                 <div
                   key={t.id}

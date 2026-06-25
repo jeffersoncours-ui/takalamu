@@ -56,7 +56,7 @@ export default function OffresPage() {
         <div className="grid gap-5 sm:grid-cols-2">
           {/* Carte 1 — Abonnement annuel */}
           <Link
-            href="/essai?offre=annuel"
+            href="/inscription?offre=annuel"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
             style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.30)" }}
           >
@@ -106,13 +106,13 @@ export default function OffresPage() {
               className="mt-auto inline-block rounded-full font-bold text-center"
               style={{ background: "#fff", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
             >
-              Commencer par l&apos;essai gratuit →
+              S&apos;abonner →
             </span>
           </Link>
 
           {/* Carte 2 — Heure à la carte */}
           <Link
-            href="/essai?offre=heure"
+            href="/inscription?offre=heure"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
             style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 20px rgba(28,26,23,.06)" }}
           >
@@ -154,7 +154,7 @@ export default function OffresPage() {
               className="mt-auto inline-block rounded-full font-bold text-center"
               style={{ background: "#F0EBE2", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
             >
-              Commencer par l&apos;essai gratuit →
+              S&apos;abonner →
             </span>
           </Link>
         </div>

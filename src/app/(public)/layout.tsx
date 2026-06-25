@@ -26,20 +26,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1">
-            <NavLink href="/cours-arabe">Cours d&apos;arabe</NavLink>
             <NavLink href="/enseignants">Enseignants</NavLink>
             <NavLink href="/offres">Tarifs</NavLink>
           </nav>
 
           {/* CTAs */}
           <div className="flex items-center gap-2 ml-auto">
-            <Link
-              href="/inscription"
-              className="hidden md:flex rounded-full font-semibold text-sm border"
-              style={{ padding: "8px 14px", color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff", fontSize: 13 }}
-            >
-              J&apos;ai un code
-            </Link>
             <Link
               href="/essai"
               className="hidden sm:flex rounded-full font-semibold text-white text-sm"
@@ -77,11 +69,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </span>
           </div>
           <nav className="flex items-center gap-5 flex-wrap justify-center">
-            <FooterLink href="/cours-arabe">Cours d&apos;arabe</FooterLink>
             <FooterLink href="/enseignants">Enseignants</FooterLink>
             <FooterLink href="/offres">Tarifs</FooterLink>
             <FooterLink href="/essai">Cours d&apos;essai</FooterLink>
-            <FooterLink href="/inscription">Inscription</FooterLink>
             <FooterLink href="/login">Mon espace</FooterLink>
           </nav>
           <p className="text-xs" style={{ color: "#8B857A" }}>

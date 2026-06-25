@@ -18,6 +18,33 @@ const STEPS = [
   },
 ];
 
+const FEATURES = [
+  {
+    title: "1 heure par semaine, en visio",
+    body: "Cours individuels sur Zoom ou Google Meet. Aucun déplacement, aucun matériel particulier requis.",
+  },
+  {
+    title: "Suivi pédagogique complet",
+    body: "Après chaque séance : récapitulatif, vocabulaire du jour, règle de grammaire, et devoir personnalisé.",
+  },
+  {
+    title: "Enseignant dédié selon ton genre",
+    body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes — conformément à l'éthique islamique.",
+  },
+  {
+    title: "Progression à ton rythme",
+    body: "Un programme structuré, du déchiffrage à la lecture orale en passant par la grammaire, avec un curseur de progression individuel.",
+  },
+  {
+    title: "Devoirs et évaluations",
+    body: "Exercices corrigés, quiz auto-générés depuis ton propre glossaire. Aucune saisie en arabe — QCM uniquement.",
+  },
+  {
+    title: "Messagerie directe",
+    body: "Chat en temps réel avec ton enseignant, sans avoir à partager ton numéro de téléphone.",
+  },
+];
+
 export default function HomePage() {
   return (
     <div style={{ background: "#F7F4EE" }}>
@@ -43,7 +70,7 @@ export default function HomePage() {
         <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
           Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet.
         </p>
-        <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
+        <div className="flex flex-col items-center gap-3 mt-8">
           <Link
             href="/essai"
             className="rounded-full font-bold text-white"
@@ -52,11 +79,11 @@ export default function HomePage() {
             Réserver mon cours d&apos;essai gratuit
           </Link>
           <Link
-            href="/cours-arabe"
+            href="/offres"
             className="rounded-full font-semibold border"
-            style={{ padding: "13px 24px", fontSize: 15, color: "#1C1A17", borderColor: "#D8D1C4", background: "#fff" }}
+            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
           >
-            En savoir plus
+            S&apos;abonner
           </Link>
         </div>
       </section>
@@ -92,60 +119,66 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Produits */}
-      <section className="mx-auto max-w-5xl px-4 py-14">
+      {/* Présentation — features */}
+      <section className="mx-auto max-w-5xl px-4 py-16">
         <h2
-          className="text-center font-bold mb-8"
+          className="text-center font-bold mb-3"
           style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
         >
-          Nos offres
+          Le cours d&apos;arabe individuel
         </h2>
-        <div className="max-w-md mx-auto">
-          {/* Produit A */}
-          <div
-            className="rounded-2xl p-7 flex flex-col gap-4"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 20px rgba(28,26,23,.07)" }}
-          >
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#0F9D6E" }}>Individuel</p>
-              <h3
-                className="font-bold mb-2"
-                style={{ fontFamily: "var(--font-spectral)", fontSize: 20, color: "#1C1A17" }}
+        <p
+          className="text-center mb-10"
+          style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 540, margin: "0 auto 40px" }}
+        >
+          Un cours personnalisé, 1 heure par semaine, en visio. Avec un suivi pédagogique
+          complet : carnet de bord, glossaire, grammaire et évaluations.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="rounded-2xl p-5"
+              style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 4px 14px rgba(28,26,23,.06)" }}
+            >
+              <div
+                className="flex items-center justify-center rounded-xl mb-4"
+                style={{ width: 40, height: 40, background: "#E8F7F1" }}
               >
-                Cours d&apos;arabe
+                <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
+              </div>
+              <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                {f.title}
               </h3>
-              <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6 }}>
-                1 heure par semaine en visio, 1-à-1 avec ton enseignant. Suivi pédagogique complet :
-                vocabulaire, grammaire, devoirs, quiz.
-              </p>
+              <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
             </div>
-            <ul className="space-y-2">
-              {["Enseignant dédié selon le genre", "Carnet de bord & glossaire", "Devoirs corrigés", "Quiz personnalisés"].map((item) => (
-                <li key={item} className="flex items-center gap-2 text-sm" style={{ color: "#4A463F" }}>
-                  <span style={{ color: "#0F9D6E" }}>✓</span> {item}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-2">
-              <p className="text-sm mb-3" style={{ color: "#8B857A" }}>
-                À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> ou 15 €/heure
-              </p>
-              <Link
-                href="/cours-arabe"
-                className="inline-block rounded-full font-semibold text-sm"
-                style={{ color: "#0F9D6E", padding: "9px 18px", border: "1.5px solid #0F9D6E" }}
-              >
-                En savoir plus →
-              </Link>
-            </div>
-          </div>
+          ))}
         </div>
+      </section>
+
+      {/* Tarifs teaser */}
+      <section
+        className="border-t py-12 px-4 text-center"
+        style={{ borderColor: "#E9E3D8", background: "#fff" }}
+      >
+        <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
+          À partir de <strong style={{ color: "#1C1A17" }}>52 €/mois</strong> en abonnement annuel,
+          ou <strong style={{ color: "#1C1A17" }}>15 €/heure</strong> à la carte.
+          Cours d&apos;essai <strong style={{ color: "#1C1A17" }}>gratuit</strong>, sans engagement.
+        </p>
+        <Link
+          href="/offres"
+          className="inline-block mt-4 rounded-full font-semibold text-sm"
+          style={{ color: "#0F9D6E", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
+        >
+          Voir tous les tarifs →
+        </Link>
       </section>
 
       {/* CTA bas de page */}
       <section
         className="border-t py-14 px-4 text-center"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
+        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
       >
         <h2
           className="font-bold mb-3"
@@ -156,13 +189,22 @@ export default function HomePage() {
         <p style={{ color: "#4A463F", fontSize: 16, marginBottom: 24 }}>
           Le cours d&apos;essai dure 1 heure. Gratuit, sans engagement.
         </p>
-        <Link
-          href="/essai"
-          className="rounded-full font-bold text-white inline-block"
-          style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
-        >
-          Réserver mon cours d&apos;essai gratuit
-        </Link>
+        <div className="flex flex-col items-center gap-3">
+          <Link
+            href="/essai"
+            className="rounded-full font-bold text-white inline-block"
+            style={{ background: "#0F9D6E", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+          >
+            Réserver mon cours d&apos;essai gratuit
+          </Link>
+          <Link
+            href="/offres"
+            className="rounded-full font-semibold border inline-block"
+            style={{ padding: "13px 26px", fontSize: 15, color: "#0F9D6E", borderColor: "#0F9D6E", background: "#fff" }}
+          >
+            S&apos;abonner
+          </Link>
+        </div>
       </section>
     </div>
   );
