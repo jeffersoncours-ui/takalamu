@@ -129,20 +129,22 @@ export default function HomePage() {
           Cours personnalisés en visio, individuel, avec un suivi pédagogique complet.
         </p>
         <div className="flex flex-col items-center gap-3 mt-8">
-          <Link
-            href="/essai"
-            className="rounded-full font-bold text-white text-center"
-            style={{ background: "var(--site-accent)", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
-          >
-            Réserver mon cours d&apos;essai gratuit
-          </Link>
-          <Link
-            href="/offres"
-            className="rounded-full font-semibold border text-center"
-            style={{ padding: "13px 26px", fontSize: 15, color: "var(--site-accent)", borderColor: "var(--site-accent)", background: "#fff" }}
-          >
-            Choisis ta formule
-          </Link>
+          <div className="flex flex-col gap-3 w-full" style={{ maxWidth: 360 }}>
+            <Link
+              href="/essai"
+              className="rounded-full font-bold text-white text-center w-full"
+              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+            >
+              Réserver mon cours d&apos;essai gratuit
+            </Link>
+            <Link
+              href="/offres"
+              className="rounded-full font-semibold border text-center w-full"
+              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff" }}
+            >
+              Choisis ta formule
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -455,20 +457,22 @@ export default function HomePage() {
           Débute par le cours d&apos;essai gratuit, sans engagement.
         </p>
         <div className="flex flex-col items-center gap-3">
-          <Link
-            href="/essai"
-            className="rounded-full font-bold text-white inline-block text-center"
-            style={{ background: "var(--site-accent)", padding: "14px 28px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
-          >
-            Réserver mon cours d&apos;essai gratuit
-          </Link>
-          <Link
-            href="/offres"
-            className="rounded-full font-semibold border inline-block text-center"
-            style={{ padding: "13px 26px", fontSize: 15, color: "var(--site-accent)", borderColor: "var(--site-accent)", background: "#fff" }}
-          >
-            Choisis ta formule
-          </Link>
+          <div className="flex flex-col gap-3 w-full" style={{ maxWidth: 360 }}>
+            <Link
+              href="/essai"
+              className="rounded-full font-bold text-white text-center w-full"
+              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+            >
+              Réserver mon cours d&apos;essai gratuit
+            </Link>
+            <Link
+              href="/offres"
+              className="rounded-full font-semibold border text-center w-full"
+              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff" }}
+            >
+              Choisis ta formule
+            </Link>
+          </div>
         </div>
       </section>
       <ColorTweaker />
