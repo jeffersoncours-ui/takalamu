@@ -234,7 +234,7 @@ export default function HomePage() {
           style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
         >
           <h2
-            className="font-bold mb-4 leading-snug"
+            className="text-center font-bold mb-4 leading-snug"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 24, color: "#fff" }}
           >
             Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
@@ -279,12 +279,6 @@ export default function HomePage() {
                 className="rounded-2xl p-5"
                 style={{ background: "#F7F4EE", border: "1px solid #EFEAE0" }}
               >
-                <div
-                  className="flex items-center justify-center rounded-xl mb-4"
-                  style={{ width: 40, height: 40, background: "#E8F7F1" }}
-                >
-                  <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
-                </div>
                 <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   <GreenLast text={f.title} />
                 </h3>
