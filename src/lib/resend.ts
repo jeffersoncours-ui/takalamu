@@ -1,8 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Adresse expéditrice : domaine vérifié en prod, onboarding@resend.dev en dev.
 // TODO: une fois le domaine OVH ajouté dans Resend, définir EMAIL_FROM en prod sur Vercel.
 const FROM = process.env.EMAIL_FROM ?? "onboarding@resend.dev";
 
@@ -12,6 +9,11 @@ export async function sendTrialCode(params: {
   code: string;
   scheduledAt?: string | null;
 }): Promise<{ error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { error: "RESEND_API_KEY non configurée." };
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const { to, firstName, code, scheduledAt } = params;
 
   let slotLine = "";
