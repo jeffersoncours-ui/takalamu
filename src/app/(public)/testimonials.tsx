@@ -98,7 +98,7 @@ export function TestimonialsStack() {
                     lineHeight: 1.65,
                     marginTop: 12,
                     fontStyle: "italic",
-                    fontFamily: "var(--font-barlow)",
+                    fontFamily: "var(--font-outfit)",
                   }}
                 >
                   &ldquo;{t.quote}&rdquo;

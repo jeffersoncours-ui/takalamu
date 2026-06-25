@@ -109,7 +109,7 @@ export default function HomePage() {
         <h1
           className="leading-tight mb-5"
           style={{
-            fontFamily: "var(--font-barlow)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 900,
             fontSize: "clamp(30px, 5vw, 46px)",
             color: "#1C1A17",
@@ -149,7 +149,7 @@ export default function HomePage() {
           </p>
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
           >
             La méthode, étape par étape
           </h2>
@@ -170,14 +170,14 @@ export default function HomePage() {
                 <div className="flex items-start gap-4">
                   <div
                     className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
-                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-barlow)", fontWeight: 900 }}
+                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
                   >
                     {phase.n}
                   </div>
                   <div className="flex-1">
                     <h3
                       className="font-bold mb-1"
-                      style={{ fontFamily: "var(--font-barlow)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
+                      style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
                     >
                       Phase {phase.n} : {phase.title}
                     </h3>
@@ -212,7 +212,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Comment ça marche
           </h2>
@@ -221,11 +221,11 @@ export default function HomePage() {
               <div key={s.n} className="flex flex-col items-center text-center gap-3">
                 <div
                   className="flex items-center justify-center rounded-full font-bold text-white"
-                  style={{ width: 42, height: 42, background: "#0F9D6E", fontSize: 17, fontFamily: "var(--font-barlow)", fontWeight: 900 }}
+                  style={{ width: 42, height: 42, background: "#0F9D6E", fontSize: 17, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
                 >
                   {s.n}
                 </div>
-                <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
+                <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   {s.title}
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
@@ -249,7 +249,7 @@ export default function HomePage() {
           </p>
           <h2
             className="font-bold mb-4 leading-snug"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 24, color: "#fff" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 24, color: "#fff" }}
           >
             Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
           </h2>
@@ -275,7 +275,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-3"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Le cours d&apos;arabe individuel
           </h2>
@@ -298,7 +298,7 @@ export default function HomePage() {
                 >
                   <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
                 </div>
-                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
+                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   {f.title}
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
@@ -335,7 +335,7 @@ export default function HomePage() {
           </p>
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Ce que disent nos élèves
           </h2>
@@ -348,7 +348,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Notre engagement, et le tien
           </h2>
@@ -361,7 +361,7 @@ export default function HomePage() {
               className="rounded-2xl p-6"
               style={{ background: "#E8F7F1", border: "1.5px solid #A8E8D0" }}
             >
-              <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
+              <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                 Ce qu&apos;on s&apos;engage à faire
               </p>
               <ul className="space-y-2.5">
@@ -382,7 +382,7 @@ export default function HomePage() {
               className="rounded-2xl p-6"
               style={{ background: "#fff", border: "1.5px solid #E9E3D8" }}
             >
-              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
+              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                 Ce qu&apos;on te demande
               </p>
               <ul className="space-y-2.5">
@@ -414,7 +414,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Les questions qu&apos;on nous pose
           </h2>
@@ -470,7 +470,7 @@ export default function HomePage() {
       <section className="py-14 px-4 text-center" style={{ background: "#F7F4EE" }}>
         <h2
           className="font-bold mb-3"
-          style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
         >
           Prêt(e) à commencer ?
         </h2>

@@ -136,7 +136,7 @@ function GenderStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-barlow)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -252,7 +252,7 @@ function SlotStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-barlow)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -433,7 +433,7 @@ function FormStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-barlow)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -639,7 +639,7 @@ function SuccessScreen({ slot }: { slot: Date | null }) {
       <h1
         className="font-bold mb-3"
         style={{
-          fontFamily: "var(--font-barlow)",
+          fontFamily: "var(--font-outfit)",
           fontSize: 26,
           color: "#1C1A17",
         }}

@@ -33,9 +33,10 @@
 @theme inline {
   /* Fonts */
   --font-spectral: var(--font-spectral);
-  --font-jakarta: var(--font-jakarta);
+  --font-outfit: var(--font-outfit);
+  --font-inter: var(--font-inter);
   --font-amiri: var(--font-amiri);
-  --font-sans: var(--font-jakarta);
+  --font-sans: var(--font-inter);
 
   /* Couleurs custom */
   --color-page: var(--tk-page-bg);

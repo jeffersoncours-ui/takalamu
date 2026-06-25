@@ -18,7 +18,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </span>
             <span
               className="font-bold hidden sm:block"
-              style={{ fontFamily: "var(--font-barlow)", fontSize: 17, color: "#1C1A17" }}
+              style={{ fontFamily: "var(--font-outfit)", fontSize: 17, color: "#1C1A17" }}
             >
               Takalamu
             </span>
@@ -64,7 +64,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             >
               ت
             </span>
-            <span className="font-semibold text-sm" style={{ color: "#1C1A17", fontFamily: "var(--font-barlow)" }}>
+            <span className="font-semibold text-sm" style={{ color: "#1C1A17", fontFamily: "var(--font-outfit)" }}>
               Takalamu
             </span>
           </div>
