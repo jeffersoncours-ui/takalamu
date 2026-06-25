@@ -26,7 +26,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1">
-            <NavLink href="/enseignants">Enseignants</NavLink>
             <NavLink href="/offres">Tarifs</NavLink>
           </nav>
 
@@ -69,7 +68,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </span>
           </div>
           <nav className="flex items-center gap-5 flex-wrap justify-center">
-            <FooterLink href="/enseignants">Enseignants</FooterLink>
             <FooterLink href="/offres">Tarifs</FooterLink>
             <FooterLink href="/essai">Cours d&apos;essai</FooterLink>
             <FooterLink href="/login">Mon espace</FooterLink>

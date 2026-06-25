@@ -235,7 +235,7 @@ export default function HomePage() {
           style={{ background: "var(--site-accent)", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
         >
           <h2
-            className="text-center font-bold mb-4 leading-snug"
+            className="font-bold mb-4 leading-snug"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 24, color: "#fff" }}
           >
             Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
