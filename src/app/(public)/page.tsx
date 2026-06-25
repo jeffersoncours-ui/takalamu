@@ -193,7 +193,7 @@ export default function HomePage() {
 
           <p
             className="text-center mt-8"
-            style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.65, maxWidth: 480, margin: "32px auto 0", fontStyle: "italic" }}
+            style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.65, maxWidth: 480, margin: "32px auto 0", fontFamily: "var(--font-outfit)", fontWeight: 600 }}
           >
             Chaque brique en prépare une autre. On ne saute jamais une étape, et on n&apos;introduit jamais une difficulté avant que la précédente soit acquise.
           </p>
@@ -378,7 +378,7 @@ export default function HomePage() {
 
           <p
             className="text-center mt-6 text-sm"
-            style={{ color: "#8B857A", fontStyle: "italic" }}
+            style={{ color: "#8B857A", fontFamily: "var(--font-outfit)", fontWeight: 600 }}
           >
             Pas de paiement, pas de réservation : l&apos;accès au planning s&apos;ouvre une fois ton offre réglée.
           </p>
