@@ -69,7 +69,7 @@ function PageHeader({ title, sub }: { title: string; sub?: string }) {
       <p className="font-bold uppercase mb-3" style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}>
         Inscription
       </p>
-      <h1 className="leading-tight mb-2" style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 28, color: "#1C1A17" }}>
+      <h1 className="leading-tight mb-2" style={{ fontFamily: "var(--font-outfit)", fontWeight: 700, fontSize: 28, color: "#1C1A17" }}>
         {title}
       </h1>
       {sub && <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6 }}>{sub}</p>}
@@ -263,10 +263,10 @@ function PlanStep({
 // ── Step 3 — Confirmation + paiement ─────────────────────────────────────────
 
 function planLabel(plan: string): string {
-  if (plan === "hourly") return "Heure à la carte — 15 €";
+  if (plan === "hourly") return "Heure à la carte, 15 €";
   const p = ANNUAL_PLANS.find((a) => a.key === plan);
   if (!p) return plan;
-  return `Abonnement annuel · ${p.label} — ${p.installmentAmount} € maintenant`;
+  return `Abonnement annuel · ${p.label}, ${p.installmentAmount} € maintenant`;
 }
 
 function ConfirmStep({
@@ -388,7 +388,7 @@ function SuccessAuto({ checkoutUrl, orderRef }: { checkoutUrl: string; orderRef:
           <polyline points="20 6 9 17 4 12" />
         </svg>
       </div>
-      <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}>
+      <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 24, color: "#1C1A17" }}>
         Commande créée !
       </h2>
       <p className="mb-1" style={{ color: "#4A463F", fontSize: 14 }}>
@@ -421,7 +421,7 @@ function SuccessManual({ orderRef }: { orderRef: string }) {
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
         </svg>
       </div>
-      <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}>
+      <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 24, color: "#1C1A17" }}>
         Demande enregistrée
       </h2>
       <p className="mb-4" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.65 }}>
@@ -446,10 +446,10 @@ function SuccessManual({ orderRef }: { orderRef: string }) {
 
 // ── Funnel principal ──────────────────────────────────────────────────────────
 
-export function InscriptionFunnel() {
+export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string | null }) {
   const [step, setStep] = useState<Step>(1);
   const [prospect, setProspect] = useState<ProspectInfo | null>(null);
-  const [plan, setPlan] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string | null>(initialPlan);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

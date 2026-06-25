@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Spectral, Plus_Jakarta_Sans, Amiri } from "next/font/google";
+import { Spectral, Inter, Amiri, Outfit } from "next/font/google";
 import "./globals.css";
 
 const spectral = Spectral({
@@ -8,10 +8,16 @@ const spectral = Spectral({
   weight: ["400", "600", "700"],
 });
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["700", "800", "900"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const amiri = Amiri({
@@ -34,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${spectral.variable} ${plusJakarta.variable} ${amiri.variable} h-full antialiased`}
+      className={`${spectral.variable} ${outfit.variable} ${inter.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-page text-ink">{children}</body>
     </html>

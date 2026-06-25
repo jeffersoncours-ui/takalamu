@@ -23,7 +23,7 @@ export default function OffresPage() {
         </p>
         <h1
           className="leading-tight mb-4"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-outfit)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
         >
           Deux façons d&apos;apprendre
         </h1>
@@ -45,7 +45,7 @@ export default function OffresPage() {
             ✓
           </span>
           <p style={{ color: "#0A6B4E", fontSize: 14, lineHeight: 1.5 }}>
-            Le <strong>cours d&apos;essai gratuit est obligatoire</strong> avant tout paiement —
+            Le <strong>cours d&apos;essai gratuit est obligatoire</strong> avant tout paiement :
             abonnement comme heure à la carte. On évalue ton niveau, puis tu choisis.
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function OffresPage() {
         <div className="grid gap-5 sm:grid-cols-2">
           {/* Carte 1 — Abonnement annuel */}
           <Link
-            href="/essai?offre=annuel"
+            href="/inscription?offre=annuel"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
             style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.30)" }}
           >
@@ -67,21 +67,26 @@ export default function OffresPage() {
               >
                 ✦ Le plus populaire
               </p>
-              <h2 className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 23, color: "#fff" }}>
+              <h2 className="font-bold" style={{ fontFamily: "var(--font-outfit)", fontSize: 23, color: "#fff" }}>
                 Abonnement annuel
               </h2>
               <p className="mt-1" style={{ color: "rgba(255,255,255,.85)", fontSize: 13.5 }}>
-                4 séances d&apos;1 h par mois · 48 séances sur l&apos;année
+                4 séances d&apos;1 h par mois · 48 séances sur l&apos;année, à partir de
               </p>
             </div>
 
             <div>
-              <span className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 34, color: "#fff" }}>
-                {best.pricePerMonth} €
-              </span>
-              <span style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}> /mois</span>
+              <div>
+                <span className="font-bold" style={{ fontFamily: "var(--font-outfit)", fontSize: 34, color: "#fff" }}>
+                  {best.pricePerMonth} €
+                </span>
+                <span style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}> /mois</span>
+              </div>
               <p style={{ color: "#A8F0D8", fontSize: 13, fontWeight: 600, marginTop: 2 }}>
-                à partir de — soit {best.savings} € d&apos;économie
+                soit {best.savings} € d&apos;économie (paiement en une fois)*
+              </p>
+              <p style={{ color: "rgba(255,255,255,.55)", fontSize: 11, marginTop: 3 }}>
+                * comparé au prix à l&apos;heure de {HOURLY_PRICE_EUROS} € ({HOURLY_PRICE_EUROS * 48} € pour 48 h)
               </p>
             </div>
 
@@ -106,13 +111,13 @@ export default function OffresPage() {
               className="mt-auto inline-block rounded-full font-bold text-center"
               style={{ background: "#fff", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
             >
-              Commencer par l&apos;essai gratuit →
+              S&apos;abonner →
             </span>
           </Link>
 
           {/* Carte 2 — Heure à la carte */}
           <Link
-            href="/essai?offre=heure"
+            href="/inscription?offre=heure"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
             style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 20px rgba(28,26,23,.06)" }}
           >
@@ -123,7 +128,7 @@ export default function OffresPage() {
               >
                 Sans engagement
               </p>
-              <h2 className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 23, color: "#1C1A17" }}>
+              <h2 className="font-bold" style={{ fontFamily: "var(--font-outfit)", fontSize: 23, color: "#1C1A17" }}>
                 Heure à la carte
               </h2>
               <p className="mt-1" style={{ color: "#6B6560", fontSize: 13.5 }}>
@@ -132,7 +137,7 @@ export default function OffresPage() {
             </div>
 
             <div>
-              <span className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 34, color: "#1C1A17" }}>
+              <span className="font-bold" style={{ fontFamily: "var(--font-outfit)", fontSize: 34, color: "#1C1A17" }}>
                 {HOURLY_PRICE_EUROS} €
               </span>
               <span style={{ color: "#8B857A", fontSize: 14 }}> /heure</span>
@@ -154,7 +159,7 @@ export default function OffresPage() {
               className="mt-auto inline-block rounded-full font-bold text-center"
               style={{ background: "#F0EBE2", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
             >
-              Commencer par l&apos;essai gratuit →
+              S&apos;abonner →
             </span>
           </Link>
         </div>
@@ -169,7 +174,7 @@ export default function OffresPage() {
         className="border-t py-12 px-4 text-center"
         style={{ borderColor: "#E9E3D8", background: "#fff" }}
       >
-        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-spectral)", fontSize: 22, color: "#1C1A17" }}>
+        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 22, color: "#1C1A17" }}>
           Commençons par un cours d&apos;essai
         </h2>
         <p style={{ color: "#4A463F", fontSize: 15, marginBottom: 20 }}>

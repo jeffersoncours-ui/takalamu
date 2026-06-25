@@ -136,7 +136,7 @@ function GenderStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-spectral)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -252,7 +252,7 @@ function SlotStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-spectral)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -402,10 +402,10 @@ function SlotStep({
 // ── Step 3 — Formulaire ───────────────────────────────────────────────────────
 
 const LEVELS = [
-  { value: "debutant", label: "Débutant complet — je ne connais pas l'alphabet" },
-  { value: "bases", label: "Bases — je connais l'alphabet" },
-  { value: "intermediaire", label: "Intermédiaire — je lis, je veux progresser" },
-  { value: "avance", label: "Avancé — lecture courante, travail approfondi" },
+  { value: "debutant", label: "Débutant complet, je ne connais pas l'alphabet" },
+  { value: "bases", label: "Bases, je connais l'alphabet" },
+  { value: "intermediaire", label: "Intermédiaire, je lis et je veux progresser" },
+  { value: "avance", label: "Avancé, lecture courante et travail approfondi" },
 ] as const;
 
 function FormStep({
@@ -433,7 +433,7 @@ function FormStep({
         <h1
           className="leading-tight mb-3"
           style={{
-            fontFamily: "var(--font-spectral)",
+            fontFamily: "var(--font-outfit)",
             fontWeight: 700,
             fontSize: 28,
             color: "#1C1A17",
@@ -639,7 +639,7 @@ function SuccessScreen({ slot }: { slot: Date | null }) {
       <h1
         className="font-bold mb-3"
         style={{
-          fontFamily: "var(--font-spectral)",
+          fontFamily: "var(--font-outfit)",
           fontSize: 26,
           color: "#1C1A17",
         }}

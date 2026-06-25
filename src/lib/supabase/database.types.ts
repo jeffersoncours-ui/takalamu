@@ -1341,6 +1341,15 @@ export type Database = {
         Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
         Returns: { day_of_week: number; start_time: string; end_time: string }[]
       }
+      get_public_teachers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          display_name: string
+          bio: string
+          gender: Database["public"]["Enums"]["gender_type"]
+        }[]
+      }
       get_teacher_booked_slots: {
         Args: { p_from?: string; p_teacher_id: string }
         Returns: {

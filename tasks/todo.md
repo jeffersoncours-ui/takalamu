@@ -2,6 +2,50 @@
 
 ---
 
+## Session 18 — Corrections visuelles vitrine (polices, boutons, tweaker couleurs)
+
+> **Statut : TERMINÉ.**
+
+### Plan
+- [x] Retirer textes en orange (eyebrows, sous-titres, mentions inutiles) signalés en screenshot
+- [x] Refonte contenus homepage : titres centrés, dernier mot en vert (`GreenLast`), phases, étapes, features, engagement, CTA
+- [x] Supprimer page `/enseignants` + retirer nav/footer links
+- [x] Ajouter `ColorTweaker` : panel flottant 🎨 temps réel (fond / texte / accent + slider tailles titres)
+- [x] Correctif titres phases mobile : `clamp(13px, 3.8vw, 18px)` + `whitespace-nowrap`
+- [x] Audit code mort : retirer `type` field inutilisé du tweaker, ajouter `aria-hidden` décoratifs
+- [x] Notes italiques → Outfit Semi-Bold sans italique (après phases + après engagement)
+- [x] Boutons CTA : uniformiser largeur (wrapper `maxWidth: 360` + `w-full`) et padding identique (`13px 24px`) + `borderWidth: 2` sur le secondaire pour équilibrer l'épaisseur visuelle
+
+### Review Session 18
+- **ColorTweaker** : CSS custom props sur `:root` → reflet instantané sans re-render. Variables `--site-bg/title/accent/h1-size/h2-size` utilisées dans tous les styles inline de la page.
+- **GreenLast** : composant minimal, split sur le dernier espace, span vert. Aucune librairie.
+- **Boutons CTA égalisés** : les deux boutons partagent désormais `w-full` dans un wrapper `maxWidth: 360`, même padding, même font-size (16px), `borderWidth: 2` sur l'outline pour que l'épaisseur visuelle égale le bouton plein.
+- **Phase card titles** : `clamp()` évite le retour à la ligne sur mobile sans truncation artificielle.
+- Build vert, pushé sur `claude/takalamu-setup-zun4ou`.
+
+---
+
+## Session 17 — Corrections vitrine (genre profs, fusion présentation, tunnel s'abonner)
+
+> **Statut : TERMINÉ.** Demandes propriétaire (screens fournis).
+
+### Plan
+- [x] **Bug genre profs** (`/enseignants`) : cause racine = anon ne peut pas lire `profiles.gender` (RLS deny-by-default) → jointure null → fallback "Cours hommes" pour tous. Fix = RPC `get_public_teachers()` SECURITY DEFINER projetant `id, display_name, bio, gender` (migration 33). Pas d'ouverture de `profiles` à anon. Prouvé en anon : Youssef=m, Khadija=f.
+- [x] **Retirer la page `/cours-arabe`** + intégrer ses 6 features directement en page d'accueil. Retirer le bouton "En savoir plus" (hero + carte produit).
+- [x] **Ajouter bouton "S'abonner"** en page d'accueil sous "Réserver cours d'essai" (hero + CTA bas) → `/offres`.
+- [x] **Cartes `/offres`** : pointent vers `/inscription?offre=annuel|heure`, libellé bouton → "S'abonner →".
+- [x] **Funnel `/inscription`** : lit `?offre=` (server page → prop `initialPlan`) et pré-sélectionne le plan (annuel → "1x", heure → "hourly").
+- [x] **Retirer accès `/inscription` de la nav** : bouton "J'ai un code" (header) + lien "Inscription" (footer) supprimés. Page accessible uniquement via les cartes tarif.
+- [x] **Nettoyer nav** : liens "Cours d'arabe" (header + footer) retirés.
+- [x] Build vert (35 routes, /cours-arabe disparue).
+
+### Review Session 17
+- **Cause racine du bug genre** identifiée et corrigée à la source (RLS, pas patch d'affichage) : RPC SECURITY DEFINER `get_public_teachers()` — même pattern que les autres RPC anon du projet, auto-gardé (projette uniquement les 4 champs vitrine). Advisor : même WARN accepté que les RPC existantes, 0 nouveau lint structurel.
+- **Vitrine simplifiée** : `/cours-arabe` supprimée, ses 6 features remontées en page d'accueil. Plus aucun lien orphelin (grep `cours-arabe` = 0 hors historique todo).
+- **Parcours de vente clarifié** : essai (gratuit) et abonnement (avec code) bien séparés. "S'abonner" présent en home (hero + CTA) et sur chaque carte tarif → `/inscription` avec plan pré-sélectionné. `/inscription` retiré de la nav publique.
+
+---
+
 ## Session 16 — Refonte tunnel de vente, pricing & règles métier
 
 > **Statut : VALIDÉ PAR LE PROPRIÉTAIRE (2026-06-24) — en cours.**

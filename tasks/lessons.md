@@ -1,5 +1,22 @@
 # Lessons
 
+## Session 18 (2026-06-25) — Corrections visuelles vitrine
+
+### Décisions
+
+- **ColorTweaker : CSS custom props sur `:root` (jamais inline React state propagé en arbre).** Pour permettre des changements couleur/taille en temps réel sans re-render de toute la page, on écrit dans `document.documentElement.style.setProperty("--site-*", val)`. La page consomme ces vars via `var(--site-*)` dans ses `style` inline. Zéro propagation React : une seule mise à jour DOM native.
+- **GreenLast helper : split sur le dernier espace, pas de regex.** `title.lastIndexOf(" ")` → `slice(0, idx)` + `slice(idx + 1)`. Simple, robuste, pas de cas limit pour les titres français 2-4 mots.
+- **Boutons CTA : wrapper conteneur + `w-full` sur chaque bouton.** Plutôt que de fixer une largeur sur le bouton lui-même (qui casse le responsive), on enveloppe les deux dans `<div style={{ maxWidth: 360 }} className="w-full flex flex-col gap-3">` et chaque bouton prend `w-full`. Le wrapper est `items-center` dans son parent → centré sur desktop, pleine largeur sur mobile.
+- **`borderWidth: 2` sur le bouton outline.** Un `border` Tailwind applique `border-width: 1px`. Visuellement, un bouton outline 1 px paraît plus fin qu'un bouton plein de même hauteur. Passer à 2 px équilibre la perception sans changer le padding ni la hauteur.
+- **Police des notes secondaires : Outfit Semi-Bold (600) sans italique.** L'italique en gris donne un aspect "disclamer" peu premium. Outfit 600 dans la même couleur muted (#6B6560 / #8B857A) reste subtil mais cohérent avec les sous-titres du design system.
+
+### Pièges
+
+- **`clamp()` + `whitespace-nowrap` pour les titres de phases.** Sur mobile < 360 px, "Phase 3 : Grammaire et expression" déborde si on laisse `font-size` fixe. La combinaison `clamp(13px, 3.8vw, 18px)` + `whitespace-nowrap overflow-hidden text-ellipsis` force tout sur une ligne en réduisant la taille. Sans `whitespace-nowrap`, le `clamp()` ne suffit pas.
+- **Ne pas mettre `inline-block` sur un bouton `w-full`.** `Link` rend un `<a>` qui est inline par défaut. `inline-block` + `w-full` → la largeur est 100% du parent inline, pas du conteneur block. Supprimer `inline-block` laisse `w-full` agir correctement (display block).
+
+---
+
 ## Session 16 (2026-06-25) — Tunnel essai multi-étapes, code d'essai, tunnel paiement self-serve
 
 ### Décisions
