@@ -14,7 +14,7 @@ const PHASES = [
   {
     n: "2",
     title: "Lecture & Oral",
-    body: "Tu passes du mot au texte. On travaille la lecture suivie, la fluidité et la compréhension à travers des textes et des dialogues.",
+    body: "Tu passes du mot au texte. On travaille la lecture, la fluidité et la compréhension à travers des textes et des dialogues.",
     outcomes: [
       "Tu lis un texte simple à voix haute, de façon fluide.",
       "Tu comprends et réemplois le vocabulaire courant.",
@@ -39,7 +39,7 @@ const STEPS = [
   },
   {
     n: "2",
-    title: "Le cours d'essai (1 h)",
+    title: "Le cours d'essai",
     body: "En visio, en 1-à-1 avec ton enseignant. Il évalue ton niveau et place ton curseur au bon endroit dans le parcours.",
   },
   {
@@ -56,7 +56,7 @@ const FEATURES = [
   },
   {
     title: "Enseignant dédié selon ton genre",
-    body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes, conformément à l'éthique islamique.",
+    body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes.",
   },
   {
     title: "Messagerie directe sans partager ton numéro",
@@ -100,12 +100,6 @@ export default function HomePage() {
     <div style={{ background: "#F7F4EE" }}>
       {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p
-          className="font-bold uppercase mb-4"
-          style={{ color: "#0F9D6E", fontSize: 11, letterSpacing: ".14em" }}
-        >
-          Takalamu · تكلموا
-        </p>
         <h1
           className="leading-tight mb-5"
           style={{
@@ -118,7 +112,7 @@ export default function HomePage() {
           Cours d&apos;arabe individuel en distanciel
         </h1>
         <p style={{ color: "#4A463F", fontSize: 17, lineHeight: 1.65, maxWidth: 500, margin: "0 auto" }}>
-          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet. Du premier alphabet à la lecture autonome.
+          Cours personnalisés en visio, en 1-à-1, avec un suivi pédagogique complet.
         </p>
         <div className="flex flex-col items-center gap-3 mt-8">
           <Link
@@ -154,7 +148,7 @@ export default function HomePage() {
             La méthode, étape par étape
           </h2>
           <p className="text-center mb-10" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.6, maxWidth: 520, margin: "0 auto 40px" }}>
-            Un seul fil, du tout premier alphabet jusqu&apos;à la lecture autonome. Pas de classe, pas de rythme imposé : tu avances à ta vitesse, sur ton propre curseur de progression.
+            Pas de classe, pas de rythme imposé : tu avances à ta vitesse, sur ton propre curseur de progression.
           </p>
 
           <div className="space-y-5">
@@ -241,12 +235,6 @@ export default function HomePage() {
           className="mx-auto max-w-3xl rounded-2xl p-8"
           style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
         >
-          <p
-            className="font-bold uppercase mb-2"
-            style={{ color: "rgba(255,255,255,.7)", fontSize: 11, letterSpacing: ".14em" }}
-          >
-            Ce qui nous rend différents
-          </p>
           <h2
             className="font-bold mb-4 leading-snug"
             style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: 24, color: "#fff" }}
