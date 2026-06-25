@@ -171,8 +171,8 @@ export default function HomePage() {
                 }}
               >
                 <h3
-                  className="font-bold mb-1"
-                  style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: 18, color: "var(--site-title)" }}
+                  className="font-bold mb-1 whitespace-nowrap overflow-hidden text-ellipsis"
+                  style={{ fontFamily: "var(--font-outfit)", fontWeight: 800, fontSize: "clamp(13px, 3.8vw, 18px)", color: "var(--site-title)" }}
                 >
                   Phase {phase.n} : <span style={{ color: "var(--site-accent)" }}>{phase.title}</span>
                 </h3>
