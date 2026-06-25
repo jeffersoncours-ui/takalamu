@@ -5,11 +5,10 @@ const PHASES = [
   {
     n: "1",
     title: "Décodage",
-    body: "On installe les fondations : les lettres, les voyelles (harakât), puis l'assemblage en mots et en phrases courtes.",
+    body: "On installe les fondations : les lettres, les voyelles (harakât), puis l'assemblage en mots.",
     outcomes: [
       "Tu reconnais et prononces chaque lettre, isolée ou attachée.",
       "Tu déchiffres n'importe quel mot entièrement voyellé.",
-      "Tu lis des phrases courtes sans buter sur les sons.",
     ],
   },
   {
@@ -18,7 +17,6 @@ const PHASES = [
     body: "Tu passes du mot au texte. On travaille la lecture suivie, la fluidité et la compréhension à travers des textes et des dialogues.",
     outcomes: [
       "Tu lis un texte simple à voix haute, de façon fluide.",
-      "Tu commences à lire sans toutes les voyelles.",
       "Tu comprends et réemplois le vocabulaire courant.",
     ],
   },
@@ -29,7 +27,6 @@ const PHASES = [
     outcomes: [
       "Tu repères la structure d'une phrase (sujet, verbe, complément…).",
       "Tu comprends pourquoi un mot prend telle terminaison.",
-      "Tu lis des textes non-voyellés avec de plus en plus d'autonomie.",
     ],
   },
 ];
@@ -74,7 +71,7 @@ const FAQ = [
   },
   {
     q: "Combien de temps avant de savoir lire ?",
-    a: "Ça dépend de ton point de départ et de ta régularité, c'est tout l'intérêt du curseur individuel. À raison d'une heure par semaine et d'un peu de travail entre les séances, la lecture des mots voyellés s'installe vite. On ne te promet pas un délai magique : on te promet une progression sans trou.",
+    a: "Ça dépend de ton point de départ et de ta régularité, c'est tout l'intérêt du curseur individuel. On ne te promet pas un délai magique : on te promet une progression sans trou.",
   },
   {
     q: "Comment se passe un cours ?",
@@ -82,7 +79,7 @@ const FAQ = [
   },
   {
     q: "Homme ou femme : qui sera mon enseignant ?",
-    a: "Les élèves hommes sont suivis par un enseignant, les élèves femmes par une enseignante, conformément à l'éthique islamique. Tu choisis au moment de réserver, et tu gardes le même enseignant tout au long de ton parcours.",
+    a: "Les élèves hommes sont suivis par un enseignant, les élèves femmes par une enseignante.",
   },
   {
     q: "Et si je dois annuler ou que je rate une séance ?",
@@ -257,13 +254,12 @@ export default function HomePage() {
             Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
           </h2>
           <p style={{ color: "rgba(255,255,255,.88)", fontSize: 15, lineHeight: 1.65, marginBottom: 20 }}>
-            La plupart des applications te font réviser une liste de mots que quelqu&apos;un d&apos;autre a choisie. Ici, c&apos;est l&apos;inverse. Chaque mot que ton enseignant t&apos;apprend entre automatiquement dans ton glossaire personnel. Tes quiz sont ensuite générés à partir de ce glossaire : tu ne révises jamais que ce que tu as réellement appris, ni plus ni moins.
+            Chaque mot que ton enseignant t&apos;apprend entre automatiquement dans ton glossaire personnel. Tes quiz sont ensuite générés à partir de ce glossaire.
           </p>
           <ul className="space-y-2">
             {[
               "Un glossaire français-arabe qui se remplit séance après séance.",
               "Des quiz auto-générés depuis ton glossaire personnel, progressivement plus exigeants.",
-              "Tu révises exactement ta matière, pas un programme générique.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "rgba(255,255,255,.9)", fontSize: 14 }}>
                 <span style={{ color: "#A8F0D8", marginTop: 1 }}>✓</span>
