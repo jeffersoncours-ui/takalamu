@@ -59,7 +59,7 @@ const FEATURES = [
   },
   {
     title: "Enseignant dédié selon ton genre",
-    body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes — conformément à l'éthique islamique.",
+    body: "Un enseignant homme pour les hommes, une enseignante femme pour les femmes, conformément à l'éthique islamique.",
   },
   {
     title: "Messagerie directe sans partager ton numéro",
@@ -74,31 +74,27 @@ const FAQ = [
   },
   {
     q: "Combien de temps avant de savoir lire ?",
-    a: "Ça dépend de ton point de départ et de ta régularité — c'est tout l'intérêt du curseur individuel. À raison d'une heure par semaine et d'un peu de travail entre les séances, la lecture des mots voyellés s'installe vite. On ne te promet pas un délai magique : on te promet une progression sans trou.",
+    a: "Ça dépend de ton point de départ et de ta régularité, c'est tout l'intérêt du curseur individuel. À raison d'une heure par semaine et d'un peu de travail entre les séances, la lecture des mots voyellés s'installe vite. On ne te promet pas un délai magique : on te promet une progression sans trou.",
   },
   {
     q: "Comment se passe un cours ?",
     a: "En visio (Zoom ou Google Meet), en tête-à-tête, une heure par semaine. Aucun déplacement, aucun matériel particulier. Après chaque séance, tu retrouves dans ton espace : le récapitulatif, le vocabulaire du jour, la règle de grammaire éventuelle et un devoir personnalisé.",
   },
   {
-    q: "Homme ou femme — qui sera mon enseignant ?",
+    q: "Homme ou femme : qui sera mon enseignant ?",
     a: "Les élèves hommes sont suivis par un enseignant, les élèves femmes par une enseignante, conformément à l'éthique islamique. Tu choisis au moment de réserver, et tu gardes le même enseignant tout au long de ton parcours.",
   },
   {
     q: "Et si je dois annuler ou que je rate une séance ?",
-    a: "Une séance annulée est reprogrammée dans tes créneaux disponibles, et une absence justifiée ne te pénalise pas.",
+    a: "Une séance annulée est reprogrammée dans tes créneaux disponibles, et une absence justifiée est sans conséquence.",
   },
   {
     q: "Dois-je acheter des livres ou du matériel ?",
-    a: "Non. Tout le nécessaire — vocabulaire, règles, supports — est fourni au fil des séances dans ton espace personnel.",
+    a: "Non. Tout le nécessaire (vocabulaire, règles, supports) est fourni au fil des séances dans ton espace personnel.",
   },
   {
     q: "Comment je paie, et est-ce que je peux étaler ?",
     a: "Le paiement se fait après le cours d'essai. L'abonnement annuel se règle en une fois ou de façon échelonnée (jusqu'à 12 fois) ; tu peux aussi prendre des heures à la carte, sans engagement.",
-  },
-  {
-    q: "Faut-il savoir taper en arabe ?",
-    a: "Jamais. Les évaluations sont à choix multiples — aucun clavier arabe à installer.",
   },
 ];
 
@@ -116,9 +112,9 @@ export default function HomePage() {
         <h1
           className="leading-tight mb-5"
           style={{
-            fontFamily: "var(--font-spectral)",
-            fontWeight: 700,
-            fontSize: "clamp(28px, 5vw, 42px)",
+            fontFamily: "var(--font-barlow)",
+            fontWeight: 900,
+            fontSize: "clamp(30px, 5vw, 46px)",
             color: "#1C1A17",
           }}
         >
@@ -146,10 +142,7 @@ export default function HomePage() {
       </section>
 
       {/* ── La méthode en 3 phases ── */}
-      <section
-        className="border-t border-b py-14 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
+      <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <p
             className="text-center font-bold uppercase mb-2"
@@ -159,7 +152,7 @@ export default function HomePage() {
           </p>
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 26, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
           >
             La méthode, étape par étape
           </h2>
@@ -180,16 +173,16 @@ export default function HomePage() {
                 <div className="flex items-start gap-4">
                   <div
                     className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
-                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-spectral)" }}
+                    style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 16, fontFamily: "var(--font-barlow)", fontWeight: 900 }}
                   >
                     {phase.n}
                   </div>
                   <div className="flex-1">
                     <h3
                       className="font-bold mb-1"
-                      style={{ fontFamily: "var(--font-spectral)", fontSize: 17, color: "#1C1A17" }}
+                      style={{ fontFamily: "var(--font-barlow)", fontWeight: 800, fontSize: 18, color: "#1C1A17" }}
                     >
-                      Phase {phase.n} — {phase.title}
+                      Phase {phase.n} : {phase.title}
                     </h3>
                     <p style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.6, marginBottom: 10 }}>
                       {phase.body}
@@ -222,7 +215,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Comment ça marche
           </h2>
@@ -231,11 +224,11 @@ export default function HomePage() {
               <div key={s.n} className="flex flex-col items-center text-center gap-3">
                 <div
                   className="flex items-center justify-center rounded-full font-bold text-white"
-                  style={{ width: 42, height: 42, background: "#0F9D6E", fontSize: 17, fontFamily: "var(--font-spectral)" }}
+                  style={{ width: 42, height: 42, background: "#0F9D6E", fontSize: 17, fontFamily: "var(--font-barlow)", fontWeight: 900 }}
                 >
                   {s.n}
                 </div>
-                <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                <h3 className="font-semibold" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
                   {s.title}
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
@@ -246,7 +239,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Évaluation sur-mesure (différenciateur) ── */}
-      <section className="px-4 pb-14">
+      <section className="px-4 pb-14" style={{ background: "#F7F4EE" }}>
         <div
           className="mx-auto max-w-3xl rounded-2xl p-8"
           style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
@@ -259,17 +252,17 @@ export default function HomePage() {
           </p>
           <h2
             className="font-bold mb-4 leading-snug"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 22, color: "#fff" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 24, color: "#fff" }}
           >
             Des quiz fabriqués sur-mesure,<br />à partir de TON vocabulaire
           </h2>
           <p style={{ color: "rgba(255,255,255,.88)", fontSize: 15, lineHeight: 1.65, marginBottom: 20 }}>
-            La plupart des applications te font réviser une liste de mots que quelqu&apos;un d&apos;autre a choisie. Ici, c&apos;est l&apos;inverse. Chaque mot que ton enseignant t&apos;apprend entre automatiquement dans ton glossaire personnel. Tes quiz sont ensuite générés à partir de ce glossaire : tu ne révises jamais que ce que tu as réellement appris — ni plus, ni moins.
+            La plupart des applications te font réviser une liste de mots que quelqu&apos;un d&apos;autre a choisie. Ici, c&apos;est l&apos;inverse. Chaque mot que ton enseignant t&apos;apprend entre automatiquement dans ton glossaire personnel. Tes quiz sont ensuite générés à partir de ce glossaire : tu ne révises jamais que ce que tu as réellement appris, ni plus ni moins.
           </p>
           <ul className="space-y-2">
             {[
               "Un glossaire français-arabe qui se remplit séance après séance.",
-              "Des quiz à choix multiples auto-générés — aucune saisie en arabe requise.",
+              "Des quiz auto-générés depuis ton glossaire personnel, progressivement plus exigeants.",
               "Tu révises exactement ta matière, pas un programme générique.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "rgba(255,255,255,.9)", fontSize: 14 }}>
@@ -282,14 +275,11 @@ export default function HomePage() {
       </section>
 
       {/* ── Features (3) ── */}
-      <section
-        className="border-t border-b py-14 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
+      <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-3"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Le cours d&apos;arabe individuel
           </h2>
@@ -312,7 +302,7 @@ export default function HomePage() {
                 >
                   <span style={{ color: "#0F9D6E", fontSize: 20 }}>✦</span>
                 </div>
-                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+                <h3 className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
                   {f.title}
                 </h3>
                 <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{f.body}</p>
@@ -339,10 +329,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Témoignages ── */}
-      <section
-        className="border-t py-14 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
+      <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <p
             className="text-center font-bold uppercase mb-2"
@@ -352,7 +339,7 @@ export default function HomePage() {
           </p>
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Ce que disent nos élèves
           </h2>
@@ -361,14 +348,11 @@ export default function HomePage() {
       </section>
 
       {/* ── Charte d'engagement ── */}
-      <section
-        className="border-t py-14 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
-      >
+      <section className="py-14 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Notre engagement, et le tien
           </h2>
@@ -381,7 +365,7 @@ export default function HomePage() {
               className="rounded-2xl p-6"
               style={{ background: "#E8F7F1", border: "1.5px solid #A8E8D0" }}
             >
-              <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+              <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
                 Ce qu&apos;on s&apos;engage à faire
               </p>
               <ul className="space-y-2.5">
@@ -402,14 +386,14 @@ export default function HomePage() {
               className="rounded-2xl p-6"
               style={{ background: "#fff", border: "1.5px solid #E9E3D8" }}
             >
-              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}>
+              <p className="font-semibold mb-4" style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-barlow)", fontWeight: 800 }}>
                 Ce qu&apos;on te demande
               </p>
               <ul className="space-y-2.5">
                 {[
                   "Être présent et à l'heure : au-delà de 10 minutes de retard, l'accès au cours se ferme et la séance compte comme une absence.",
                   "Prévenir en cas d'empêchement : une absence justifiée est sans conséquence, et la séance est reprogrammée.",
-                  "Au-delà de 3 absences non justifiées, l'accès à la réservation est suspendu — ton historique et tes contenus restent consultables.",
+                  "Au-delà de 3 absences non justifiées, l'accès à la réservation est suspendu ; ton historique et tes contenus restent consultables.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.55 }}>
                     <span style={{ color: "#0F9D6E", marginTop: 1 }}>·</span>
@@ -430,14 +414,11 @@ export default function HomePage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section
-        className="border-t py-14 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
+      <section className="py-14 px-4" style={{ background: "#fff" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
-            style={{ fontFamily: "var(--font-spectral)", fontSize: 24, color: "#1C1A17" }}
+            style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 28, color: "#1C1A17" }}
           >
             Les questions qu&apos;on nous pose
           </h2>
@@ -470,10 +451,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Confidentialité ── */}
-      <section
-        className="border-t py-10 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
-      >
+      <section className="py-10 px-4" style={{ background: "#F7F4EE" }}>
         <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1px solid #E9E3D8" }}>
           <p className="font-semibold mb-3" style={{ color: "#1C1A17", fontSize: 14 }}>
             Tes données restent chez toi
@@ -493,13 +471,10 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section
-        className="border-t py-14 px-4 text-center"
-        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
-      >
+      <section className="py-14 px-4 text-center" style={{ background: "#F7F4EE" }}>
         <h2
           className="font-bold mb-3"
-          style={{ fontFamily: "var(--font-spectral)", fontSize: 26, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-barlow)", fontWeight: 900, fontSize: 30, color: "#1C1A17" }}
         >
           Prêt(e) à commencer ?
         </h2>

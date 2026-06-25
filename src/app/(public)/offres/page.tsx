@@ -23,7 +23,7 @@ export default function OffresPage() {
         </p>
         <h1
           className="leading-tight mb-4"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-barlow)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
         >
           Deux façons d&apos;apprendre
         </h1>
@@ -45,7 +45,7 @@ export default function OffresPage() {
             ✓
           </span>
           <p style={{ color: "#0A6B4E", fontSize: 14, lineHeight: 1.5 }}>
-            Le <strong>cours d&apos;essai gratuit est obligatoire</strong> avant tout paiement —
+            Le <strong>cours d&apos;essai gratuit est obligatoire</strong> avant tout paiement :
             abonnement comme heure à la carte. On évalue ton niveau, puis tu choisis.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function OffresPage() {
               >
                 ✦ Le plus populaire
               </p>
-              <h2 className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 23, color: "#fff" }}>
+              <h2 className="font-bold" style={{ fontFamily: "var(--font-barlow)", fontSize: 23, color: "#fff" }}>
                 Abonnement annuel
               </h2>
               <p className="mt-1" style={{ color: "rgba(255,255,255,.85)", fontSize: 13.5 }}>
@@ -77,7 +77,7 @@ export default function OffresPage() {
 
             <div>
               <div>
-                <span className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 34, color: "#fff" }}>
+                <span className="font-bold" style={{ fontFamily: "var(--font-barlow)", fontSize: 34, color: "#fff" }}>
                   {best.pricePerMonth} €
                 </span>
                 <span style={{ color: "rgba(255,255,255,.8)", fontSize: 14 }}> /mois</span>
@@ -128,7 +128,7 @@ export default function OffresPage() {
               >
                 Sans engagement
               </p>
-              <h2 className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 23, color: "#1C1A17" }}>
+              <h2 className="font-bold" style={{ fontFamily: "var(--font-barlow)", fontSize: 23, color: "#1C1A17" }}>
                 Heure à la carte
               </h2>
               <p className="mt-1" style={{ color: "#6B6560", fontSize: 13.5 }}>
@@ -137,7 +137,7 @@ export default function OffresPage() {
             </div>
 
             <div>
-              <span className="font-bold" style={{ fontFamily: "var(--font-spectral)", fontSize: 34, color: "#1C1A17" }}>
+              <span className="font-bold" style={{ fontFamily: "var(--font-barlow)", fontSize: 34, color: "#1C1A17" }}>
                 {HOURLY_PRICE_EUROS} €
               </span>
               <span style={{ color: "#8B857A", fontSize: 14 }}> /heure</span>
@@ -174,7 +174,7 @@ export default function OffresPage() {
         className="border-t py-12 px-4 text-center"
         style={{ borderColor: "#E9E3D8", background: "#fff" }}
       >
-        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-spectral)", fontSize: 22, color: "#1C1A17" }}>
+        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-barlow)", fontSize: 22, color: "#1C1A17" }}>
           Commençons par un cours d&apos;essai
         </h2>
         <p style={{ color: "#4A463F", fontSize: 15, marginBottom: 20 }}>

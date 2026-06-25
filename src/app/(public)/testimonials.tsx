@@ -4,19 +4,19 @@ import { useState } from "react";
 const TESTIMONIALS = [
   {
     stars: 5,
-    quote: "[Citation réelle à venir — une phrase sur le résultat obtenu]",
+    quote: "[Citation réelle à venir : une phrase sur le résultat obtenu]",
     name: "Prénom A.",
     detail: "Débutant complet",
   },
   {
     stars: 5,
-    quote: "[Citation réelle à venir — une phrase sur le résultat obtenu]",
+    quote: "[Citation réelle à venir : une phrase sur le résultat obtenu]",
     name: "Prénom B.",
     detail: "Lit le Coran depuis 6 mois",
   },
   {
     stars: 5,
-    quote: "[Citation réelle à venir — une phrase sur le résultat obtenu]",
+    quote: "[Citation réelle à venir : une phrase sur le résultat obtenu]",
     name: "Prénom C.",
     detail: "Reprise après une longue pause",
   },
@@ -98,7 +98,7 @@ export function TestimonialsStack() {
                     lineHeight: 1.65,
                     marginTop: 12,
                     fontStyle: "italic",
-                    fontFamily: "var(--font-spectral)",
+                    fontFamily: "var(--font-barlow)",
                   }}
                 >
                   &ldquo;{t.quote}&rdquo;

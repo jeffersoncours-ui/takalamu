@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Spectral, Plus_Jakarta_Sans, Amiri } from "next/font/google";
+import { Spectral, Plus_Jakarta_Sans, Amiri, Barlow } from "next/font/google";
 import "./globals.css";
 
 const spectral = Spectral({
   variable: "--font-spectral",
   subsets: ["latin"],
   weight: ["400", "600", "700"],
+});
+
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
 });
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -34,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${spectral.variable} ${plusJakarta.variable} ${amiri.variable} h-full antialiased`}
+      className={`${spectral.variable} ${barlow.variable} ${plusJakarta.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-page text-ink">{children}</body>
     </html>

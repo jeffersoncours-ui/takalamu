@@ -24,7 +24,7 @@ export default async function EnseignantsPage() {
         </p>
         <h1
           className="leading-tight mb-4"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-barlow)", fontWeight: 700, fontSize: 34, color: "#1C1A17" }}
         >
           Nos enseignants
         </h1>
@@ -52,7 +52,7 @@ export default async function EnseignantsPage() {
                       width: 72,
                       height: 72,
                       background: gender === "f" ? "#7B6EAF" : "#0F9D6E",
-                      fontFamily: "var(--font-spectral)",
+                      fontFamily: "var(--font-barlow)",
                     }}
                   >
                     {t.display_name?.[0]?.toUpperCase() ?? "?"}
@@ -67,7 +67,7 @@ export default async function EnseignantsPage() {
                     </p>
                     <h2
                       className="font-bold mb-2"
-                      style={{ fontFamily: "var(--font-spectral)", fontSize: 20, color: "#1C1A17" }}
+                      style={{ fontFamily: "var(--font-barlow)", fontSize: 20, color: "#1C1A17" }}
                     >
                       {t.display_name ?? "Enseignant"}
                     </h2>
@@ -91,11 +91,8 @@ export default async function EnseignantsPage() {
       </section>
 
       {/* CTA */}
-      <section
-        className="border-t py-12 px-4 text-center"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
-        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-spectral)", fontSize: 22, color: "#1C1A17" }}>
+      <section className="py-12 px-4 text-center" style={{ background: "#fff" }}>
+        <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-barlow)", fontSize: 22, color: "#1C1A17" }}>
           Rencontre ton enseignant
         </h2>
         <p style={{ color: "#4A463F", fontSize: 15, marginBottom: 20 }}>
