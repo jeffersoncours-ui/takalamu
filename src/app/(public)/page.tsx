@@ -182,7 +182,7 @@ export default function HomePage() {
                 <ul className="space-y-1">
                   {phase.outcomes.map((o) => (
                     <li key={o} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 13.5 }}>
-                      <span style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
+                      <span aria-hidden="true" style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
                       {o}
                     </li>
                   ))}
@@ -250,7 +250,7 @@ export default function HomePage() {
               "Des évaluations expression écrite et orale pour te pousser et que tu saches réellement où tu en es dans ton avancée.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "rgba(255,255,255,.9)", fontSize: 14 }}>
-                <span style={{ color: "#A8F0D8", marginTop: 1 }}>✓</span>
+                <span aria-hidden="true" style={{ color: "#A8F0D8", marginTop: 1 }}>✓</span>
                 {item}
               </li>
             ))}
@@ -347,7 +347,7 @@ export default function HomePage() {
                   "Évaluation et suivi adapté : on continue.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#1C5C41", fontSize: 14, lineHeight: 1.55 }}>
-                    <span style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
+                    <span aria-hidden="true" style={{ color: "var(--site-accent)", marginTop: 1 }}>✓</span>
                     {item}
                   </li>
                 ))}
@@ -368,7 +368,7 @@ export default function HomePage() {
                   "Au-delà de 3 absences non justifiées, l'accès à la réservation est suspendu ; ton historique et tes contenus restent consultables.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2" style={{ color: "#4A463F", fontSize: 14, lineHeight: 1.55 }}>
-                    <span style={{ color: "var(--site-accent)", marginTop: 1 }}>·</span>
+                    <span aria-hidden="true" style={{ color: "var(--site-accent)", marginTop: 1 }}>·</span>
                     {item}
                   </li>
                 ))}
@@ -407,6 +407,7 @@ export default function HomePage() {
                 >
                   {item.q}
                   <span
+                    aria-hidden="true"
                     className="shrink-0 transition-transform group-open:rotate-45"
                     style={{ color: "var(--site-accent)", fontSize: 22, lineHeight: 1 }}
                   >
@@ -434,7 +435,7 @@ export default function HomePage() {
               "Tes échanges et tes informations restent sur la plateforme, accessibles à toi et à ton enseignant.",
             ].map((item) => (
               <li key={item} className="flex items-start gap-2" style={{ color: "#6B6560", fontSize: 13.5 }}>
-                <span style={{ color: "var(--site-accent)" }}>·</span>
+                <span aria-hidden="true" style={{ color: "var(--site-accent)" }}>·</span>
                 {item}
               </li>
             ))}

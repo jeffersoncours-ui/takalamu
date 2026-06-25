@@ -52,10 +52,10 @@ export function ColorTweaker() {
 
           {(
             [
-              { key: "bg", label: "Fond", type: "color" },
-              { key: "title", label: "Texte", type: "color" },
-              { key: "accent", label: "Accent", type: "color" },
-            ] as { key: "bg" | "title" | "accent"; label: string; type: string }[]
+              { key: "bg", label: "Fond" },
+              { key: "title", label: "Texte" },
+              { key: "accent", label: "Accent" },
+            ] as { key: "bg" | "title" | "accent"; label: string }[]
           ).map(({ key, label }) => (
             <div
               key={key}
