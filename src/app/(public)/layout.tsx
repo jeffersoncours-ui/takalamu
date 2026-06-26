@@ -5,7 +5,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <>
       <header
         className="sticky top-0 z-30 bg-white"
-        style={{ borderBottom: "2px dashed #EDE0C0" }}
+        style={{ borderBottom: "2px dashed #0F9D6E" }}
       >
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           {/* Logo */}
@@ -40,7 +40,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link
               href="/login"
               className="rounded-full font-semibold text-sm border"
-              style={{ padding: "8px 16px", color: "#1C1A17", background: "#EDE0C0", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-4px" }}
+              style={{ padding: "8px 16px", color: "#1C1A17", background: "#0F9D6E", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-4px" }}
             >
               Mon espace
             </Link>
@@ -52,7 +52,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       <footer
         className="py-8 px-4"
-        style={{ borderTop: "2px dashed #EDE0C0", background: "#ffffff" }}
+        style={{ borderTop: "2px dashed #0F9D6E", background: "#ffffff" }}
       >
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
