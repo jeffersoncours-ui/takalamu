@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
 import { ColorTweaker } from "./color-tweaker";
-import { VitrineBgWrapper } from "./vitrine-bg-wrapper";
 
 function GreenLast({ text }: { text: string }) {
   const idx = text.lastIndexOf(" ");
@@ -111,13 +110,7 @@ const FAQ = [
 
 export default function HomePage() {
   return (
-    <div style={{ position: "relative", background: "transparent" }}>
-      {/* Fond animé WebGL — fixe, derrière tout le contenu */}
-      <VitrineBgWrapper />
-
-      {/* Contenu — au-dessus du canvas */}
-      <div style={{ position: "relative", zIndex: 1 }}>
-
+    <div className="vitrine-gradient">
       {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1
@@ -156,7 +149,7 @@ export default function HomePage() {
       </section>
 
       {/* ── La méthode en 3 phases ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
@@ -210,7 +203,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Comment ça marche ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
@@ -238,7 +231,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Évaluation sur-mesure (différenciateur) ── */}
-      <section className="px-4 pb-14" style={{ background: "var(--site-bg)" }}>
+      <section className="px-4 pb-14" style={{ background: "transparent" }}>
         <div
           className="mx-auto max-w-3xl rounded-2xl p-8"
           style={{ background: "var(--site-accent)", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
@@ -268,7 +261,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Features (3) ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-3"
@@ -300,7 +293,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Tarifs teaser ── */}
-      <section className="py-12 px-4 text-center" style={{ background: "var(--site-bg)" }}>
+      <section className="py-12 px-4 text-center" style={{ background: "transparent" }}>
         <p style={{ color: "#4A463F", fontSize: 16, maxWidth: 540, margin: "0 auto" }}>
           À partir de <strong style={{ color: "var(--site-title)" }}>52 €/mois</strong> en abonnement annuel,
           ou <strong style={{ color: "var(--site-title)" }}>15 €/heure</strong> à la carte.
@@ -316,7 +309,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Témoignages ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
@@ -329,7 +322,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Charte d'engagement ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
@@ -395,7 +388,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
@@ -433,7 +426,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Confidentialité ── */}
-      <section className="py-10 px-4" style={{ background: "var(--site-bg)" }}>
+      <section className="py-10 px-4" style={{ background: "transparent" }}>
         <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1.5px solid #0F9D6E" }}>
           <p className="font-semibold mb-3" style={{ color: "var(--site-title)", fontSize: 14 }}>
             Tes données restent chez toi
@@ -453,7 +446,7 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-4 text-center" style={{ background: "var(--site-bg)" }}>
+      <section className="py-14 px-4 text-center" style={{ background: "transparent" }}>
         <h2
           className="font-bold mb-3"
           style={{ fontFamily: "var(--font-outfit)", fontWeight: 900, fontSize: "var(--site-h2-size)", color: "var(--site-title)" }}
@@ -482,7 +475,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      </div>{/* fin contenu z:1 */}
       <ColorTweaker />
     </div>
   );

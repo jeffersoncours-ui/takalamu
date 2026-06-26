@@ -70,9 +70,24 @@
   --shadow-nav: var(--tk-shadow-nav);
 }
 
-/* Fond transparent pour laisser passer le canvas WebGL de la vitrine */
-html, body {
-  background: transparent;
+/* ── Fond animé vitrine ── */
+@keyframes vitrine-shift {
+  0%   { background-position: 0% 0%; }
+  25%  { background-position: 100% 20%; }
+  50%  { background-position: 80% 100%; }
+  75%  { background-position: 20% 80%; }
+  100% { background-position: 0% 0%; }
+}
+
+.vitrine-gradient {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%,  #E8F4EE 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 0%,   #F0EBE2 0%, transparent 55%),
+    radial-gradient(ellipse 90% 70% at 60% 90%,  #E8F4EE 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 5%  80%,  #F0EBE2 0%, transparent 50%),
+    #ffffff;
+  background-size: 300% 300%;
+  animation: vitrine-shift 18s ease-in-out infinite;
 }
 
 /* Utilitaires typographiques */
