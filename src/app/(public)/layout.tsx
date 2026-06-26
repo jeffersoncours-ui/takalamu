@@ -40,7 +40,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link
               href="/login"
               className="rounded-full font-semibold text-sm border"
-              style={{ padding: "8px 16px", color: "#1C1A17", borderColor: "#D8D1C4", background: "#fff" }}
+              style={{ padding: "8px 16px", color: "#1C1A17", background: "#F7F4EE", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-4px" }}
             >
               Mon espace
             </Link>

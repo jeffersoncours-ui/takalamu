@@ -446,26 +446,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Confidentialité ── */}
-      <section className="py-10 px-4" style={{ background: "transparent" }}>
-        <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}>
-          <p className="font-semibold mb-3" style={{ color: "var(--site-title)", fontSize: 14 }}>
-            Tes données restent chez toi
-          </p>
-          <ul className="space-y-1.5">
-            {[
-              "Ton numéro de téléphone n'est jamais partagé : toute la communication passe par la messagerie interne.",
-              "Tes échanges et tes informations restent sur la plateforme, accessibles à toi et à ton enseignant.",
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-2" style={{ color: "#6B6560", fontSize: 13.5 }}>
-                <span aria-hidden="true" style={{ color: "var(--site-accent)" }}>·</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {/* ── CTA final ── */}
       <section className="py-14 px-4 text-center" style={{ background: "transparent" }}>
         <h2
