@@ -52,7 +52,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       <footer
         className="border-t py-8 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#F7F4EE" }}
+        style={{ borderColor: "#E9E3D8", background: "#ffffff" }}
       >
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">

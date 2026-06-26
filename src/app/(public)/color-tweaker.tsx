@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 const DEFAULTS = {
-  bg: "#F7F4EE",
+  bg: "#ffffff",
   title: "#1C1A17",
   accent: "#0F9D6E",
   size: 34,
