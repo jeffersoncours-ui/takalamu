@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
 import { ColorTweaker } from "./color-tweaker";
+import { VitrineBgWrapper } from "./vitrine-bg-wrapper";
 
 function GreenLast({ text }: { text: string }) {
   const idx = text.lastIndexOf(" ");
@@ -110,7 +111,13 @@ const FAQ = [
 
 export default function HomePage() {
   return (
-    <div style={{ background: "var(--site-bg)" }}>
+    <div style={{ position: "relative", background: "transparent" }}>
+      {/* Fond animé WebGL — fixe, derrière tout le contenu */}
+      <VitrineBgWrapper />
+
+      {/* Contenu — au-dessus du canvas */}
+      <div style={{ position: "relative", zIndex: 1 }}>
+
       {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1
@@ -475,6 +482,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </div>{/* fin contenu z:1 */}
       <ColorTweaker />
     </div>
   );

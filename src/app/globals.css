@@ -70,6 +70,11 @@
   --shadow-nav: var(--tk-shadow-nav);
 }
 
+/* Fond transparent pour laisser passer le canvas WebGL de la vitrine */
+html, body {
+  background: transparent;
+}
+
 /* Utilitaires typographiques */
 .font-title {
   font-family: var(--font-spectral);
