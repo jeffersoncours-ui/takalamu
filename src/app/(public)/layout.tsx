@@ -4,8 +4,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <header
-        className="sticky top-0 z-30 bg-white border-b"
-        style={{ borderColor: "#E9E3D8" }}
+        className="sticky top-0 z-30 bg-white"
+        style={{ borderBottom: "2px dashed #EDE0C0" }}
       >
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           {/* Logo */}
@@ -33,7 +33,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link
               href="/essai"
               className="hidden sm:flex rounded-full font-semibold text-white text-sm"
-              style={{ background: "#0F9D6E", padding: "9px 18px", boxShadow: "0 4px 12px rgba(15,157,110,.28)" }}
+              style={{ background: "#0F9D6E", padding: "9px 18px", boxShadow: "0 4px 12px rgba(15,157,110,.28)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-4px" }}
             >
               Essai gratuit
             </Link>
@@ -51,8 +51,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main className="flex-1">{children}</main>
 
       <footer
-        className="border-t py-8 px-4"
-        style={{ borderColor: "#E9E3D8", background: "#ffffff" }}
+        className="py-8 px-4"
+        style={{ borderTop: "2px dashed #EDE0C0", background: "#ffffff" }}
       >
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
