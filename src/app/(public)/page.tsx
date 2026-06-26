@@ -238,7 +238,7 @@ export default function HomePage() {
       <section className="px-4 pb-14" style={{ background: "transparent" }}>
         <div
           className="mx-auto max-w-3xl rounded-2xl p-8"
-          style={{ background: "var(--site-accent)", boxShadow: "0 10px 30px rgba(15,157,110,.25)" }}
+          style={{ background: "var(--site-accent)", boxShadow: "0 10px 30px rgba(15,157,110,.25)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-7px" }}
         >
           <h2
             className="font-bold mb-4 leading-snug"
