@@ -2,6 +2,43 @@
 
 ---
 
+## Session 19 — Refonte visuelle vitrine + design system public
+
+> **Statut : TERMINÉ.**
+
+### Plan
+- [x] Remplacer badge `ت` par logo oiseau origami (transparent, Pillow)
+- [x] Extraire calligraphie "كلموا" → wordmark transparent, placer header/footer/login
+- [x] Unifier fond vitrine → blanc (`#ffffff`)
+- [x] Cartes : fond blanc + bordure verte `1.5px solid #0F9D6E` (style Izox)
+- [x] Fond animé : tenter Three.js (invisible) → CSS blobs (invisible) → `@paper-design/shaders-react` Warp shader en teintes crème ✓
+- [x] Surpiqûre (dashed outline inset) sur toutes les cartes blanches (vert) et cartes vertes (blanc)
+- [x] Surpiqûre sur tous les boutons (inversée selon la couleur du bouton)
+- [x] Ronds étapes avec surpiqûre blanche + connecteurs lacet SVG (`strokeLinecap="round"`)
+- [x] Bouton "Mon espace" header → fond sable `#EDE0C0`, sans stitching
+- [x] Séparateurs header/footer → `2px solid #0F9D6E`
+- [x] Nouvelle calligraphie تكلموا (extraction Pillow, 753×331, transparent)
+- [x] VitrineBg déplacé dans public layout (s'applique à toutes les pages publiques)
+- [x] Appliquer design system sur `/offres` et `/essai`
+- [x] Supprimer carte "Tes données restent chez toi"
+
+### Review Session 19
+- **`@paper-design/shaders-react` Warp** : seule solution visible pour le fond animé. CSS `radial-gradient` avec `background-position` animation = invisible. Blobs CSS avec `opacity < 0.12` = invisible sur blanc. Warp WebGL avec couleurs crème opacité élevée = visible et élégant.
+- **`ssr: false` en Server Component** : Next.js 16 Turbopack interdit `ssr: false` dans un Server Component. Solution : wrapper `"use client"` qui fait le `dynamic()`. Fichier `vitrine-bg-wrapper.tsx`.
+- **`zIndex: -1`** sur le conteneur fixe du shader pour qu'il passe derrière tout le contenu.
+- **Surpiqûre** : `outline + outlineOffset` négatif. Moderne, respecte `border-radius`. `-7px` pour les cartes, `-5px` pour les boutons, `-4px` pour les petits boutons.
+- **VitrineBg dans le layout** : déplacé de `page.tsx` vers `(public)/layout.tsx` pour couvrir toutes les pages publiques en un seul endroit.
+- Build vert, tout pushé sur `main`.
+
+### Tâches restantes (prochaines sessions)
+- [ ] Domaine OVH → Resend → `EMAIL_FROM=noreply@takalamu.com` (Vercel env vars)
+- [ ] Revolut Merchant API keys (après création de l'entité)
+- [ ] Bunny Stream : upload vidéos de bienvenue + milestone
+- [ ] Zoom : enforcement serveur lien (bouton cesse à H+5 min)
+- [ ] Page `/inscription` : appliquer design system (cartes + boutons)
+
+---
+
 ## Session 18 — Corrections visuelles vitrine (polices, boutons, tweaker couleurs)
 
 > **Statut : TERMINÉ.**

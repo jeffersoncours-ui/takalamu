@@ -1,5 +1,25 @@
 # Lessons
 
+## Session 19 (2026-06-26) — Refonte visuelle vitrine + design system public
+
+### Décisions
+
+- **Fond animé : `@paper-design/shaders-react` Warp, pas CSS.** Les `radial-gradient` avec `background-position` animation ne produisent aucun effet visible. Les blobs CSS (`position: fixed`, `filter: blur`, `opacity < 0.15`) sont invisibles sur fond blanc. Le Warp WebGL avec couleurs crème est la seule solution qui fonctionne réellement.
+- **`zIndex: -1` sur le conteneur fixe**, pas `0`. Avec `zIndex: 0`, le contenu de la page peut passer derrière selon le contexte d'empilement. `-1` garantit que le shader est toujours derrière tout.
+- **Wrapper `"use client"` + `dynamic(..., { ssr: false })`** obligatoire pour WebGL en Next.js 16 App Router. Le Server Component parent ne peut pas faire le `dynamic()` lui-même.
+- **VitrineBg dans le layout public** (pas dans chaque page). Une seule instance `position: fixed` couvre toutes les pages sous `(public)/layout.tsx`. Évite la duplication et l'apparition/disparition du fond à chaque navigation.
+- **Surpiqûre = `outline` + `outlineOffset` négatif**, pas de pseudo-élément. `outline: "1.5px dashed #0F9D6E"; outlineOffset: "-7px"` crée le trait intérieur en respectant le `border-radius` dans tous les navigateurs modernes.
+- **Couleurs inversées selon le fond** : bouton/carte vert → surpiqûre blanche. Bouton/carte blanc → surpiqûre verte. Règle systématique à appliquer à tous les nouveaux éléments.
+- **Connecteurs lacet** : SVG avec `strokeLinecap="round"` et `strokeDasharray="3 7"`. CSS `border-dashed` donne des tirets plats ; le SVG avec `round` donne des points ronds, effet lacet/corde.
+
+### Pièges
+
+- **`replace_all` sur une couleur partagée** : remplacer `#EDE0C0` par `#0F9D6E` a aussi changé le fond du bouton "Mon espace" car la même valeur était utilisée deux fois dans le fichier. Toujours cibler la chaîne de contexte complète, pas juste la couleur.
+- **Extraction d'image Pillow sans numpy** : utiliser des boucles Python pures pour trouver la bounding box et rendre les pixels blancs transparents. Le boucle sur chaque pixel est lente mais fonctionne sans dépendances supplémentaires.
+- **`border` dans `className` + `style`** : le bouton "Mon espace" avait `className="... border"` (Tailwind) ET `style={{ border: ... }}` (inline). Le style inline écrase Tailwind mais le `className` reste. Toujours supprimer le `border` du className quand le style inline le redéfinit.
+
+---
+
 ## Session 18 (2026-06-25) — Corrections visuelles vitrine
 
 ### Décisions
