@@ -239,10 +239,18 @@ export default function HomePage() {
                 </div>
                 {idx < STEPS.length - 1 && (
                   <>
-                    {/* Connecteur vertical (mobile) */}
-                    <div className="sm:hidden w-px my-1" style={{ height: 32, borderLeft: "2px dashed #0F9D6E", opacity: 0.5 }} />
-                    {/* Connecteur horizontal (desktop) */}
-                    <div className="hidden sm:block shrink-0 self-start" style={{ marginTop: 22, width: 32, borderTop: "2px dashed #0F9D6E", opacity: 0.5 }} />
+                    {/* Lacet vertical (mobile) */}
+                    <div className="sm:hidden flex justify-center my-1">
+                      <svg width="6" height="40" viewBox="0 0 6 40" fill="none">
+                        <line x1="3" y1="0" x2="3" y2="40" stroke="#0F9D6E" strokeWidth="3" strokeDasharray="3 7" strokeLinecap="round" opacity="0.55" />
+                      </svg>
+                    </div>
+                    {/* Lacet horizontal (desktop) */}
+                    <div className="hidden sm:flex items-start shrink-0" style={{ paddingTop: 21 }}>
+                      <svg width="40" height="6" viewBox="0 0 40 6" fill="none">
+                        <line x1="0" y1="3" x2="40" y2="3" stroke="#0F9D6E" strokeWidth="3" strokeDasharray="3 7" strokeLinecap="round" opacity="0.55" />
+                      </svg>
+                    </div>
                   </>
                 )}
               </>
