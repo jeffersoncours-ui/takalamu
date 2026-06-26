@@ -9,7 +9,7 @@ export function VitrineBg() {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 0,
+        zIndex: -1,
         pointerEvents: "none",
       }}
     >
