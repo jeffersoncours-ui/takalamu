@@ -22,12 +22,11 @@ export default async function DashboardLayout({
       <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#E9E3D8" }}>
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <span
-              className="flex items-center justify-center rounded-lg text-white font-arabic"
-              style={{ width: 30, height: 30, background: "#0F9D6E", fontSize: "18px" }}
-            >
-              ت
-            </span>
+            <img
+              src="/logo.png"
+              alt="Takalamu"
+              style={{ height: 30, width: "auto" }}
+            />
             <span
               className="text-base font-semibold"
               style={{ color: "#1C1A17", fontFamily: "var(--font-spectral)" }}

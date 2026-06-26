@@ -10,12 +10,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <span
-              className="flex items-center justify-center rounded-[12px] text-white font-arabic"
-              style={{ width: 38, height: 38, background: "#0F9D6E", fontSize: 22, boxShadow: "0 4px 10px rgba(15,157,110,.28)" }}
-            >
-              ت
-            </span>
+            <img
+              src="/logo.png"
+              alt="Takalamu"
+              style={{ height: 38, width: "auto" }}
+            />
             <span
               className="font-bold hidden sm:block"
               style={{ fontFamily: "var(--font-outfit)", fontSize: 17, color: "#1C1A17" }}
@@ -57,12 +56,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       >
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span
-              className="flex items-center justify-center rounded-[10px] text-white font-arabic"
-              style={{ width: 30, height: 30, background: "#0F9D6E", fontSize: 17 }}
-            >
-              ت
-            </span>
+            <img
+              src="/logo.png"
+              alt="Takalamu"
+              style={{ height: 30, width: "auto" }}
+            />
             <span className="font-semibold text-sm" style={{ color: "#1C1A17", fontFamily: "var(--font-outfit)" }}>
               Takalamu
             </span>

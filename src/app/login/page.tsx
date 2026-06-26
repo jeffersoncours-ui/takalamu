@@ -26,12 +26,11 @@ export default async function LoginPage() {
       <div className="w-full max-w-sm space-y-7">
         <div className="flex flex-col items-center text-center space-y-3">
           <Link href="/" className="flex items-center gap-2">
-            <span
-              className="flex items-center justify-center rounded-[14px] text-white font-arabic"
-              style={{ width: 48, height: 48, background: "#0F9D6E", fontSize: 28, boxShadow: "0 8px 18px rgba(15,157,110,.30)" }}
-            >
-              ت
-            </span>
+            <img
+              src="/logo.png"
+              alt="Takalamu"
+              style={{ height: 48, width: "auto" }}
+            />
           </Link>
           <div>
             <h1
