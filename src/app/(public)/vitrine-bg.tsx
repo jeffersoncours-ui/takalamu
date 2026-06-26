@@ -1,6 +1,6 @@
 "use client";
 
-/* Voile animé — blobs floutés qui dérivent lentement sur le fond blanc */
+/* Voile animé — blobs crème floutés qui dérivent lentement sur le fond blanc */
 export function VitrineBg() {
   return (
     <>
@@ -38,55 +38,55 @@ export function VitrineBg() {
           overflow: "hidden",
         }}
       >
-        {/* Blob 1 — vert principal — haut gauche */}
+        {/* Blob 1 — crème chaud — haut gauche */}
         <div style={{
           position: "absolute",
           width: "70vw", height: "70vw",
           maxWidth: 640, maxHeight: 640,
           top: "-20%", left: "-15%",
           borderRadius: "50%",
-          background: "radial-gradient(circle, #0F9D6E 0%, transparent 68%)",
-          opacity: 0.11,
-          filter: "blur(48px)",
+          background: "radial-gradient(circle, #E8D9B8 0%, transparent 68%)",
+          opacity: 0.7,
+          filter: "blur(60px)",
           animation: "drift1 22s ease-in-out infinite",
         }} />
 
-        {/* Blob 2 — or (couleur du logo) — haut droit */}
+        {/* Blob 2 — crème clair — haut droit */}
         <div style={{
           position: "absolute",
           width: "55vw", height: "55vw",
           maxWidth: 520, maxHeight: 520,
           top: "-10%", right: "-10%",
           borderRadius: "50%",
-          background: "radial-gradient(circle, #C9A84C 0%, transparent 68%)",
-          opacity: 0.09,
-          filter: "blur(56px)",
+          background: "radial-gradient(circle, #F0E5C8 0%, transparent 68%)",
+          opacity: 0.6,
+          filter: "blur(70px)",
           animation: "drift2 18s ease-in-out infinite",
         }} />
 
-        {/* Blob 3 — vert profond — centre bas */}
+        {/* Blob 3 — crème doré — centre bas */}
         <div style={{
           position: "absolute",
           width: "80vw", height: "80vw",
           maxWidth: 700, maxHeight: 700,
           bottom: "-30%", left: "10%",
           borderRadius: "50%",
-          background: "radial-gradient(circle, #0A4636 0%, transparent 68%)",
-          opacity: 0.07,
-          filter: "blur(64px)",
+          background: "radial-gradient(circle, #EDE0C0 0%, transparent 68%)",
+          opacity: 0.55,
+          filter: "blur(80px)",
           animation: "drift3 26s ease-in-out infinite",
         }} />
 
-        {/* Blob 4 — or pâle — bas droit */}
+        {/* Blob 4 — blanc cassé — bas droit */}
         <div style={{
           position: "absolute",
           width: "50vw", height: "50vw",
           maxWidth: 460, maxHeight: 460,
           bottom: "5%", right: "-5%",
           borderRadius: "50%",
-          background: "radial-gradient(circle, #D4A843 0%, transparent 68%)",
-          opacity: 0.08,
-          filter: "blur(44px)",
+          background: "radial-gradient(circle, #F5EDDA 0%, transparent 68%)",
+          opacity: 0.65,
+          filter: "blur(55px)",
           animation: "drift4 20s ease-in-out infinite",
         }} />
       </div>
