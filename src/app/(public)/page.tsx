@@ -215,20 +215,37 @@ export default function HomePage() {
           >
             Comment ça <span style={{ color: "var(--site-accent)" }}>marche</span>
           </h2>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.n} className="flex flex-col items-center text-center gap-3">
-                <div
-                  className="flex items-center justify-center rounded-full font-bold text-white"
-                  style={{ width: 42, height: 42, background: "var(--site-accent)", fontSize: 17, fontFamily: "var(--font-outfit)", fontWeight: 900 }}
-                >
-                  {s.n}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start">
+            {STEPS.map((s, idx) => (
+              <>
+                <div key={s.n} className="flex flex-col items-center text-center gap-3 flex-1 px-2">
+                  <div
+                    className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
+                    style={{
+                      width: 46, height: 46,
+                      background: "var(--site-accent)",
+                      fontSize: 17, fontFamily: "var(--font-outfit)", fontWeight: 900,
+                      border: "1.5px solid #fff",
+                      outline: "1.5px dashed #fff",
+                      outlineOffset: "-4px",
+                    }}
+                  >
+                    {s.n}
+                  </div>
+                  <h3 className="font-semibold" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
+                    <GreenLast text={s.title} />
+                  </h3>
+                  <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
                 </div>
-                <h3 className="font-semibold" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
-                  <GreenLast text={s.title} />
-                </h3>
-                <p style={{ color: "#6B6560", fontSize: 14, lineHeight: 1.6 }}>{s.body}</p>
-              </div>
+                {idx < STEPS.length - 1 && (
+                  <>
+                    {/* Connecteur vertical (mobile) */}
+                    <div className="sm:hidden w-px my-1" style={{ height: 32, borderLeft: "2px dashed #0F9D6E", opacity: 0.5 }} />
+                    {/* Connecteur horizontal (desktop) */}
+                    <div className="hidden sm:block shrink-0 self-start" style={{ marginTop: 22, width: 32, borderTop: "2px dashed #0F9D6E", opacity: 0.5 }} />
+                  </>
+                )}
+              </>
             ))}
           </div>
         </div>
