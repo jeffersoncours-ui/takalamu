@@ -155,7 +155,9 @@ function GenderStep({
         className="rounded-2xl p-6"
         style={{
           background: "#fff",
-          border: "1px solid #EFEAE0",
+          border: "1.5px solid #0F9D6E",
+          outline: "1.5px dashed #0F9D6E",
+          outlineOffset: "-7px",
           boxShadow: "0 8px 24px rgba(28,26,23,.08)",
         }}
       >
@@ -182,7 +184,7 @@ function GenderStep({
               disabled={isPending}
               onClick={() => onSelect(value)}
               className="flex flex-col items-center gap-1.5 rounded-xl p-5 border-2 transition-all disabled:opacity-60"
-              style={{ borderColor: "#E9E3D8" }}
+              style={{ borderColor: "#0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
             >
               <span
                 className="font-semibold text-sm"
@@ -268,7 +270,9 @@ function SlotStep({
         className="rounded-2xl p-6"
         style={{
           background: "#fff",
-          border: "1px solid #EFEAE0",
+          border: "1.5px solid #0F9D6E",
+          outline: "1.5px dashed #0F9D6E",
+          outlineOffset: "-7px",
           boxShadow: "0 8px 24px rgba(28,26,23,.08)",
         }}
       >
@@ -318,7 +322,7 @@ function SlotStep({
                                 boxShadow: "0 4px 12px rgba(15,157,110,.25)",
                               }
                             : {
-                                background: "#F7F4EE",
+                                background: "transparent",
                                 borderColor: "#E9E3D8",
                                 color: "#4A463F",
                               }
@@ -389,6 +393,9 @@ function SlotStep({
             style={{
               background: "#0F9D6E",
               boxShadow: "0 6px 16px rgba(15,157,110,.28)",
+              border: "1.5px solid #fff",
+              outline: "1.5px dashed #fff",
+              outlineOffset: "-4px",
             }}
           >
             Continuer →
@@ -464,7 +471,9 @@ function FormStep({
         className="rounded-2xl p-6 space-y-4"
         style={{
           background: "#fff",
-          border: "1px solid #EFEAE0",
+          border: "1.5px solid #0F9D6E",
+          outline: "1.5px dashed #0F9D6E",
+          outlineOffset: "-7px",
           boxShadow: "0 8px 24px rgba(28,26,23,.08)",
         }}
       >
@@ -483,7 +492,7 @@ function FormStep({
               placeholder="Mohammed"
               className="w-full rounded-xl px-3.5 py-3 text-sm outline-none"
               style={{
-                background: "#F7F4EE",
+                background: "transparent",
                 border: "1.5px solid #E9E3D8",
                 color: "#1C1A17",
               }}
@@ -503,7 +512,7 @@ function FormStep({
               placeholder="Dupont"
               className="w-full rounded-xl px-3.5 py-3 text-sm outline-none"
               style={{
-                background: "#F7F4EE",
+                background: "transparent",
                 border: "1.5px solid #E9E3D8",
                 color: "#1C1A17",
               }}
@@ -525,7 +534,7 @@ function FormStep({
             placeholder="exemple@mail.com"
             className="w-full rounded-xl px-3.5 py-3 text-sm outline-none"
             style={{
-              background: "#F7F4EE",
+              background: "transparent",
               border: "1.5px solid #E9E3D8",
               color: "#1C1A17",
             }}
@@ -544,7 +553,7 @@ function FormStep({
             required
             className="w-full rounded-xl px-3.5 py-3 text-sm outline-none"
             style={{
-              background: "#F7F4EE",
+              background: "transparent",
               border: "1.5px solid #E9E3D8",
               color: "#1C1A17",
             }}
@@ -575,7 +584,7 @@ function FormStep({
             placeholder="Tes objectifs, tes questions…"
             className="w-full rounded-xl px-3.5 py-3 text-sm outline-none resize-none"
             style={{
-              background: "#F7F4EE",
+              background: "transparent",
               border: "1.5px solid #E9E3D8",
               color: "#1C1A17",
             }}
@@ -604,6 +613,9 @@ function FormStep({
             style={{
               background: "#0F9D6E",
               boxShadow: "0 6px 16px rgba(15,157,110,.30)",
+              border: "1.5px solid #fff",
+              outline: "1.5px dashed #fff",
+              outlineOffset: "-4px",
             }}
           >
             {isPending ? "Envoi en cours…" : "Envoyer ma demande"}
@@ -728,7 +740,7 @@ export function EssaiFunnel() {
 
   if (success) {
     return (
-      <div style={{ background: "#F7F4EE" }}>
+      <div style={{ background: "transparent" }}>
         <SuccessScreen slot={selectedSlot} />
       </div>
     );
@@ -739,7 +751,7 @@ export function EssaiFunnel() {
   const noSlots = step === 2 && slots.length === 0 && !isPending;
 
   return (
-    <div style={{ background: "#F7F4EE" }}>
+    <div style={{ background: "transparent" }}>
       {step === 1 && (
         <GenderStep
           onSelect={handleGenderSelect}

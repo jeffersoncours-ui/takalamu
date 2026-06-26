@@ -12,7 +12,7 @@ export default function OffresPage() {
   const best = getAnnualPlan("1x");
 
   return (
-    <div style={{ background: "#F7F4EE" }}>
+    <div>
       {/* Header */}
       <section className="mx-auto max-w-3xl px-4 py-14 text-center">
         <p
@@ -36,7 +36,7 @@ export default function OffresPage() {
       <section className="mx-auto max-w-3xl px-4 pb-8">
         <div
           className="rounded-2xl px-5 py-4 flex items-center gap-3"
-          style={{ background: "#E8F7F1", border: "1.5px solid #0F9D6E" }}
+          style={{ background: "#E8F7F1", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}
         >
           <span
             className="flex items-center justify-center rounded-full text-white shrink-0"
@@ -58,7 +58,7 @@ export default function OffresPage() {
           <Link
             href="/inscription?offre=annuel"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
-            style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.30)" }}
+            style={{ background: "#0F9D6E", boxShadow: "0 10px 30px rgba(15,157,110,.30)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-7px" }}
           >
             <div>
               <p
@@ -90,7 +90,6 @@ export default function OffresPage() {
               </p>
             </div>
 
-            {/* Les 4 niveaux de paiement */}
             <ul className="space-y-1.5 mt-1">
               {ANNUAL_PLANS.map((plan) => (
                 <li
@@ -109,7 +108,7 @@ export default function OffresPage() {
 
             <span
               className="mt-auto inline-block rounded-full font-bold text-center"
-              style={{ background: "#fff", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
+              style={{ background: "#fff", color: "#0A6B4E", padding: "11px 0", fontSize: 14, outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
             >
               S&apos;abonner →
             </span>
@@ -119,7 +118,7 @@ export default function OffresPage() {
           <Link
             href="/inscription?offre=heure"
             className="group block rounded-2xl p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 20px rgba(28,26,23,.06)" }}
+            style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px", boxShadow: "0 6px 20px rgba(28,26,23,.06)" }}
           >
             <div>
               <p
@@ -157,7 +156,7 @@ export default function OffresPage() {
 
             <span
               className="mt-auto inline-block rounded-full font-bold text-center"
-              style={{ background: "#F0EBE2", color: "#0A6B4E", padding: "11px 0", fontSize: 14 }}
+              style={{ background: "#F0EBE2", color: "#0A6B4E", padding: "11px 0", fontSize: 14, border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
             >
               S&apos;abonner →
             </span>
@@ -170,10 +169,7 @@ export default function OffresPage() {
       </section>
 
       {/* CTA */}
-      <section
-        className="border-t py-12 px-4 text-center"
-        style={{ borderColor: "#E9E3D8", background: "#fff" }}
-      >
+      <section className="py-12 px-4 text-center" style={{ borderTop: "2px solid #0F9D6E" }}>
         <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 22, color: "#1C1A17" }}>
           Commençons par un cours d&apos;essai
         </h2>
@@ -183,7 +179,7 @@ export default function OffresPage() {
         <Link
           href="/essai"
           className="rounded-full font-bold text-white inline-block"
-          style={{ background: "#0F9D6E", padding: "13px 26px", fontSize: 15, boxShadow: "0 6px 16px rgba(15,157,110,.30)" }}
+          style={{ background: "#0F9D6E", padding: "13px 26px", fontSize: 15, boxShadow: "0 6px 16px rgba(15,157,110,.30)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-5px" }}
         >
           Réserver mon cours d&apos;essai gratuit
         </Link>

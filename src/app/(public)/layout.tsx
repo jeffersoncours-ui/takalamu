@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { VitrineBgWrapper } from "./vitrine-bg-wrapper";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <VitrineBgWrapper />
       <header
         className="sticky top-0 z-30 bg-white"
         style={{ borderBottom: "2px solid #0F9D6E" }}
