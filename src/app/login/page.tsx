@@ -25,11 +25,16 @@ export default async function LoginPage() {
     <main className="flex flex-1 items-center justify-center px-6 py-16" style={{ background: "#F7F4EE" }}>
       <div className="w-full max-w-sm space-y-7">
         <div className="flex flex-col items-center text-center space-y-3">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex flex-col items-center gap-2">
             <img
               src="/logo.png"
-              alt="Takalamu"
-              style={{ height: 48, width: "auto" }}
+              alt=""
+              style={{ height: 64, width: "auto" }}
+            />
+            <img
+              src="/wordmark.png"
+              alt="كلموا"
+              style={{ height: 36, width: "auto" }}
             />
           </Link>
           <div>

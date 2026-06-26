@@ -9,18 +9,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       >
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/" className="flex items-center gap-3 shrink-0">
             <img
               src="/logo.png"
-              alt="Takalamu"
+              alt=""
               style={{ height: 38, width: "auto" }}
             />
-            <span
-              className="font-bold hidden sm:block"
-              style={{ fontFamily: "var(--font-outfit)", fontSize: 17, color: "#1C1A17" }}
-            >
-              Takalamu
-            </span>
+            <img
+              src="/wordmark.png"
+              alt="كلموا"
+              className="hidden sm:block"
+              style={{ height: 28, width: "auto" }}
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -58,12 +58,14 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"
-              alt="Takalamu"
+              alt=""
               style={{ height: 30, width: "auto" }}
             />
-            <span className="font-semibold text-sm" style={{ color: "#1C1A17", fontFamily: "var(--font-outfit)" }}>
-              Takalamu
-            </span>
+            <img
+              src="/wordmark.png"
+              alt="كلموا"
+              style={{ height: 22, width: "auto" }}
+            />
           </div>
           <nav className="flex items-center gap-5 flex-wrap justify-center">
             <FooterLink href="/offres">Tarifs</FooterLink>
