@@ -172,6 +172,8 @@ export default function HomePage() {
                 style={{
                   background: "#fff",
                   border: "1.5px solid #0F9D6E",
+                  outline: "1.5px dashed #0F9D6E",
+                  outlineOffset: "-7px",
                 }}
               >
                 <h3
@@ -282,7 +284,7 @@ export default function HomePage() {
               <div
                 key={f.title}
                 className="rounded-2xl p-5"
-                style={{ background: "#fff", border: "1.5px solid #0F9D6E" }}
+                style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}
               >
                 <h3 className="font-semibold mb-2" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                   <GreenLast text={f.title} />
@@ -339,7 +341,7 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div
               className="rounded-2xl p-6"
-              style={{ background: "#fff", border: "1.5px solid #0F9D6E" }}
+              style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}
             >
               <p className="font-semibold mb-4" style={{ color: "#0A6B4E", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                 Ce qu&apos;on s&apos;engage à faire
@@ -360,7 +362,7 @@ export default function HomePage() {
 
             <div
               className="rounded-2xl p-6"
-              style={{ background: "#fff", border: "1.5px solid #0F9D6E" }}
+              style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}
             >
               <p className="font-semibold mb-4" style={{ color: "var(--site-title)", fontSize: 15, fontFamily: "var(--font-outfit)", fontWeight: 800 }}>
                 Ce qu&apos;on te demande
@@ -403,7 +405,7 @@ export default function HomePage() {
               <details
                 key={item.q}
                 className="group rounded-xl"
-                style={{ border: "1.5px solid #0F9D6E", background: "#fff" }}
+                style={{ border: "1.5px solid #0F9D6E", background: "#fff", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}
               >
                 <summary
                   className="flex items-center justify-between gap-4 cursor-pointer select-none px-5 py-4 font-semibold list-none"
@@ -429,7 +431,7 @@ export default function HomePage() {
 
       {/* ── Confidentialité ── */}
       <section className="py-10 px-4" style={{ background: "transparent" }}>
-        <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1.5px solid #0F9D6E" }}>
+        <div className="mx-auto max-w-3xl rounded-2xl px-6 py-5" style={{ background: "#fff", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-7px" }}>
           <p className="font-semibold mb-3" style={{ color: "var(--site-title)", fontSize: 14 }}>
             Tes données restent chez toi
           </p>

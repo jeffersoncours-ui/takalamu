@@ -82,6 +82,8 @@ export function TestimonialsStack() {
                 background: "#fff",
                 borderRadius: 20,
                 border: "1.5px solid #0F9D6E",
+                outline: "1.5px dashed #0F9D6E",
+                outlineOffset: "-7px",
                 boxShadow: "0 6px 24px rgba(28,26,23,.09)",
                 padding: "24px 22px",
                 display: "flex",
