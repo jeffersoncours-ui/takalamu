@@ -149,7 +149,7 @@ export default function HomePage() {
       </section>
 
       {/* ── La méthode en 3 phases ── */}
-      <section className="py-14 px-4" style={{ background: "#fff" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-2"
@@ -261,7 +261,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Features (3) ── */}
-      <section className="py-14 px-4" style={{ background: "#fff" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-3"
@@ -309,7 +309,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Témoignages ── */}
-      <section className="py-14 px-4" style={{ background: "#fff" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
@@ -388,7 +388,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-14 px-4" style={{ background: "#fff" }}>
+      <section className="py-14 px-4" style={{ background: "var(--site-bg)" }}>
         <div className="mx-auto max-w-3xl">
           <h2
             className="text-center font-bold mb-10"
