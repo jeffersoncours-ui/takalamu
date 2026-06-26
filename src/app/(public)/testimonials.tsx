@@ -81,7 +81,7 @@ export function TestimonialsStack() {
                 cursor: offset === 0 ? "pointer" : "default",
                 background: "#fff",
                 borderRadius: 20,
-                border: "1.5px solid #E9E3D8",
+                border: "1.5px solid #0F9D6E",
                 boxShadow: "0 6px 24px rgba(28,26,23,.09)",
                 padding: "24px 22px",
                 display: "flex",
