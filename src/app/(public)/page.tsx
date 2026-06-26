@@ -135,14 +135,14 @@ export default function HomePage() {
             <Link
               href="/essai"
               className="rounded-full font-bold text-white text-center w-full"
-              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-5px" }}
             >
               Réserver mon cours d&apos;essai gratuit
             </Link>
             <Link
               href="/offres"
               className="rounded-full font-semibold border text-center w-full"
-              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff" }}
+              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff", outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
             >
               Choisis ta formule
             </Link>
@@ -306,7 +306,7 @@ export default function HomePage() {
         <Link
           href="/offres"
           className="inline-block mt-4 rounded-full font-semibold text-sm"
-          style={{ color: "var(--site-accent)", padding: "10px 20px", border: "1.5px solid #0F9D6E" }}
+          style={{ color: "var(--site-accent)", padding: "10px 20px", border: "1.5px solid #0F9D6E", outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
         >
           Voir tous les tarifs →
         </Link>
@@ -465,14 +465,14 @@ export default function HomePage() {
             <Link
               href="/essai"
               className="rounded-full font-bold text-white text-center w-full"
-              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)" }}
+              style={{ background: "var(--site-accent)", padding: "13px 24px", fontSize: 16, boxShadow: "0 8px 20px rgba(15,157,110,.32)", border: "1.5px solid #fff", outline: "1.5px dashed #fff", outlineOffset: "-5px" }}
             >
               Réserver mon cours d&apos;essai gratuit
             </Link>
             <Link
               href="/offres"
               className="rounded-full font-semibold border text-center w-full"
-              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff" }}
+              style={{ padding: "13px 24px", fontSize: 16, color: "var(--site-accent)", borderColor: "var(--site-accent)", borderWidth: 2, background: "#fff", outline: "1.5px dashed #0F9D6E", outlineOffset: "-5px" }}
             >
               Choisis ta formule
             </Link>
