@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
 import { ColorTweaker } from "./color-tweaker";
+import { VitrineBg } from "./vitrine-bg";
 
 function GreenLast({ text }: { text: string }) {
   const idx = text.lastIndexOf(" ");
@@ -110,7 +111,8 @@ const FAQ = [
 
 export default function HomePage() {
   return (
-    <div className="vitrine-gradient">
+    <div style={{ position: "relative" }}>
+      <VitrineBg />
       {/* ── Hero ── */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1
