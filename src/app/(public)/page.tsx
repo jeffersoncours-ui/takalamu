@@ -65,7 +65,7 @@ const STEPS = [
 const FEATURES = [
   {
     title: "1 heure par semaine, en visio",
-    body: "Cours individuels sur Zoom ou Google Meet. Aucun déplacement, aucun matériel particulier requis.",
+    body: "Cours individuels sur Google Meet. Aucun déplacement, aucun matériel particulier requis.",
   },
   {
     title: "Enseignant dédié selon ton genre",
@@ -88,7 +88,7 @@ const FAQ = [
   },
   {
     q: "Comment se passe un cours ?",
-    a: "En visio (Zoom ou Google Meet), en tête-à-tête, une heure par semaine. Aucun déplacement, aucun matériel particulier. Après chaque séance, tu retrouves dans ton espace : le récapitulatif, le vocabulaire du jour, la règle de grammaire éventuelle et un devoir personnalisé.",
+    a: "En visio (Google Meet), en tête-à-tête, une heure par semaine. Aucun déplacement, aucun matériel particulier. Après chaque séance, tu retrouves dans ton espace : le récapitulatif, le vocabulaire du jour, la règle de grammaire éventuelle et un devoir personnalisé.",
   },
   {
     q: "Homme ou femme : qui sera mon enseignant ?",
