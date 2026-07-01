@@ -2,7 +2,8 @@
 
 import { randomBytes } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createRevolutOrder } from "@/lib/revolut";
+import { paypalMeUrl } from "@/lib/paypal";
+import { sendPaymentLink } from "@/lib/resend";
 import { ANNUAL_PLANS, HOURLY_PRICE_CENTS, isAnnualPlanKey } from "@/lib/pricing";
 
 export type VerifyResult =
@@ -41,11 +42,16 @@ export async function verifyTrialCode(code: string): Promise<VerifyResult> {
 }
 
 export type EnrollmentResult =
-  | { ok: true; checkoutUrl: string; orderRef: string; manual: false }
-  | { ok: true; orderRef: string; manual: true }
+  | {
+      ok: true;
+      orderRef: string;
+      amountCents: number;
+      /** Lien PayPal.Me à montant exact — null si PAYPAL_ME_USERNAME absent. */
+      paypalUrl: string | null;
+    }
   | { ok: false; error: string };
 
-/** Crée l'intention d'inscription et, si possible, le lien de paiement Revolut. */
+/** Crée l'intention d'inscription et le lien de paiement PayPal.Me. */
 export async function createEnrollment(params: {
   trialCode: string;
   trialId: string;
@@ -62,6 +68,9 @@ export async function createEnrollment(params: {
   if (verification.trialId !== trialId) return { ok: false, error: "Identifiant de demande invalide." };
 
   const isAnnual = isAnnualPlanKey(plan);
+  if (!isAnnual && plan !== "hourly") {
+    return { ok: false, error: "Plan invalide." };
+  }
   const annualPlan = isAnnual ? ANNUAL_PLANS.find((p) => p.key === plan) : null;
   const amountCents = isAnnual
     ? (annualPlan?.installmentAmount ?? 0) * 100
@@ -70,16 +79,15 @@ export async function createEnrollment(params: {
 
   const orderRef = `TK-${randomBytes(4).toString("hex").toUpperCase()}`;
 
-  let description = "Cours d'arabe — ";
-  if (isAnnual && annualPlan) {
-    description += `Abonnement annuel (${annualPlan.label}) — ${annualPlan.installmentAmount} €`;
-  } else {
-    description += "Heure à la carte — 15 €";
-  }
+  const label =
+    isAnnual && annualPlan
+      ? `Abonnement annuel (${annualPlan.label}) — 1er versement`
+      : "Heure à la carte";
 
   const admin = createAdminClient();
 
-  // Stocker l'intention d'inscription (service_role contourne la RLS)
+  // Stocker l'intention d'inscription (service_role contourne la RLS).
+  // `revolut_order_id` sert de référence de paiement générique (héritage Revolut).
   const { error: updateErr } = await admin
     .from("trial_requests")
     .update({
@@ -91,24 +99,19 @@ export async function createEnrollment(params: {
 
   if (updateErr) return { ok: false, error: "Erreur lors de la création de la commande." };
 
-  // Tenter de créer le lien Revolut
-  const revolut = await createRevolutOrder({
-    amountCents,
-    currency: "EUR",
-    orderRef,
-    customerEmail: email,
-    description,
-  });
+  const paypalUrl = paypalMeUrl(amountCents);
 
-  if (revolut.error) {
-    // Erreur API Revolut → mode manuel avec référence de commande
-    return { ok: true, orderRef, manual: true };
+  // Envoyer le lien par email (non bloquant : l'écran de succès l'affiche aussi)
+  if (paypalUrl) {
+    await sendPaymentLink({
+      to: email,
+      firstName: verification.firstName,
+      amountCents,
+      reference: orderRef,
+      paypalUrl,
+      label,
+    }).catch(() => {/* non bloquant */});
   }
 
-  if (revolut.checkoutUrl) {
-    return { ok: true, checkoutUrl: revolut.checkoutUrl, orderRef, manual: false };
-  }
-
-  // Pas de clé configurée → mode manuel
-  return { ok: true, orderRef, manual: true };
+  return { ok: true, orderRef, amountCents, paypalUrl };
 }

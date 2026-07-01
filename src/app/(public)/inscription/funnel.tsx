@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { verifyTrialCode, createEnrollment } from "./actions";
 import { ANNUAL_PLANS, HOURLY_PRICE_EUROS } from "@/lib/pricing";
 
-type Step = 1 | 2 | 3 | "success_auto" | "success_manual";
+type Step = 1 | 2 | 3 | "pay";
 
 type ProspectInfo = {
   firstName: string;
@@ -370,9 +370,18 @@ function ConfirmStep({
   );
 }
 
-// ── Succès auto (Revolut) ─────────────────────────────────────────────────────
+// ── Écran de paiement (PayPal.Me) ────────────────────────────────────────────
 
-function SuccessAuto({ checkoutUrl, orderRef }: { checkoutUrl: string; orderRef: string }) {
+function PayScreen({
+  orderRef,
+  amountCents,
+  paypalUrl,
+}: {
+  orderRef: string;
+  amountCents: number;
+  paypalUrl: string | null;
+}) {
+  const amount = (amountCents / 100).toFixed(2).replace(".", ",");
   return (
     <div className="text-center py-10">
       <div
@@ -386,55 +395,47 @@ function SuccessAuto({ checkoutUrl, orderRef }: { checkoutUrl: string; orderRef:
       <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 24, color: "#1C1A17" }}>
         Commande créée !
       </h2>
-      <p className="mb-1" style={{ color: "#4A463F", fontSize: 14 }}>
-        Référence : <code className="font-bold" style={{ color: "#1C1A17" }}>{orderRef}</code>
-      </p>
-      <p className="mb-6" style={{ color: "#8B857A", fontSize: 13 }}>
-        Tu vas être redirigé vers Revolut pour finaliser le paiement.
-      </p>
-      <a
-        href={checkoutUrl}
-        className="inline-flex items-center gap-2 rounded-full font-bold text-white px-8 py-3.5 text-sm"
-        style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
-      >
-        Payer maintenant →
-      </a>
-    </div>
-  );
-}
-
-// ── Succès manuel (pas de clé Revolut) ───────────────────────────────────────
-
-function SuccessManual({ orderRef }: { orderRef: string }) {
-  return (
-    <div className="text-center py-10">
-      <div
-        className="flex items-center justify-center rounded-full mx-auto mb-6"
-        style={{ width: 64, height: 64, background: "#FEF3C7" }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.05 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-        </svg>
-      </div>
-      <h2 className="font-bold mb-3" style={{ fontFamily: "var(--font-outfit)", fontSize: 24, color: "#1C1A17" }}>
-        Demande enregistrée
-      </h2>
-      <p className="mb-4" style={{ color: "#4A463F", fontSize: 15, lineHeight: 1.65 }}>
-        Ta référence de commande est :
+      <p className="mb-4" style={{ color: "#4A463F", fontSize: 15 }}>
+        Montant à régler : <strong>{amount} €</strong>
       </p>
       <div
-        className="inline-block rounded-2xl px-6 py-4 mb-6"
+        className="inline-block rounded-2xl px-6 py-4 mb-4"
         style={{ background: "#F7F4EE", border: "2px solid #E9E3D8" }}
       >
         <code className="font-bold tracking-widest" style={{ fontSize: 22, color: "#1C1A17", letterSpacing: ".15em" }}>
           {orderRef}
         </code>
       </div>
-      <p style={{ color: "#8B857A", fontSize: 13, lineHeight: 1.65 }}>
-        Ton enseignant va t&apos;envoyer un lien de paiement personnalisé par email.
-        <br />
-        Conserve cette référence.
-      </p>
+
+      {paypalUrl ? (
+        <>
+          <p className="mb-5" style={{ color: "#8B857A", fontSize: 13, lineHeight: 1.65 }}>
+            Indique bien cette référence dans la <strong>note du paiement PayPal</strong> :
+            <br />
+            c&apos;est elle qui permet de valider ton règlement.
+          </p>
+          <a
+            href={paypalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full font-bold text-white px-8 py-3.5 text-sm"
+            style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
+          >
+            Payer {amount} € via PayPal →
+          </a>
+          <p className="mt-5" style={{ color: "#8B857A", fontSize: 13, lineHeight: 1.65 }}>
+            Le lien t&apos;a aussi été envoyé par email.
+            <br />
+            Dès réception du paiement, tu recevras ton invitation pour créer ton compte.
+          </p>
+        </>
+      ) : (
+        <p style={{ color: "#8B857A", fontSize: 13, lineHeight: 1.65 }}>
+          Ton enseignant va t&apos;envoyer un lien de paiement personnalisé par email.
+          <br />
+          Conserve cette référence.
+        </p>
+      )}
     </div>
   );
 }
@@ -448,7 +449,11 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [result, setResult] = useState<{ checkoutUrl?: string; orderRef: string; manual: boolean } | null>(null);
+  const [result, setResult] = useState<{
+    orderRef: string;
+    amountCents: number;
+    paypalUrl: string | null;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -478,8 +483,8 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
         email,
       });
       if (!res.ok) { setError(res.error); return; }
-      setResult({ checkoutUrl: res.manual ? undefined : res.checkoutUrl, orderRef: res.orderRef, manual: res.manual });
-      setStep(res.manual ? "success_manual" : "success_auto");
+      setResult({ orderRef: res.orderRef, amountCents: res.amountCents, paypalUrl: res.paypalUrl });
+      setStep("pay");
     });
   }
 
@@ -516,12 +521,12 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
           />
         )}
 
-        {step === "success_auto" && result?.checkoutUrl && (
-          <SuccessAuto checkoutUrl={result.checkoutUrl} orderRef={result.orderRef} />
-        )}
-
-        {step === "success_manual" && result && (
-          <SuccessManual orderRef={result.orderRef} />
+        {step === "pay" && result && (
+          <PayScreen
+            orderRef={result.orderRef}
+            amountCents={result.amountCents}
+            paypalUrl={result.paypalUrl}
+          />
         )}
       </div>
     </div>

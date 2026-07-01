@@ -1,5 +1,6 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { paypalMeUrl } from "@/lib/paypal";
 import { PaymentRequestForm } from "./payment-request-form";
 import { StatusBadge, paymentBadge } from "@/components/status-badge";
 import type { Database } from "@/lib/supabase/database.types";
@@ -74,31 +75,54 @@ export default async function PaymentsPage() {
         )}
         {payments?.map((p) => {
           const badge = paymentBadge(p.status);
+          const paypalUrl =
+            p.status === "pending" && p.amount_cents ? paypalMeUrl(p.amount_cents) : null;
           return (
             <div
               key={p.id}
-              className="flex items-center justify-between gap-3 rounded-[16px] px-4 py-[14px]"
+              className="rounded-[16px] px-4 py-[14px]"
               style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
             >
-              <div>
-                <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                  {PRODUCT_LABEL[p.product] ?? p.product}
-                  {p.plan ? ` — ${PLAN_LABEL[p.plan]}` : ""}
-                </p>
-                {p.revolut_reference && (
-                  <p className="font-mono mt-0.5" style={{ color: "#8B857A", fontSize: 11 }}>
-                    Réf. {p.revolut_reference}
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
+                    {PRODUCT_LABEL[p.product] ?? p.product}
+                    {p.plan ? ` — ${PLAN_LABEL[p.plan]}` : ""}
                   </p>
-                )}
-                <p className="mt-0.5" style={{ color: "#A8A29E", fontSize: 11 }}>
-                  {new Date(p.created_at).toLocaleDateString("fr-FR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
+                  {p.revolut_reference && (
+                    <p className="font-mono mt-0.5" style={{ color: "#8B857A", fontSize: 11 }}>
+                      Réf. {p.revolut_reference}
+                    </p>
+                  )}
+                  <p className="mt-0.5" style={{ color: "#A8A29E", fontSize: 11 }}>
+                    {new Date(p.created_at).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <StatusBadge hue={badge.hue} label={badge.label} />
               </div>
-              <StatusBadge hue={badge.hue} label={badge.label} />
+
+              {paypalUrl && (
+                <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: "1px solid #F4F0E8" }}>
+                  <a
+                    href={paypalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-11 items-center justify-center rounded-[12px] font-bold text-white"
+                    style={{ background: "#0F9D6E", fontSize: 13, boxShadow: "0 6px 13px rgba(15,157,110,.26)" }}
+                  >
+                    Payer {((p.amount_cents ?? 0) / 100).toFixed(2).replace(".", ",")} € via PayPal
+                  </a>
+                  {p.revolut_reference && (
+                    <p className="text-center" style={{ color: "#8B857A", fontSize: 11 }}>
+                      Indique la référence {p.revolut_reference} dans la note du paiement.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

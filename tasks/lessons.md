@@ -1,5 +1,20 @@
 # Lessons
 
+## Session 21 (2026-07-01) — Paiement PayPal.Me (compte perso) + relances cron
+
+### Décisions
+
+- **PayPal compte PERSONNEL = pas d'API Orders ni de webhook** (réservés aux comptes Business). Architecture retenue : liens **PayPal.Me à montant exact** (`paypal.me/{user}/{montant}EUR`) + référence `TK-…` que l'élève met dans la note du paiement + **confirmation manuelle** par l'enseignant (`confirm_payment` existant). Aucune surface d'attaque nouvelle : rien à vérifier cryptographiquement, c'est l'humain qui valide.
+- **Échéancier sans table dédiée.** Les échéances 2x/3x/12x se déduisent de `payments` : ancre = `created_at` du 1er versement `paid`, intervalle = `12 / installments` mois, prochaine échéance = ancre + (nb payés × intervalle). Dédup des relances par `period` (YYYY-MM) sur la ligne pending créée par le cron. Zéro migration.
+- **Vercel Cron + `CRON_SECRET`** : quand la variable d'env existe, Vercel envoie automatiquement `Authorization: Bearer <secret>` sur les routes déclarées dans `vercel.json` → un simple check d'égalité suffit à fermer la route au public.
+- **Le 1er paiement est enregistré à l'invitation** (`inviteStudent`) : l'enseignant vérifie l'argent sur PayPal avant de cliquer « Inviter l'élève », le code crée alors la ligne `payments` paid avec le montant du 1er versement + la référence de la demande. Le verrou « pas payé = pas de résa » est satisfait dès l'entrée de l'élève.
+- **Revolut conservé mais dormant** (`revolut.ts` + webhook) : si un compte Business existe un jour, on rebranche sans réécrire.
+
+### Pièges
+
+- **Narrowing TS d'un type predicate via variable aliasée** (`const isAnnual = isAnnualPlanKey(x)`) : fragile sur les propriétés d'objet. Appeler le predicate directement dans la condition (`isAnnualPlanKey(plan) ? … : …`) garantit le narrowing.
+- **`createEnrollment` acceptait n'importe quelle string comme plan** (tout non-annuel était traité « hourly »). Toute server action qui reçoit un identifiant de plan doit le valider explicitement contre la liste connue.
+
 ## Session 20 (2026-07-01) — Revue complète du code
 
 ### Décisions

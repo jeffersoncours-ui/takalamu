@@ -2,6 +2,40 @@
 
 ---
 
+## Session 21 — Paiement PayPal (compte perso, liens PayPal.Me + relances mensuelles)
+
+> **Décision propriétaire (2026-07-01)** : PayPal remplace Revolut pour l'encaissement,
+> avec le **compte PayPal personnel** du propriétaire (pas de compte Business), l'argent
+> étant ensuite reversé sur Revolut manuellement.
+> **Conséquence technique** : pas d'API Orders ni de webhook PayPal (réservés aux comptes
+> Business) → flux = liens **PayPal.Me à montant exact** + **confirmation manuelle** par
+> l'enseignant dans l'app (bouton « Confirmer » existant). Modèle validé : 1er paiement
+> immédiat même en 12×, puis **email automatique de relance** à chaque échéance mensuelle.
+> Design `/inscription` : à faire APRÈS cette phase, séparément (demande propriétaire).
+
+### Plan
+- [x] `src/lib/paypal.ts` : `paypalMeUrl(amountCents)` depuis `PAYPAL_ME_USERNAME` (guard si absent)
+- [x] `src/lib/resend.ts` : `sendPaymentLink()` (montant, référence, lien PayPal, échéance)
+- [x] `/inscription` : `createEnrollment` ne tente plus Revolut → génère réf `TK-…` + lien PayPal.Me ; écran `PayScreen` = bouton « Payer X € via PayPal » + consigne référence dans la note ; email envoyé au prospect avec le même lien ; validation serveur du plan ajoutée (avant, une valeur arbitraire passait pour « hourly »)
+- [x] `inviteStudent` : si `chosen_plan` présent, crée la ligne `payments` (status `paid`, montant 1er versement, référence, `period` = mois courant) — l'enseignant n'invite qu'après avoir vu l'argent arriver sur PayPal
+- [x] Cron quotidien Vercel `/api/cron/payment-reminders` (Bearer `CRON_SECRET`) : ancre = 1er versement payé, intervalle = 12/nb versements mois (12x→1, 3x→4, 2x→6) ; à échéance → ligne pending (dédup par `period` YYYY-MM) + email PayPal.Me + notif in-app
+- [x] `vercel.json` : cron 08:00 UTC quotidien
+- [x] `/dashboard/payments` : bouton « Payer X € via PayPal » + rappel de référence sur les lignes pending
+- [x] `.env.example` : `PAYPAL_ME_USERNAME`, `CRON_SECRET` (Revolut marqué DORMANT)
+- [x] Build vert + tsc clean + push
+
+### À faire côté propriétaire (hors code)
+- [ ] Renseigner `PAYPAL_ME_USERNAME` dans Vercel (pseudo paypal.me du compte perso)
+- [ ] Générer et renseigner `CRON_SECRET` dans Vercel (`openssl rand -hex 32`)
+- [ ] Toujours en attente : domaine OVH → Resend → `EMAIL_FROM` (sans ça, les emails partent de onboarding@resend.dev, tests uniquement)
+
+### Différé / notes
+- Suspension automatique si échéance impayée après N jours (règle §8.6) : le cron pourrait la déclencher — période de grâce à décider par le propriétaire. Pour l'instant suspension manuelle (fiche élève).
+- `revolut.ts` + webhook Revolut conservés mais dormants (option future si compte Business).
+- ⚠️ Mise en garde transmise au propriétaire : encaisser une activité commerciale régulière sur un compte PayPal perso = risque de limitation du compte par PayPal (ToS). Assumé à cette échelle.
+
+---
+
 ## Session 20 — Revue complète du code + simplifications
 
 > **Statut : TERMINÉ.** Revue de l'intégralité de `src/` (110 fichiers) sur branche dupliquée de `main`.

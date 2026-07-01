@@ -8,6 +8,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendTrialCode } from "@/lib/resend";
+import { HOURLY_PRICE_CENTS, installmentCents, isAnnualPlanKey } from "@/lib/pricing";
 import type { Database } from "@/lib/supabase/database.types";
 
 type TrialStatus = Database["public"]["Enums"]["trial_status"];
@@ -183,6 +184,33 @@ export async function inviteStudent(trialRequestId: string): Promise<ActionState
 
   if (studentError) {
     return { error: "Invitation envoyée mais fiche élève non créée. Vérifie en base." };
+  }
+
+  // Si un plan a été choisi via /inscription, enregistrer le 1er paiement comme reçu :
+  // l'enseignant n'invite qu'après avoir vérifié l'arrivée de l'argent sur PayPal.
+  if (req.chosen_plan) {
+    const { data: newStudent } = await admin
+      .from("students")
+      .select("id")
+      .eq("profile_id", data.user.id)
+      .maybeSingle();
+
+    if (newStudent) {
+      const plan = req.chosen_plan;
+      const amountCents = isAnnualPlanKey(plan)
+        ? installmentCents(plan)
+        : HOURLY_PRICE_CENTS;
+
+      await admin.from("payments").insert({
+        student_id: newStudent.id,
+        product: isAnnualPlanKey(plan) ? "individual_sub" : "individual_hour",
+        plan: plan as Database["public"]["Enums"]["payment_plan"],
+        status: "paid",
+        amount_cents: amountCents,
+        revolut_reference: req.revolut_order_id,
+        period: new Date().toISOString().slice(0, 7), // YYYY-MM
+      });
+    }
   }
 
   await supabase
