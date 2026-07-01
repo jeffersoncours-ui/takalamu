@@ -1,7 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
-import { ColorTweaker } from "./color-tweaker";
 
 function GreenLast({ text }: { text: string }) {
   const idx = text.lastIndexOf(" ");
@@ -483,7 +482,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <ColorTweaker />
     </div>
   );
 }

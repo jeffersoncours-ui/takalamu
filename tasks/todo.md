@@ -23,11 +23,11 @@
 - 3 erreurs lint `react-hooks/set-state-in-effect` (join-button, next-course-hero, drawer-nav) : pattern intentionnel d'init d'horloge côté client (anti-hydration-mismatch) et fermeture du drawer au changement de route. Ne pas « corriger » sans re-tester l'hydration.
 - 18 warnings `_prev`/`_formData` unused : signature imposée par `useActionState`.
 
-### Propositions nécessitant l'accord du propriétaire (NON faites)
-- [ ] **ColorTweaker (panneau 🎨) encore rendu sur la home publique en prod** — outil de réglage de dev. Le retirer ?
-- [ ] **Témoignages placeholder** (« [Citation réelle à venir…] ») visibles en prod sur la home. Masquer la section en attendant les vrais ?
-- [ ] **Verrou base pour les créneaux d'essai** : index unique partiel sur `trial_requests (gender, scheduled_at) WHERE status <> 'declined'` — élimine la course résiduelle entre vérification et INSERT (nécessite ré-auth MCP Supabase pour la migration).
-- [ ] **Factorisation des styles répétés de la vitrine** (carte blanche/verte avec surpiqûre, boutons CTA) en petits composants partagés — zéro delta visuel mais diff étendu.
+### Décisions propriétaire (2026-07-01) + exécution
+- [x] **ColorTweaker retiré** (accord propriétaire) : import + rendu supprimés de la home, `color-tweaker.tsx` supprimé. Les valeurs par défaut `--site-*` vivent dans `globals.css` — aucun impact visuel.
+- [x] **Témoignages placeholder** : le propriétaire les laisse tels quels pour l'instant.
+- [x] **Verrou base créneaux d'essai** (accord propriétaire) : migration 34 appliquée — index unique partiel `trial_requests_slot_unique (gender, scheduled_at) WHERE scheduled_at IS NOT NULL AND status <> 'declined'`. `requestTrial` mappe l'erreur 23505 sur le message « créneau vient d'être réservé ». Preuves MCP : insert nominal ✓, doublon même genre = 23505 ✓, même créneau autre genre passe ✓, décliné libère le créneau ✓, données de test nettoyées ✓, advisor 0 nouveau lint ✓.
+- [ ] **Factorisation des styles répétés de la vitrine** (carte blanche/verte avec surpiqûre, boutons CTA) en petits composants partagés — zéro delta visuel mais diff étendu. Toujours en attente d'accord.
 
 ### Tâches restantes (reprises de la session 19)
 - [ ] Page `/inscription` : appliquer design system (cartes + boutons)

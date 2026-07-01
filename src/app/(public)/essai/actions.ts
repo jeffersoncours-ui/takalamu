@@ -93,6 +93,10 @@ export async function requestTrial(
   });
 
   if (insertError) {
+    // 23505 = index unique trial_requests_slot_unique (créneau pris entre-temps)
+    if (insertError.code === "23505") {
+      return { error: "Ce créneau vient d'être réservé. Merci d'en choisir un autre." };
+    }
     return { error: "Une erreur est survenue. Merci de réessayer." };
   }
 
