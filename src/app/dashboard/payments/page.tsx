@@ -55,8 +55,8 @@ export default async function PaymentsPage() {
             Demander un paiement
           </p>
           <p style={{ color: "#8B857A", fontSize: 12 }}>
-            Choisis un abonnement annuel ou une heure à la carte. Ton enseignant confirme
-            le paiement via Revolut.
+            Choisis un abonnement annuel ou une heure à la carte. Tu règles via PayPal,
+            ton enseignant confirme à réception.
           </p>
           <PaymentRequestForm />
         </section>

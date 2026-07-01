@@ -13,7 +13,7 @@ export function PaymentRequestForm() {
         className="rounded-[14px] px-4 py-3"
         style={{ background: "#ECFAF4", border: "1px solid #C8EBDB", color: "#0A6B4E", fontSize: 13 }}
       >
-        Demande envoyée. Contacte ton enseignant pour finaliser le paiement via Revolut.
+        Demande envoyée. Le bouton de paiement PayPal apparaît dans ton historique ci-dessous.
       </div>
     );
   }

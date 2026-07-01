@@ -56,12 +56,27 @@ function Card({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="rounded-2xl p-6"
-      style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 8px 24px rgba(28,26,23,.08)" }}
+      style={{
+        background: "#fff",
+        border: "1.5px solid #0F9D6E",
+        outline: "1.5px dashed #0F9D6E",
+        outlineOffset: "-7px",
+        boxShadow: "0 8px 24px rgba(28,26,23,.08)",
+      }}
     >
       {children}
     </div>
   );
 }
+
+/** Style commun des boutons pleins verts (surpiqûre blanche). */
+const primaryBtnStyle: React.CSSProperties = {
+  background: "#0F9D6E",
+  boxShadow: "0 6px 16px rgba(15,157,110,.28)",
+  border: "1.5px solid #fff",
+  outline: "1.5px dashed #fff",
+  outlineOffset: "-4px",
+};
 
 function PageHeader({ title, sub }: { title: string; sub?: string }) {
   return (
@@ -141,7 +156,7 @@ function CodeStep({
           onClick={() => onVerify(raw)}
           disabled={isPending || raw.replace(/\s/g, "").length < 8}
           className="w-full rounded-full font-bold text-white py-3 text-sm transition-opacity disabled:opacity-50"
-          style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
+          style={primaryBtnStyle}
         >
           {isPending ? "Vérification…" : "Valider mon code →"}
         </button>
@@ -248,7 +263,7 @@ function PlanStep({
             onClick={onNext}
             disabled={!selectedPlan || isPending}
             className="flex-1 rounded-full font-bold text-white py-3 text-sm transition-opacity disabled:opacity-50"
-            style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
+            style={primaryBtnStyle}
           >
             Continuer →
           </button>
@@ -360,7 +375,7 @@ function ConfirmStep({
             onClick={onSubmit}
             disabled={isPending || !firstName || !lastName || !email}
             className="flex-1 rounded-full font-bold text-white py-3 text-sm transition-opacity disabled:opacity-50"
-            style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
+            style={primaryBtnStyle}
           >
             {isPending ? "Création de la commande…" : "Procéder au paiement →"}
           </button>
@@ -400,7 +415,12 @@ function PayScreen({
       </p>
       <div
         className="inline-block rounded-2xl px-6 py-4 mb-4"
-        style={{ background: "#F7F4EE", border: "2px solid #E9E3D8" }}
+        style={{
+          background: "#fff",
+          border: "1.5px solid #0F9D6E",
+          outline: "1.5px dashed #0F9D6E",
+          outlineOffset: "-5px",
+        }}
       >
         <code className="font-bold tracking-widest" style={{ fontSize: 22, color: "#1C1A17", letterSpacing: ".15em" }}>
           {orderRef}
@@ -419,7 +439,7 @@ function PayScreen({
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full font-bold text-white px-8 py-3.5 text-sm"
-            style={{ background: "#0F9D6E", boxShadow: "0 6px 16px rgba(15,157,110,.28)" }}
+            style={{ ...primaryBtnStyle, outlineOffset: "-5px" }}
           >
             Payer {amount} € via PayPal →
           </a>
@@ -489,7 +509,7 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
   }
 
   return (
-    <div style={{ background: "#F7F4EE" }}>
+    <div style={{ background: "transparent" }}>
       <div className="mx-auto max-w-lg px-4 py-12">
         {step === 1 && (
           <CodeStep isPending={isPending} error={error} onVerify={handleVerify} />

@@ -5,7 +5,7 @@ import type { Database } from "./database.types";
 /**
  * Client Supabase à privilèges service_role — CONTOURNE les RLS.
  * À n'utiliser QUE côté serveur, pour des opérations de confiance
- * (webhook Revolut, création de comptes par l'admin, etc.).
+ * (cron de relances, création de comptes par l'admin, etc.).
  * Ne jamais importer dans un Composant Client.
  */
 export function createAdminClient() {

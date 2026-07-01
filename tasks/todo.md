@@ -31,8 +31,12 @@
 
 ### Différé / notes
 - Suspension automatique si échéance impayée après N jours (règle §8.6) : le cron pourrait la déclencher — période de grâce à décider par le propriétaire. Pour l'instant suspension manuelle (fiche élève).
-- `revolut.ts` + webhook Revolut conservés mais dormants (option future si compte Business).
 - ⚠️ Mise en garde transmise au propriétaire : encaisser une activité commerciale régulière sur un compte PayPal perso = risque de limitation du compte par PayPal (ToS). Assumé à cette échelle.
+
+### Suite de session (2026-07-01) — demandes propriétaire
+- [x] **Code Revolut SUPPRIMÉ** (décision propriétaire — plus de mode dormant) : `revolut.ts`, webhook `/api/webhooks/revolut`, section `.env.example`, 4 mentions texte/commentaires mises à jour. Les colonnes `revolut_reference` / `revolut_order_id` restent en base comme référence de paiement générique (renommer = migration sans valeur).
+- [x] **Design system appliqué à `/inscription`** : fond transparent (Warp visible), `Card` = bordure verte 1.5px + surpiqûre dashed −7px, boutons pleins verts = surpiqûre blanche −4px (style partagé `primaryBtnStyle`), boîte de référence TK = surpiqûre verte −5px, bouton PayPal = surpiqûre blanche. Cohérent avec `/essai` et `/offres`.
+- [x] Build vert + tsc clean + push.
 
 ---
 
