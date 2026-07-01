@@ -54,7 +54,7 @@ export async function createEnrollment(params: {
   lastName: string;
   email: string;
 }): Promise<EnrollmentResult> {
-  const { trialCode, trialId, plan, firstName, lastName, email } = params;
+  const { trialCode, trialId, plan, email } = params;
 
   // Re-vérification serveur (prévient toute manipulation côté client)
   const verification = await verifyTrialCode(trialCode);
@@ -69,7 +69,6 @@ export async function createEnrollment(params: {
   const product = isAnnual ? "individual_sub" : "individual_hour";
 
   const orderRef = `TK-${randomBytes(4).toString("hex").toUpperCase()}`;
-  const fullName = `${firstName} ${lastName}`.trim();
 
   let description = "Cours d'arabe — ";
   if (isAnnual && annualPlan) {

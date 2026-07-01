@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { TestimonialsStack } from "./testimonials";
 import { ColorTweaker } from "./color-tweaker";
@@ -163,7 +164,7 @@ export default function HomePage() {
           </p>
 
           <div className="space-y-5">
-            {PHASES.map((phase, idx) => (
+            {PHASES.map((phase) => (
               <div
                 key={phase.n}
                 className="rounded-2xl p-6"
@@ -215,8 +216,8 @@ export default function HomePage() {
           </h2>
           <div className="flex flex-col sm:flex-row items-center sm:items-start">
             {STEPS.map((s, idx) => (
-              <>
-                <div key={s.n} className="flex flex-col items-center text-center gap-3 flex-1 px-2">
+              <Fragment key={s.n}>
+                <div className="flex flex-col items-center text-center gap-3 flex-1 px-2">
                   <div
                     className="flex items-center justify-center rounded-full font-bold text-white shrink-0"
                     style={{
@@ -251,7 +252,7 @@ export default function HomePage() {
                     </div>
                   </>
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>

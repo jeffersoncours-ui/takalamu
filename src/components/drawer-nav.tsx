@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 type NavItem = {
   href: string;
@@ -160,7 +160,6 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, pending
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const drawerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 

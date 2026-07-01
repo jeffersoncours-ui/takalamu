@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "crypto";
+
 // Revolut Merchant API — accepter les paiements des élèves.
 // TODO: configurer REVOLUT_MERCHANT_API_KEY dans Vercel une fois le compte Revolut Business activé.
 // Docs: https://developer.revolut.com/docs/merchant/create-an-order
@@ -53,8 +55,6 @@ export function verifyRevolutSignature(body: string, signature: string): boolean
   const secret = process.env.REVOLUT_WEBHOOK_SECRET;
   if (!secret || !signature) return false;
 
-  // Import synchrone de crypto (Node built-in, toujours dispo dans Next.js edge/node)
-  const { createHmac, timingSafeEqual } = require("crypto") as typeof import("crypto");
   const hex = signature.startsWith("v1=") ? signature.slice(3) : signature;
   const expected = createHmac("sha256", secret).update(body).digest("hex");
 

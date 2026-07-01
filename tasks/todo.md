@@ -2,6 +2,47 @@
 
 ---
 
+## Session 20 — Revue complète du code + simplifications
+
+> **Statut : TERMINÉ.** Revue de l'intégralité de `src/` (110 fichiers) sur branche dupliquée de `main`.
+
+### Plan
+- [x] Lire tout le code applicatif (lib, public, dashboard, teacher, composants, webhook, migrations concernées)
+- [x] **Bug corrigé — anti-double-booking essai** : `requestTrial` faisait un SELECT direct sur `trial_requests` avec le client anon ; aucune policy SELECT anon n'existe → le contrôle renvoyait toujours « libre » (protection uniquement visuelle). Remplacé par la RPC existante `get_trial_taken_slots` (SECURITY DEFINER, grantée anon).
+- [x] Dépendances mortes retirées : `three`, `@react-three/fiber`, `@types/three` (résidus de la tentative Three.js abandonnée en session 19)
+- [x] `revolut.ts` : `require("crypto")` → import top-level (erreur lint)
+- [x] `drawer-nav.tsx` : `useRouter` importé/instancié jamais utilisé — retiré
+- [x] `inscription/funnel.tsx` : prop `onSuccess` jamais appelée, état `codeInput` jamais lu, prop `prospect` inutilisée (`void prospect`) — retirés
+- [x] `inscription/actions.ts` : variables `fullName`/`firstName`/`lastName` inutilisées — retirées
+- [x] `page.tsx` (home) : fragment sans `key` dans la boucle STEPS (warning React) → `<Fragment key>` ; `idx` inutilisé retiré
+- [x] `layout.tsx` : poids Outfit **600** utilisé (notes session 18) mais non chargé — ajouté
+- [x] `eslint.config.mjs` : dossier `design/**` (handoff statique) exclu du lint
+- [x] Lint : 36 → 21 problèmes (6 → 3 erreurs) ; build vert
+
+### Restes assumés (pas des bugs)
+- 3 erreurs lint `react-hooks/set-state-in-effect` (join-button, next-course-hero, drawer-nav) : pattern intentionnel d'init d'horloge côté client (anti-hydration-mismatch) et fermeture du drawer au changement de route. Ne pas « corriger » sans re-tester l'hydration.
+- 18 warnings `_prev`/`_formData` unused : signature imposée par `useActionState`.
+
+### Propositions nécessitant l'accord du propriétaire (NON faites)
+- [ ] **ColorTweaker (panneau 🎨) encore rendu sur la home publique en prod** — outil de réglage de dev. Le retirer ?
+- [ ] **Témoignages placeholder** (« [Citation réelle à venir…] ») visibles en prod sur la home. Masquer la section en attendant les vrais ?
+- [ ] **Verrou base pour les créneaux d'essai** : index unique partiel sur `trial_requests (gender, scheduled_at) WHERE status <> 'declined'` — élimine la course résiduelle entre vérification et INSERT (nécessite ré-auth MCP Supabase pour la migration).
+- [ ] **Factorisation des styles répétés de la vitrine** (carte blanche/verte avec surpiqûre, boutons CTA) en petits composants partagés — zéro delta visuel mais diff étendu.
+
+### Tâches restantes (reprises de la session 19)
+- [ ] Page `/inscription` : appliquer design system (cartes + boutons)
+- [ ] Domaine OVH → Resend → `EMAIL_FROM=noreply@takalamu.com` (Vercel env vars)
+- [ ] Revolut Merchant API keys (après création de l'entité)
+- [ ] Bunny Stream : upload vidéos de bienvenue + milestone
+- [ ] Zoom : enforcement serveur lien (bouton cesse à H+10 min)
+
+### Review Session 20
+- Revue exhaustive : la base est saine — RLS-first respecté partout, server actions correctement gardées (`requireTeacher`/`requireStudent`/`requireAdmin`), aucune règle métier côté client seul, `createAdminClient()` limité aux cas légitimes (invitations auth, webhook, vérif code d'essai).
+- Un seul vrai bug trouvé et corrigé (anti-double-booking essai, silencieusement inopérant à cause du deny-by-default RLS). Le reste : code mort et hygiène.
+- Build vert (35 routes), poussé sur `claude/takalamu-platform-dev-46gpjg`.
+
+---
+
 ## Session 19 — Refonte visuelle vitrine + design system public
 
 > **Statut : TERMINÉ.**

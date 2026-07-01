@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Handoff design statique (HTML + JS généré) — pas du code applicatif.
+    "design/**",
   ]),
 ]);
 

@@ -93,12 +93,10 @@ function BackBtn({ onClick }: { onClick: () => void }) {
 // ── Step 1 — Code d'essai ─────────────────────────────────────────────────────
 
 function CodeStep({
-  onSuccess,
   isPending,
   error,
   onVerify,
 }: {
-  onSuccess: (info: ProspectInfo, code: string) => void;
   isPending: boolean;
   error: string | null;
   onVerify: (code: string) => void;
@@ -270,7 +268,6 @@ function planLabel(plan: string): string {
 }
 
 function ConfirmStep({
-  prospect,
   plan,
   firstName,
   lastName,
@@ -283,7 +280,6 @@ function ConfirmStep({
   isPending,
   error,
 }: {
-  prospect: ProspectInfo;
   plan: string;
   firstName: string;
   lastName: string;
@@ -296,7 +292,6 @@ function ConfirmStep({
   isPending: boolean;
   error: string | null;
 }) {
-  void prospect;
   return (
     <div>
       <PageHeader title="Récapitulatif" />
@@ -456,10 +451,8 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
   const [result, setResult] = useState<{ checkoutUrl?: string; orderRef: string; manual: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [codeInput, setCodeInput] = useState("");
 
   function handleVerify(code: string) {
-    setCodeInput(code);
     setError(null);
     startTransition(async () => {
       const res = await verifyTrialCode(code);
@@ -494,18 +487,7 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
     <div style={{ background: "#F7F4EE" }}>
       <div className="mx-auto max-w-lg px-4 py-12">
         {step === 1 && (
-          <CodeStep
-            onSuccess={(info, code) => {
-              setProspect({ ...info, trialCode: code });
-              setFirstName(info.firstName);
-              setLastName(info.lastName);
-              setEmail(info.email);
-              setStep(2);
-            }}
-            isPending={isPending}
-            error={error}
-            onVerify={handleVerify}
-          />
+          <CodeStep isPending={isPending} error={error} onVerify={handleVerify} />
         )}
 
         {step === 2 && (
@@ -520,7 +502,6 @@ export function InscriptionFunnel({ initialPlan = null }: { initialPlan?: string
 
         {step === 3 && prospect && plan && (
           <ConfirmStep
-            prospect={prospect}
             plan={plan}
             firstName={firstName}
             lastName={lastName}

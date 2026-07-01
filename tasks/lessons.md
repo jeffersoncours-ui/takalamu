@@ -1,5 +1,19 @@
 # Lessons
 
+## Session 20 (2026-07-01) — Revue complète du code
+
+### Décisions
+
+- **Un SELECT côté serveur avec le client anon sur une table deny-by-default ne renvoie jamais d'erreur — juste 0 ligne.** C'est le piège le plus sournois du modèle RLS : le contrôle anti-double-booking de `requestTrial` « fonctionnait » (aucune erreur, tests passants) mais ne détectait jamais rien. Règle : toute vérification serveur faite pour un utilisateur anon DOIT passer par une RPC SECURITY DEFINER (ou l'admin client) — jamais par un SELECT direct. Auditer ce pattern à chaque nouvelle action anon.
+- **Après un pivot technique, purger les dépendances de la piste abandonnée.** `three` + `@react-three/fiber` + `@types/three` sont restés dans package.json après l'abandon de Three.js (session 19) au profit de `@paper-design/shaders-react`. Vérifier `package.json` en fin de session quand une approche a été essayée puis remplacée.
+- **`next/font` ne charge que les poids déclarés.** Utiliser `fontWeight: 600` alors que la police est chargée en `["700","800","900"]` produit un faux gras synthétisé par le navigateur, silencieusement. Toute nouvelle valeur de `fontWeight` doit exister dans la déclaration du layout.
+- **Les erreurs `react-hooks/set-state-in-effect` ne sont pas toutes à corriger.** L'init d'horloge client (`setNow(new Date())` dans un effect au montage) est le pattern anti-hydration-mismatch documenté ici depuis la refonte UI. Restructurer pour satisfaire le linter réintroduirait le crash d'hydration React 19. Les laisser, les documenter.
+
+### Pièges
+
+- **`.map()` retournant un fragment `<>...</>` : la key doit être sur le fragment**, pas sur le premier enfant. `<Fragment key={...}>` (import explicite) est obligatoire — un fragment court `<>` ne peut pas porter de key. Le warning React n'apparaît qu'à l'exécution, pas au build.
+- **Le dossier `design/` (handoff HTML/JS statique) était linté** et générait des erreurs parasites dans le rapport. `globalIgnores` dans `eslint.config.mjs` règle ça proprement.
+
 ## Session 19 (2026-06-26) — Refonte visuelle vitrine + design system public
 
 ### Décisions
