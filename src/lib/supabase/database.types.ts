@@ -1004,11 +1004,14 @@ export type Database = {
       }
       students: {
         Row: {
+          address: string | null
+          birth_date: string | null
           created_at: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           onboarding_completed: boolean
           profile_id: string
+          school_background: string | null
           status: Database["public"]["Enums"]["student_status"]
           teacher_id: string | null
           trial_credit_cents: number
@@ -1016,11 +1019,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           onboarding_completed?: boolean
           profile_id: string
+          school_background?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
           trial_credit_cents?: number
@@ -1028,11 +1034,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           onboarding_completed?: boolean
           profile_id?: string
+          school_background?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
           trial_credit_cents?: number
@@ -1412,6 +1421,16 @@ export type Database = {
           p_vocab?: Json
         }
         Returns: string
+      }
+      update_own_student_info: {
+        Args: {
+          p_address?: string
+          p_birth_date?: string
+          p_full_name: string
+          p_gender: Database["public"]["Enums"]["gender_type"]
+          p_school_background?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

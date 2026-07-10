@@ -1,0 +1,73 @@
+import { requireStudent } from "@/lib/auth";
+import { MenuCardLink } from "@/components/menu-card-link";
+
+const REVISION_ITEMS = [
+  {
+    href: "/dashboard/evaluations",
+    label: "Évaluations",
+    desc: "Quiz vocabulaire auto-généré",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    ),
+    color: "#D97706",
+    bg: "#FEF3C7",
+  },
+  {
+    href: "/dashboard/vocabulary",
+    label: "Mon glossaire",
+    desc: "Tous mes mots arabes",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    ),
+    color: "#0F9D6E",
+    bg: "#ECFAF4",
+  },
+  {
+    href: "/dashboard/grammar",
+    label: "Mes règles de grammaire",
+    desc: "Toutes mes règles",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" y1="9" x2="20" y2="9" />
+        <line x1="4" y1="15" x2="20" y2="15" />
+        <line x1="10" y1="3" x2="8" y2="21" />
+        <line x1="16" y1="3" x2="14" y2="21" />
+      </svg>
+    ),
+    color: "#3E63DD",
+    bg: "#EAEFFD",
+  },
+];
+
+export default async function RevisionPage() {
+  await requireStudent();
+
+  return (
+    <div className="space-y-6">
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        >
+          Révision
+        </h1>
+        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+          Vocabulaire, grammaire et évaluations.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {REVISION_ITEMS.map((item) => (
+          <MenuCardLink key={item.href} {...item} />
+        ))}
+      </div>
+    </div>
+  );
+}

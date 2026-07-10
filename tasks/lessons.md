@@ -1,5 +1,17 @@
 # Lessons
 
+## Session 24 (2026-07-10) — Onglet Révision + profil élève + correctif RLS profiles
+
+### Décisions
+- **Branche de session stale, non-ancêtre de `main`** : la branche assignée pour cette session forkait avant la session 12 (10+ sessions manquantes : quiz, homework, pivot service, PayPal, Meet…). `git merge-base --is-ancestor` dans les deux sens a confirmé la divergence avant tout travail. Réinitialisée sur `origin/main` (`git checkout -B <branche> origin/main`) puis repoussée — aucune perte, ses 13 commits étaient déjà dans `main` sous d'autres hash. **Réflexe à garder** : toujours vérifier `git merge-base --is-ancestor HEAD origin/main` en tout début de session avant de lire `tasks/todo.md` — un todo.md qui semble "en retard" par rapport au résumé donné par l'utilisateur est un signal fort de branche périmée, pas d'un todo.md mal tenu.
+- **`authenticated` est un rôle Postgres partagé entre élève ET enseignant** (différenciation uniquement via JWT claims + RLS, pas via rôle DB séparé). Conséquence pratique : un `GRANT UPDATE (colonnes...)` restreint par colonne s'applique à TOUT le monde sous ce rôle — utilisable pour `profiles` (élève et enseignant n'éditent que full_name/gender de toute façon) mais **inutilisable** pour `students` (l'enseignant doit pouvoir écrire `status`/`teacher_id`/absences, l'élève jamais). Pour ce 2ᵉ cas, seule une RPC `SECURITY DEFINER` avec vérification explicite d'appartenance permet de restreindre les colonnes par *type d'appelant* plutôt que par rôle DB.
+- **Pattern RPC self-service élève** : `update_own_student_info(...)` suit le même moule que `confirm_payment`/`get_teacher_booked_slots`/`get_public_teachers` (SECURITY DEFINER, `search_path=''`, objets qualifiés `public.`, `grant execute ... to authenticated`). Réutilisable pour toute future feature "l'élève édite un sous-ensemble de champs sur une table qui a aussi des colonnes sensibles".
+- **Composant partagé extrait après le 2ᵉ usage identique** : `MenuCardLink` créé quand le pattern "carte-lien avec icône" s'est retrouvé dans 2 pages (Plus + Révision) suite au déplacement de contenu — pas avant, conforme au principe anti-sur-ingénierie.
+
+### Pièges / trouvailles
+- **Trou RLS historique découvert par lecture, pas par test** : `profiles_update_own` (migration 01, jamais retouchée) n'avait aucune restriction de colonne — un élève pouvait en théorie s'auto-promouvoir `role=admin` via un PATCH REST direct sur sa propre ligne `profiles`. Passé inaperçu car aucun flux applicatif ne fait `.from("profiles").update(...)` côté client (vérifié par grep avant de corriger). Le correctif (`revoke update ... ; grant update (full_name, gender) ...`) est sans risque de régression justement parce qu'aucun code ne dépendait du comportement large. **Leçon générale** : quand une nouvelle feature touche une policy RLS existante, relire toute la policy (pas seulement l'ajout), pas seulement la partie qu'on modifie.
+- **Session bloquée sur les preuves empiriques MCP** : le connecteur Supabase nécessite une autorisation OAuth qui ne peut pas se déclencher en session non-interactive. La migration 38 est donc écrite/versionnée mais **non appliquée et non prouvée** — premier écart connu au CLAUDE.md §4 (preuve empirique obligatoire) dans ce projet, documenté explicitement plutôt que masqué. À rattraper dès que le propriétaire autorise le connecteur.
+
 ## Session 23 (2026-07-10) — Reset comptes, compte réel Anthony, mot de passe élève, E2E
 
 ### Décisions

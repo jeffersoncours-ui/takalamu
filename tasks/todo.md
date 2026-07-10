@@ -2,6 +2,40 @@
 
 ---
 
+## Session 24 — Onglet Révision + profil élève éditable + suppression rappel auto
+
+> **Décisions propriétaire (2026-07-10)**, actées après échange :
+> - Onglet **Session → Révision** : retire l'affichage "prochain cours" (compte à rebours, bouton Rejoindre, lien Meet) — le lien Meet est désormais transmis à la main dans le chat existant. Retrait complet, aucune trace ailleurs.
+> - **Révision** héberge à la place ce qui vivait dans **Plus** : Évaluations, Glossaire, Grammaire (cartes cliquables, même pattern qu'aujourd'hui — pas de segmented control).
+> - **Paiements reste dans Plus.** Plus s'enrichit d'une nouvelle section **Mon profil** : l'élève peut lui-même saisir/modifier prénom (déjà là), adresse, date de naissance, parcours scolaire.
+> - **Cron de rappel du jour (`session-reminders`) supprimé** : redondant avec l'envoi manuel du lien par le prof.
+
+### Plan
+- [x] Migration 38 : `students.address text`, `students.birth_date date`, `students.school_background text` (nullable) + RPC `update_own_student_info(...)` SECURITY DEFINER (met à jour `profiles.full_name/gender` + `students.address/birth_date/school_background` pour l'appelant élève uniquement — colonnes sensibles `status/teacher_id/unjustified_absences_count` jamais exposées)
+- [x] **Correctif sécurité trouvé en chemin** : `profiles_update_own` autorisait la modification de **toute** colonne de sa propre ligne, y compris `role` et `email` (élévation de privilège possible via PATCH REST direct, aucun flux applicatif n'en dépendait). Restreint via `revoke update on profiles from authenticated; grant update (full_name, gender) to authenticated;` — défense en profondeur, indépendant de la RPC ci-dessus.
+- [x] `database.types.ts` : ajouter `update_own_student_info` + colonnes `students`
+- [x] Renommer route `/dashboard/bookings` → `/dashboard/revision` : nouvelle page avec 3 cartes (Évaluations/Glossaire/Grammaire), suppression de l'affichage "prochain cours"
+- [x] Suppression fichiers devenus morts : `next-course-hero.tsx`, `lib/next-course.ts`, `bookings/join-button.tsx` (déjà non importé), `lib/join-window.ts`, `bookings/loading.tsx`
+- [x] `dashboard-tabs.tsx` : label "Session" → "Révision", href → `/dashboard/revision`
+- [x] `more/page.tsx` : retirer cartes Évaluations/Glossaire/Grammaire, garder Paiements, ajouter carte "Mon profil" → nouvelle page `/dashboard/profile`
+- [x] Nouvelle page `/dashboard/profile` + formulaire (prénom, genre, adresse, date de naissance, parcours scolaire) + server action appelant la RPC
+- [x] Suppression cron : `src/app/api/cron/session-reminders/route.ts`, entrée `vercel.json`, `sendSessionReminder` dans `resend.ts` (plus jamais appelée) + `CRON_SECRET` retiré de `.env.example`
+- [x] `notification_type = 'session_reminder'` et `bookings.reminder_sent` : laissés en base (impact minimal, migration destructive non justifiée) — documentés comme vestiges
+- [ ] **Tests MCP — BLOQUÉ** : Supabase MCP non autorisé dans cette session (auth OAuth requise, non déclenchable en non-interactif). À faire dès autorisation : élève modifie ses propres infos ; élève NE PEUT PAS modifier `status`/`teacher_id`/`unjustified_absences_count` via la RPC ; élève bloqué en écriture directe sur `role`/`email` de son profil (preuve du correctif sécurité) ; migration 38 pas encore appliquée en base (fichier versionné, jamais exécuté contre le vrai projet)
+- [x] Build + lint verts (32 routes, 0 nouvelle erreur — le seul lint error préexistant est dans `drawer-nav.tsx`, non touché)
+- [ ] Push
+
+### Review Session 24
+- Refonte livrée : onglet **Révision** (ex-Session) héberge Évaluations/Glossaire/Grammaire ; onglet **Plus** garde Paiements + nouvelle carte **Mon profil** (adresse, date de naissance, parcours scolaire, en plus de prénom/genre déjà existants).
+- Suppression complète de l'affichage "prochain cours" côté élève (NextCourseHero, compte à rebours, bouton Rejoindre, cron de rappel + email) — le lien Meet est désormais transmis à la main par le prof via le chat existant. 6 fichiers morts supprimés (`next-course-hero.tsx`, `lib/next-course.ts`, `lib/join-window.ts`, `bookings/*`, cron route).
+- Nouveau composant partagé `src/components/menu-card-link.tsx` (déduplique le pattern carte-menu utilisé par Plus et Révision).
+- **RPC `update_own_student_info`** (SECURITY DEFINER) : seul chemin d'écriture pour les nouvelles colonnes élève-éditables. Une policy RLS classique aurait été insuffisante car `students` a des colonnes sensibles (`status`, `teacher_id`, `unjustified_absences_count`) et élève/enseignant partagent le même rôle Postgres `authenticated` — impossible de restreindre par colonne via GRANT dans ce cas précis (contrairement à `profiles`, où élève et enseignant n'ont besoin d'éditer que les 2 mêmes colonnes).
+- **Trou de sécurité corrigé au passage** : `profiles_update_own` (migration 01, jamais retouchée depuis) autorisait la modification de n'importe quelle colonne de sa propre ligne `profiles`, y compris `role` et `email` — un élève aurait pu s'auto-promouvoir admin via un PATCH REST direct (aucun flux applicatif ne l'utilisait, donc non détecté jusqu'ici). Corrigé par un `GRANT UPDATE` restreint aux colonnes `full_name`/`gender`.
+- **Non testé empiriquement** : le MCP Supabase n'est pas autorisé dans cette session (OAuth non déclenchable en non-interactif) → migration 38 écrite et versionnée mais **jamais appliquée à la base réelle**, RLS/RPC non prouvées par `execute_sql`. À faire dès que le propriétaire autorise le connecteur Supabase.
+- Domaine réel communiqué par le propriétaire : **tatakalamu.fr** (pas takalamu.com/.fr) — à utiliser pour `EMAIL_FROM` sur Vercel quand Resend sera branché dessus.
+
+---
+
 ## Session 23 — Reset comptes de test, compte réel Anthony, mot de passe élève, vérification E2E
 
 > **Statut : TERMINÉ.** Premier vrai élève sur la plateforme.
