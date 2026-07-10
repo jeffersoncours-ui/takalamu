@@ -145,6 +145,7 @@ export type Database = {
           id: string
           linked_book_session_id: string | null
           prep_notes: string | null
+          reminder_sent: boolean
           scheduled_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_id: string
@@ -158,6 +159,7 @@ export type Database = {
           id?: string
           linked_book_session_id?: string | null
           prep_notes?: string | null
+          reminder_sent?: boolean
           scheduled_at: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_id: string
@@ -171,6 +173,7 @@ export type Database = {
           id?: string
           linked_book_session_id?: string | null
           prep_notes?: string | null
+          reminder_sent?: boolean
           scheduled_at?: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_id?: string
@@ -664,6 +667,7 @@ export type Database = {
           amount_cents: number | null
           created_at: string
           id: string
+          label: string | null
           period: string | null
           plan: Database["public"]["Enums"]["payment_plan"] | null
           product: Database["public"]["Enums"]["payment_product"]
@@ -677,6 +681,7 @@ export type Database = {
           amount_cents?: number | null
           created_at?: string
           id?: string
+          label?: string | null
           period?: string | null
           plan?: Database["public"]["Enums"]["payment_plan"] | null
           product: Database["public"]["Enums"]["payment_product"]
@@ -690,6 +695,7 @@ export type Database = {
           amount_cents?: number | null
           created_at?: string
           id?: string
+          label?: string | null
           period?: string | null
           plan?: Database["public"]["Enums"]["payment_plan"] | null
           product?: Database["public"]["Enums"]["payment_product"]
@@ -1337,17 +1343,21 @@ export type Database = {
         Returns: Json
       }
       get_grammar_quiz_questions: { Args: { p_quiz_id: string }; Returns: Json }
+      get_public_teachers: {
+        Args: never
+        Returns: {
+          bio: string
+          display_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+        }[]
+      }
       get_teacher_availability_by_gender: {
         Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
-        Returns: { day_of_week: number; start_time: string; end_time: string }[]
-      }
-      get_public_teachers: {
-        Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          display_name: string
-          bio: string
-          gender: Database["public"]["Enums"]["gender_type"]
+          day_of_week: number
+          end_time: string
+          start_time: string
         }[]
       }
       get_teacher_booked_slots: {
@@ -1359,7 +1369,9 @@ export type Database = {
       }
       get_trial_taken_slots: {
         Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
-        Returns: { slot_at: string }[]
+        Returns: {
+          slot_at: string
+        }[]
       }
       insert_notification: {
         Args: { p_payload: Json; p_type: string; p_user_id: string }
@@ -1423,6 +1435,7 @@ export type Database = {
         | "payment_confirmed"
         | "homework_submitted"
         | "trial_request"
+        | "session_reminder"
       payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly" | "hourly"
       payment_product: "individual_sub" | "book" | "individual_hour"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
@@ -1585,6 +1598,7 @@ export const Constants = {
         "payment_confirmed",
         "homework_submitted",
         "trial_request",
+        "session_reminder",
       ],
       payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly", "hourly"],
       payment_product: ["individual_sub", "book", "individual_hour"],

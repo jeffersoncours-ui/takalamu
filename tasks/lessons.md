@@ -1,5 +1,24 @@
 # Lessons
 
+## Session 22 (2026-07-10) — Pivot service à la confiance (Session tab, paiement libre, vitrine dormante)
+
+### Décisions
+
+- **Auditer avant de coder sur un pivot métier — payant.** Le propriétaire a explicitement demandé un audit complet avant tout code sur cette session. L'audit (RLS live, schéma live, comptes réels via MCP) a révélé que `prep_notes` existait en base sans migration fichier correspondante (dérive silencieuse) et a permis de dimensionner correctement chaque décision (ex. confirmer que `teacher_availability` est aussi utilisée par le tunnel `/essai` public, donc à ne pas toucher).
+- **Une nouvelle capacité d'écriture peut exposer une policy RLS jamais testée en pratique.** `bookings_teacher_all` existait depuis la session 1 mais n'avait jamais servi à un INSERT réel côté teacher (seul le student insérait). Donner au prof la capacité de créer directement une réservation a immédiatement révélé que le `WITH CHECK` ne vérifiait que `teacher_id`, jamais la cohérence `student_id → teacher_id`. **Leçon générale : chaque fois qu'une policy `FOR ALL` déjà en place devient réellement exercée pour la première fois (nouveau bouton, nouvelle action), la re-tester en conditions d'attaque avant de livrer** — une policy « jamais cassée » peut simplement n'avoir jamais été sollicitée.
+- **Défense en profondeur : app + RLS, jamais l'un sans l'autre.** L'action serveur `createBookingByTeacher` faisait déjà l'ownership check via un SELECT scopé RLS (`students_select_teacher`) — donc l'app était déjà sûre. Mais la RLS elle-même restait perméable à un appel direct (Postgrest, mauvais futur refactor, bug applicatif). Corrigé au niveau base (migration 37), conformément au Principe 1 de CLAUDE.md — jamais se reposer uniquement sur l'affichage/l'app.
+- **Paiement post-payé, montant libre, initié par l'enseignant seul.** Remplace complètement les formules (1x/2x/3x/12x). `payments.label` (texte libre) ajouté pour ne plus mentir sur la nature du paiement (ne plus afficher « Abonnement individuel » pour un paiement ad-hoc). Fallback vers les anciens libellés de plan conservé uniquement pour l'affichage des 3 paiements seed historiques.
+- **« Ne pas dépendre de Claude pour une action répétitive. »** Le propriétaire voulait initialement me demander d'envoyer chaque email de paiement manuellement. Recommandation donnée et acceptée : construire un petit formulaire in-app à la place — plus résilient, pas de single point of failure sur la disponibilité d'une session Claude Code.
+- **Vitrine « dormante » ≠ vitrine supprimée.** Pattern déjà établi avec Revolut (session 20) et repris ici : le funnel public (`/offres`, `/essai`, `/inscription`, `trial_requests`, `/teacher/trials`) reste intact et fonctionnel par URL directe, seule la racine `/` redirige vers `/login`. Coût de maintenir ≈ nul, coût de reconstruire un jour ≈ élevé.
+- **Contenu remplacé (pas dormant) = supprimé, pas commenté.** `booking-slots.tsx`, `dashboard/bookings/actions.ts` (self-serve), `testimonials.tsx`, le cron d'abonnement session 21 : tous supprimés franchement (pas de code mort laissé), car il n'y a aucun scénario où on les rebrancherait tels quels — contrairement à Revolut/vitrine qui pourraient revenir en l'état.
+- **Helper partagé dès la 2ᵉ occurrence.** La requête « prochain cours + contexte pédagogique » était dupliquée entre `dashboard/page.tsx` et la nouvelle page Session → extraite dans `src/lib/next-course.ts` avant que les deux ne divergent silencieusement.
+
+### Pièges
+
+- **Réactivation Supabase (pause plan gratuit) : après `restore_project`, le statut passe par `COMING_UP` avant `ACTIVE_HEALTHY`.** Interroger la base pendant `COMING_UP` renvoie des résultats trompeurs (`auth.users` = 0, `relation "profiles" does not exist`) qui ressemblent à une perte de données mais ne le sont pas — toujours attendre `ACTIVE_HEALTHY` avant de tirer une conclusion.
+- **`date-fns-tz` v3 : `fromZonedTime`/`formatInTimeZone`**, pas `zonedTimeToUtc` (API v1/v2). Toujours vérifier la version installée avant d'écrire du code fuseau horaire — les noms de fonctions changent entre versions majeures.
+- **Prouver une faille RLS avant de la corriger, pas seulement après.** Insérer réellement (dans une transaction `BEGIN...ROLLBACK`) avec le rôle impersonné AVANT le fix pour confirmer que le trou existe vraiment (ici : 1 ligne insérée), puis re-tester après coup pour confirmer le blocage (42501) ET que le cas légitime n'a pas été cassé au passage. Un seul des deux tests ne suffit pas.
+
 ## Session 21 (2026-07-01) — Paiement PayPal.Me (compte perso) + relances cron
 
 ### Décisions

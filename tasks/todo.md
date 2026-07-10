@@ -2,6 +2,60 @@
 
 ---
 
+## Session 22 — Pivot modèle de service (Session tab, paiement libre, vitrine dormante)
+
+> **Décisions propriétaire (2026-07-01)**, actées après audit + avis donné :
+> - **Onglet réservation → « Session ».** Plus d'auto-réservation élève : le créneau est fixé par le prof (arrangement via chat externe), la page n'affiche que le prochain cours (lien Meet, countdown identique à l'existant, rappel du jour, rappel caméra/posture texte).
+> - **Paiement 100 % libre, post-payé, montant variable.** Fin de l'abonnement/formules. Le prof envoie lui-même une demande de paiement (montant + élève au choix) depuis un petit formulaire dans l'app — pas de sollicitation de Claude à chaque fois. Élève garde un historique en lecture seule + bouton PayPal.
+> - **Cron de relances mensuelles (session 21) supprimé** : incompatible avec « c'est moi qui décide » (aurait pu emailer automatiquement).
+> - **Plus de verrou paiement à la création d'un cours.** Suspension gérée manuellement par le prof (statut existant sur la fiche élève).
+> - **Vitrine gardée dormante** (code intact, accessible par URL directe) mais **`/` devient une redirection pure vers `/login`** — aucune page d'accueil publique affichée.
+> - **Création de compte élève 100 % manuelle**, indépendante du tunnel d'essai : petit formulaire côté `/teacher/students` (prénom/nom/email/genre), plus de notion de « code d'essai ».
+
+### Plan
+- [x] Migration 35 : `notification_type` += `session_reminder`
+- [x] Migration 36 : `payments.label` (text, nullable) ; `bookings.reminder_sent` (bool, default false)
+- [x] Migration 37 (**faille RLS découverte en test, hors plan initial**) : `bookings_teacher_all` ne vérifiait pas que `student_id` appartient à l'enseignant — corrigé
+- [x] `database.types.ts` régénéré (enum + 2 colonnes)
+- [x] Suppression code mort self-serve élève : `src/lib/booking.ts`, `dashboard/bookings/booking-slots.tsx`, `dashboard/bookings/actions.ts`
+- [x] Création de créneau côté prof : `/teacher/bookings` + `createBookingByTeacher` (aucun verrou paiement, ownership re-vérifiée serveur ET RLS)
+- [x] Session tab élève : helper partagé `src/lib/next-course.ts`, page réécrite (`NextCourseHero` inchangé + bandeau « aujourd'hui » Europe/Paris + rappel caméra/posture + état vide adapté)
+- [x] `dashboard/page.tsx` (« Cours ») simplifié : historique + stats seulement
+- [x] `dashboard-tabs.tsx` : « Réserver » → « Session »
+- [x] Cron `/api/cron/session-reminders` (Bearer `CRON_SECRET`, fenêtre Europe/Paris via date-fns-tz) → email + notif + `reminder_sent=true`
+- [x] Suppression cron abonnement session 21 (route + `vercel.json`)
+- [x] Paiement libre côté prof : `SendPaymentForm` sur `/teacher/payments` + `sendPaymentRequest`
+- [x] Paiement élève simplifié : retrait `PaymentRequestForm`/`requestPayment`, affichage préfère `payments.label`
+- [x] Création manuelle d'élève : `NewStudentForm` sur `/teacher/students` + `createStudentManually`
+- [x] Racine publique → `redirect("/login")`, `testimonials.tsx` supprimé, `/offres` `/essai` `/inscription` intacts et dormants
+- [x] Preuves MCP (voir Review) + advisor sécurité = 0 nouveau lint
+- [x] Build + tsc + lint verts (mêmes 3 erreurs déjà connues, 0 nouvelle)
+
+### Review Session 22
+
+**État au 2026-07-10 — pivot complet vers un modèle de service à la confiance, réalisé.**
+
+- **Session tab** : plus d'auto-réservation élève. Le prof fixe le créneau (`/teacher/bookings`, formulaire « + Fixer une séance », aucun verrou paiement). L'élève voit sur « Session » : le `NextCourseHero` inchangé (countdown, bouton Rejoindre 3 états), un bandeau « C'est aujourd'hui ! » (calculé en Europe/Paris via `date-fns-tz`, jamais un décalage codé en dur — Principe 7), et un rappel statique caméra/posture. État vide renvoie vers Messages plutôt que vers un self-serve disparu.
+- **Rappel du jour** : cron quotidien 06:00 UTC (`session-reminders`), fenêtre calculée en jour calendaire Paris, email Resend + notification cloche + `bookings.reminder_sent` pour dédupliquer — prouvé empiriquement (fenêtre correcte, dédup effective à 0 candidat après passage).
+- **Paiement 100 % libre** : plus de formule/abonnement. L'enseignant envoie une demande ad-hoc (montant + libellé libres) depuis `/teacher/payments` — aucune sollicitation de Claude nécessaire à l'usage. L'élève garde un historique en lecture seule + bouton PayPal sur les lignes en attente. Cron de relances automatiques de la session 21 **supprimé** (incompatible avec « c'est moi qui décide »).
+- **Création manuelle d'élève** : `/teacher/students`, indépendante du tunnel d'essai (`trial_requests`), réutilise le pattern `inviteUserByEmail` déjà éprouvé. Admin peut assigner à n'importe quel enseignant, un enseignant normal ne peut créer que pour lui-même.
+- **Vitrine dormante** : `/` redirige vers `/login`, aucune page d'accueil publique affichée. `/offres`, `/essai`, `/inscription` restent pleinement fonctionnels par URL directe (code intact, juste plus liés depuis nulle part).
+- **Faille RLS trouvée et corrigée en cours de route** : la nouvelle capacité « le prof crée directement une réservation » exposait un trou préexistant dans `bookings_teacher_all` — la policy vérifiait `teacher_id = current_teacher_id()` mais jamais que le `student_id` visé appartenait à ce même enseignant. Un enseignant aurait pu créer une réservation pour l'élève d'un collègue en indiquant simplement son propre `teacher_id`. Prouvé exploitable (INSERT réussi), corrigé migration 37 (`WITH CHECK` avec `EXISTS` sur `students`), re-prouvé bloqué (42501) puis re-prouvé que le cas légitime fonctionne toujours.
+
+**Preuves MCP (toutes nettoyées après coup)** :
+- Booking cross-teacher avant fix : 1 ligne insérée (faille confirmée) → après fix : 42501 (bloqué)
+- Booking légitime (Khadija → sa propre élève Fatima) : succès, `teacher_id`/`student_id` cohérents
+- Paiement libre avec `label` custom : insert + lecture conformes
+- Fenêtre cron du jour (Europe/Paris → bornes UTC) : capture la bonne réservation ; après `reminder_sent=true`, 0 candidat restant (dédup prouvée)
+- Advisor sécurité : 0 nouveau lint (mêmes WARN pré-existants, tous déjà acceptés/documentés)
+
+**Différé / à surveiller** :
+- Pas de suspension automatique pour impayés répétés — gérée manuellement par le prof (statut existant sur la fiche élève), décision explicite du propriétaire pour rester simple.
+- `/teacher/trials` (backend du tunnel d'essai) laissé tel quel — dormant comme le reste de la vitrine, aucune raison de le retirer.
+- Build vert (32 routes), poussé sur `claude/takalamu-platform-dev-46gpjg`.
+
+---
+
 ## Session 21 — Paiement PayPal (compte perso, liens PayPal.Me + relances mensuelles)
 
 > **Décision propriétaire (2026-07-01)** : PayPal remplace Revolut pour l'encaissement,

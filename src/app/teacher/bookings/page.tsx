@@ -5,12 +5,23 @@ import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/status-badge";
 import { BookingActions } from "./booking-actions";
+import { NewBookingForm } from "./new-booking-form";
 
 export default async function TeacherBookingsPage() {
   await requireTeacher();
   const supabase = await createClient();
 
   const now = new Date().toISOString();
+
+  const { data: studentRows } = await supabase
+    .from("students")
+    .select("id, profiles(full_name)")
+    .eq("status", "active");
+
+  const students = (studentRows ?? []).map((s) => {
+    const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
+    return { id: s.id, name: profile?.full_name ?? "Élève" };
+  });
 
   const { data: upcoming } = await supabase
     .from("bookings")
@@ -40,6 +51,8 @@ export default async function TeacherBookingsPage() {
       >
         Réservations
       </h1>
+
+      <NewBookingForm students={students} />
 
       {/* À venir */}
       <div className="space-y-2">

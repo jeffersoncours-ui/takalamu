@@ -1,15 +1,23 @@
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StudentsList } from "./students-list";
+import { NewStudentForm } from "./new-student-form";
 
 export default async function StudentsPage() {
-  await requireTeacher();
+  const { profile } = await requireTeacher();
   const supabase = await createClient();
 
-  const { data: students } = await supabase
-    .from("students")
-    .select("id, status, unjustified_absences_count, gender, profiles(full_name, email)")
-    .order("created_at", { ascending: true });
+  const isAdmin = profile?.role === "admin";
+
+  const [{ data: students }, { data: teacherRows }] = await Promise.all([
+    supabase
+      .from("students")
+      .select("id, status, unjustified_absences_count, gender, profiles(full_name, email)")
+      .order("created_at", { ascending: true }),
+    supabase.from("teachers").select("id, display_name"),
+  ]);
+
+  const teachers = (teacherRows ?? []).map((t) => ({ id: t.id, name: t.display_name ?? "Enseignant" }));
 
   const list = (students ?? []).map((s) => {
     const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
@@ -29,6 +37,8 @@ export default async function StudentsPage() {
       >
         Mes élèves
       </h1>
+
+      <NewStudentForm teachers={isAdmin ? teachers : undefined} />
 
       {list.length === 0 ? (
         <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun élève rattaché pour le moment.</p>

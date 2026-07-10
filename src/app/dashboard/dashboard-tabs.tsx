@@ -17,7 +17,7 @@ const TABS = [
   },
   {
     href: "/dashboard/bookings",
-    label: "Réserver",
+    label: "Session",
     exact: false,
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 2} strokeLinecap="round" strokeLinejoin="round">
