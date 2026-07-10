@@ -17,8 +17,15 @@
 - [x] Domaine ajouté au projet Vercel (`tatakalamu.fr` + `www.tatakalamu.fr`)
 - [x] DNS chez OVH : A `@` → `216.198.79.1` (remplace l'ancien A de parking OVH), CNAME `www` → `7d0172612168296d.vercel-dns-017.com.` (après suppression des restes TXT/AAAA de la redirection OVH par défaut qui bloquaient la coexistence avec le CNAME)
 - [x] Les deux domaines passés en **« Valid Configuration »** côté Vercel, certificat SSL généré
-- [x] Confirmé : la Production Vercel (donc `tatakalamu.fr`) déploie bien depuis la branche `main`
 - [ ] Resend / SMTP personnalisé / `EMAIL_FROM` : reporté (hors scope de cette session, cf. priorités en attente)
+
+### 🔴 Bug critique découvert et corrigé : mauvaise branche en production
+> Après avoir branché le domaine, le propriétaire a remarqué que `tatakalamu.fr` affichait encore l'ancienne vitrine publique (sensée être supprimée depuis le pivot session 22). Investigation : la **branche de production configurée dans Vercel n'a jamais été `main`**.
+- [x] Diagnostic confirmé via Vercel (app mobile) : Production Deployment = commit du **23 juin**, branche `claude/new-project-setup-1jcgwf`, 93 commits derrière `main` (tout le pivot de service manquant en prod depuis des semaines)
+- [x] Réglage **« Production Branch »** introuvable dans l'app mobile Vercel (probablement absent de cette UI simplifiée) — non résolu par ce biais
+- [x] **Corrigé autrement** (suggestion du propriétaire) : `git push --force-with-lease origin origin/main:refs/heads/claude/new-project-setup-1jcgwf` → fait pointer la branche de prod directement sur le dernier commit de `main`. Vérifié via `list_deployments` (Vercel MCP) : nouveau déploiement `target: "production"` sur le bon commit, state passé à READY. Propriétaire confirme `tatakalamu.fr` à jour.
+- [x] Avertissement durable ajouté dans `CLAUDE.md` §11 (⚠️ branche de prod) pour que ça ne se reproduise pas silencieusement
+- [ ] **Reste à faire (idéalement prochaine session ou par le propriétaire sur vercel.com desktop)** : soit changer une bonne fois pour toutes le réglage Vercel "Production Branch" vers `main` (pas trouvé sur mobile, à chercher sur le site web complet), soit prendre l'habitude de resynchroniser `claude/new-project-setup-1jcgwf` après chaque merge sur `main`. **Tant que ce n'est pas fait, un merge sur `main` ne part PAS automatiquement en prod.**
 
 ---
 
