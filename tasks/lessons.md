@@ -1,5 +1,19 @@
 # Lessons
 
+## Session 23 (2026-07-10) — Reset comptes, compte réel Anthony, mot de passe élève, E2E
+
+### Décisions
+
+- **Comptes élèves désormais créés avec mot de passe fixe communiqué directement par l'enseignant** (plus de flux d'invitation email systématique — cohérent avec le pivot bouche-à-oreille de la session 22). Conséquence directe : il fallait un moyen pour l'élève de changer ce mot de passe une fois connecté — construit dans la foulée (`supabase.auth.updateUser()` côté serveur, aucun privilège admin requis, la session courante suffit).
+- **Création de compte réel via SQL direct (`crypt()` + `gen_salt('bf')`) plutôt que `inviteUserByEmail`.** Choisi pour donner un accès immédiat (mot de passe fixe connu tout de suite) plutôt que de dépendre de la délivrabilité d'un email d'invitation Supabase Auth (SMTP par défaut, non configuré avec un domaine vérifié). Méthode identique à `seed_test_accounts.sql`, donc déjà « éprouvée » sur le papier — mais voir piège ci-dessous.
+- **Suppression complète des comptes de test avant le premier vrai élève.** Propre : `DELETE FROM auth.users` cascade correctement à travers tout le schéma (profils, students, lesson_records, vocabulary, grammar_rules, homework, payments, conversations, messages) — seule une notification a dû être nettoyée manuellement (son `payload.conversation_id` n'est pas une FK, donc pas de cascade sur une donnée JSON qui référence un id supprimé ailleurs — à garder en tête si d'autres tables stockent des références jsonb non-FK).
+
+### Pièges
+
+- **« Vérifié via `crypt()` en SQL » ≠ « le login fonctionne réellement ».** Les comptes de test (session 1) étaient documentés comme `password_ok=true`, mais cette vérification ne faisait que comparer le hash en SQL — jamais un vrai appel à `supabase.auth.signInWithPassword()`. En tentant un test E2E réel cette session, la connexion a échoué avec « Identifiants invalides » — panique de courte durée jusqu'à comprendre que c'est le **réseau du sandbox qui bloque `*.supabase.co`** (confirmé par `curl -v` : `403` sur le tunnel `CONNECT`), pas un problème de compte. **Leçon** : ne jamais interpréter un message d'erreur générique de l'app (« Identifiants invalides », qui `catch`-all toute erreur de `signInWithPassword`) comme une preuve du contenu réel de l'erreur — toujours vérifier la couche réseau en premier avec un test isolé (`curl -v` direct) avant de soupçonner les données.
+- **Ce sandbox ne peut PAS lancer le serveur de dev contre la vraie base Supabase pour un test navigateur.** `chromium-cli` n'est pas installé dans cet environnement (malgré la mention dans le skill `run`) ; Playwright global existe (`/opt/node22/lib/node_modules/playwright`, Chromium binaire `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`) et peut piloter un navigateur — mais ça ne sert à rien ici puisque le réseau vers Supabase est bloqué. **Ne plus retenter cette approche** : pour toute vérification de logique métier, utiliser directement le MCP Supabase (`execute_sql` avec impersonation de rôle) — c'est la seule voie qui fonctionne de façon fiable dans ce sandbox, et elle a largement suffi à prouver tout le flux (RPC, anti-triche du quiz, cascade de suppression).
+- **Nettoyer les données de test générées pour une vérification n'est pas optionnel quand un vrai compte est concerné.** Contrairement aux comptes de seed (Ali/Omar/etc., purement fictifs), Anthony est un vrai élève — laisser une fausse leçon/quiz dans son historique après un test de vérification aurait été trompeur pour le propriétaire ET pour l'élève. Toujours nettoyer après un test sur un compte réel, même si la vérification elle-même n'était pas destinée à être visible.
+
 ## Session 22 (2026-07-10) — Pivot service à la confiance (Session tab, paiement libre, vitrine dormante)
 
 ### Décisions

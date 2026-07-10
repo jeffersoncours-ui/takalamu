@@ -2,6 +2,27 @@
 
 ---
 
+## Session 23 — Reset comptes de test, compte réel Anthony, mot de passe élève, vérification E2E
+
+> **Statut : TERMINÉ.** Premier vrai élève sur la plateforme.
+
+### Plan
+- [x] Suppression des 4 comptes élèves de test (Ali, Omar, Fatima, Aisha) + toutes leurs données liées (cascade `auth.users` → `profiles`/`students`/`lesson_records`/`vocabulary`/`grammar_rules`/`homework`/`payments`/`conversations`/`messages`) + 1 notification orpheline nettoyée manuellement
+- [x] **Changement de mot de passe côté élève** (`/dashboard/more`) : action `changePassword` (`supabase.auth.updateUser`) + `ChangePasswordForm` — nécessaire car les comptes élèves sont désormais créés avec un mot de passe fixe communiqué directement par l'enseignant (session 22 : plus de flux d'invitation email systématique)
+- [x] **Création du compte réel « Anthony »** (premier vrai élève) : email temporaire `anthony@takalamu.test` (à mettre à jour dès qu'il fournit sa vraie adresse), mot de passe généré aléatoirement, rattaché à Youssef, méthode SQL identique au script `seed_test_accounts.sql` original (`auth.users` + `auth.identities` + `public.students`, trigger `handle_new_user` vérifié pour la création du profil)
+- [x] **Tentative de test E2E navigateur réel** (Playwright + Chromium local) : bloquée par la politique réseau du bac à sable (egress `*.supabase.co` refusé, `403` sur le tunnel CONNECT) — confirmé par `curl -v`, déjà documenté en session 1. Nettoyage : serveur de dev arrêté, `.env.local` temporaire supprimé.
+- [x] **Vérification de bout en bout par impersonation SQL** (méthode de repli, conforme à CLAUDE.md §4) : `submit_session_record` (présence, leçon, récap, note privée, devoir, 4 mots de vocabulaire, 1 règle de grammaire, référence de fichier) → `generate_individual_quiz` (4 questions mixées AR↔FR, aucune fuite de réponse) → `submit_individual_quiz` (score 2/4 recalculé serveur, review détaillée correcte)
+- [x] Nettoyage des données de test générées pour la vérification (lesson_record, vocab, grammar, homework, quiz_attempt) — le vrai premier cours sera saisi par le propriétaire lui-même
+- [x] Connexion réelle d'Anthony **confirmée fonctionnelle** par le propriétaire (test hors sandbox)
+
+### Review Session 23
+- Base remise à zéro côté élèves : plus aucun compte de test, uniquement les 2 enseignants + Anthony (premier vrai élève).
+- **Limite d'environnement confirmée à nouveau** : ce sandbox ne peut pas atteindre `*.supabase.co` en sortant — tout test nécessitant un vrai aller-retour réseau (login via l'app, appels REST Auth) doit passer soit par le MCP Supabase (`execute_sql`, qui lui fonctionne), soit être vérifié par le propriétaire directement sur la vraie app (Vercel). Ne plus retenter de lancer le serveur de dev local contre la prod dans ce sandbox — le proxy le bloque systématiquement.
+- La logique métier (RPC, quiz, anti-triche) est prouvée saine par impersonation SQL — c'est la méthode fiable pour ce type de vérification ici.
+- **TODO connu** : remplacer l'email temporaire `anthony@takalamu.test` par sa vraie adresse dès qu'il la communique.
+
+---
+
 ## Session 22 — Pivot modèle de service (Session tab, paiement libre, vitrine dormante)
 
 > **Décisions propriétaire (2026-07-01)**, actées après audit + avis donné :
