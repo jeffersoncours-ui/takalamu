@@ -28,6 +28,11 @@
 - **Fiche prof réorganisée** : vocab et grammaire en accordéons par cours (comme côté élève), chaque groupe a un lien « Voir le cours → » vers le détail de séance en lecture seule. Historique des séances relibellé « Cours N ». Suppression de l'ancienne pagination « voir tout » vocab/grammaire (remplacée par les accordéons).
 - Migration 40 appliquée + prouvée par impersonation ; tentative de test purgée.
 
+### Correctif complémentaire (même session) — cours passés cliquables côté élève
+- **Problème signalé** : les 2 photos uploadées par le prof (texte + traduction vocab) atterrissent dans `lesson_records.support_files` mais **aucun écran élève** ne les affichait — la carte du dashboard ne montrait que l'audio de leçon, jamais les fichiers de séance.
+- **Fix** : cartes de cours du dashboard rendues cliquables → nouvelle page `/dashboard/cours/[recordId]` (lecture seule) : récap, **documents du cours** (images affichées en grand + lien, URLs signées `session-files` 1h), vocabulaire, grammaire, devoir. Numérotée « Cours N » comme le reste. Aucune note privée (non requêtée, RLS la bloque de toute façon).
+- **Vérif MCP** : les 2 fichiers d'Anthony sont bien visibles via la RLS Storage (`session_files_student_select`, dossier = student_id) → 2 fichiers lisibles par impersonation. Build + lint verts (27 routes).
+
 ## Session 26 — Bug "0 séances" + correctifs fiche de cours + regroupement par cours
 
 > **Contexte** : premier vrai cours saisi par le propriétaire pour Anthony. Retours de test manuel + un bug critique trouvé en investigation.

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -128,16 +129,21 @@ export default async function CoursPage() {
                 className="rounded-[16px] p-[15px]"
                 style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <div className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
-                    {lesson?.title ?? `Cours ${courseNumber.get(r.id)}`}
+                <Link href={`/dashboard/cours/${r.id}`} className="block transition-opacity hover:opacity-80">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-1.5 font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
+                      {lesson?.title ?? `Cours ${courseNumber.get(r.id)}`}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                    <StatusBadge hue={badge.hue} label={badge.label} />
                   </div>
-                  <StatusBadge hue={badge.hue} label={badge.label} />
-                </div>
-                <div className="font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
-                  {format(new Date(r.session_date), "EEE d MMM", { locale: fr })}
-                  {r.public_recap ? ` · ${r.public_recap}` : ""}
-                </div>
+                  <div className="font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
+                    {format(new Date(r.session_date), "EEE d MMM", { locale: fr })}
+                    {r.public_recap ? ` · ${r.public_recap}` : ""}
+                  </div>
+                </Link>
                 {audioUrl && (
                   <div className="mt-2.5">
                     {audioAsset?.title && (
