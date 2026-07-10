@@ -19,7 +19,7 @@
 - [x] Fiche prof `/teacher/students/[id]` : vocab + grammaire en accordéons « Cours N » (`AccordionGroup`/`groupByLesson`) avec lien « Voir le cours → » vers le détail de séance ; historique relibellé « Cours N »
 - [x] Vérif MCP : RPC filtré testé (tout=10, cours=10, séance vide=0), garde d'appartenance intacte (42501 sur student_id étranger), suppression tentative confirmée (0 restant), advisor sécurité inchangé (fonction recréée, mêmes WARN acceptés)
 - [x] Build + lint verts (26 routes, 0 nouvelle erreur)
-- [ ] Push
+- [x] Push
 
 ### Review Session 27
 - **Cours numérotés** partout : dashboard élève et fiche prof affichent « Cours 1, 2… » (le plus ancien = Cours 1) au lieu de « Cours sans leçon »/dates. La date reste affichée en sous-titre.
