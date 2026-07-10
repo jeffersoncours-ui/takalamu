@@ -1,5 +1,13 @@
 # Lessons
 
+## Session 27 (2026-07-10) — Cours numérotés + revue de tentative + quiz par cours
+
+### Décisions
+- **Un paramètre de RPC « défunt » est un piège silencieux, pas un no-op.** `generate_individual_quiz` acceptait `p_lesson_id` qui joignait `lesson_records.lesson_id` — colonne devenue toujours NULL depuis la suppression du choix de leçon (session 25). Le filtre « ne plantait pas » mais ne filtrait jamais rien d'utile. Quand une feature dépend d'un paramètre, vérifier qu'il pointe encore vers une donnée vivante, pas juste qu'il compile. Ici rebranché sur `lesson_record_id` (la vraie clé de séance).
+- **Changement de nom de paramètre d'une fonction Postgres = DROP + CREATE obligatoire.** `CREATE OR REPLACE FUNCTION` refuse de renommer un paramètre (« cannot change name of input parameter »). Il faut `DROP FUNCTION ... (signature)` puis recréer, et re-`GRANT EXECUTE`. Penser à mettre à jour tous les appels client (ici `generateQuiz` passait `p_lesson_id`).
+- **Ne pas stocker ce qui est reconstituable.** `quiz_attempts.answers` stocke `chosen/correct/direction/is_correct` mais pas le « prompt » (mot demandé). Plutôt que d'élargir le schéma, la page de revue reconstruit le prompt à la lecture : c'est l'opposé de `correct` selon `direction`, récupéré via un lookup `vocabulary` par `vocab_id`. Robuste au cas « mot supprimé depuis » (fallback : afficher réponse/bonne réponse sans prompt).
+- **Nettoyage de données de test = one-shot MCP, pas une feature.** Le propriétaire avait fait un quiz de test sur le compte d'Anthony. Supprimé via `execute_sql` (+ le quiz auto-généré orphelin créé par la RPC submit). Pas besoin de construire un bouton « supprimer tentative » pour un cas ponctuel.
+
 ## Session 26 (2026-07-10) — Bug "0 séances" + regroupement par cours
 
 ### Décisions

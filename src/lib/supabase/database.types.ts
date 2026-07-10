@@ -1172,7 +1172,11 @@ export type Database = {
       cancel_payment: { Args: { p_payment_id: string }; Returns: undefined }
       confirm_payment: { Args: { p_payment_id: string }; Returns: undefined }
       generate_individual_quiz: {
-        Args: { p_lesson_id?: string; p_size?: number; p_student_id: string }
+        Args: {
+          p_lesson_record_id?: string
+          p_size?: number
+          p_student_id: string
+        }
         Returns: Json
       }
       get_grammar_quiz_questions: { Args: { p_quiz_id: string }; Returns: Json }

@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { groupByLesson } from "@/lib/group-by-lesson";
 import QuizRunner from "./quiz-runner";
 import { GrammarQuizRunner } from "./grammar-quiz-runner";
 
@@ -17,12 +19,13 @@ export default async function EvaluationsPage() {
     .eq("id", studentId)
     .maybeSingle();
 
-  const [{ count: vocabCount }, { data: attempts }, { data: grammarQuizzes }] =
+  const [{ data: vocab }, { data: attempts }, { data: grammarQuizzes }] =
     await Promise.all([
       supabase
         .from("vocabulary")
-        .select("id", { count: "exact", head: true })
-        .eq("student_id", studentId),
+        .select("id, created_at, lesson_record_id, lesson_records(session_date)")
+        .eq("student_id", studentId)
+        .order("created_at", { ascending: true }),
       supabase
         .from("quiz_attempts")
         .select("id, score, taken_at, quizzes(scope, source_type, title)")
@@ -38,6 +41,19 @@ export default async function EvaluationsPage() {
             .order("created_at", { ascending: false })
         : Promise.resolve({ data: [] }),
     ]);
+
+  const vocabCount = vocab?.length ?? 0;
+
+  // Cours (séances) ayant du vocabulaire, numérotés « Cours 1, 2… »
+  const vocabGroups = groupByLesson(
+    (vocab ?? []).map((v) => {
+      const record = Array.isArray(v.lesson_records) ? v.lesson_records[0] : v.lesson_records;
+      return { lessonRecordId: v.lesson_record_id, sessionDate: record?.session_date ?? null };
+    }),
+  );
+  const courseOptions = vocabGroups
+    .filter((g) => g.key !== "none")
+    .map((g) => ({ id: g.key, label: g.label, count: g.items.length }));
 
   const vocabHistory = (attempts ?? []).filter((a) => {
     const q = Array.isArray(a.quizzes) ? a.quizzes[0] : a.quizzes;
@@ -63,7 +79,7 @@ export default async function EvaluationsPage() {
         <p className="text-xs font-semibold uppercase tracking-wide px-0.5" style={{ color: "#8B857A" }}>
           Quiz vocabulaire
         </p>
-        <QuizRunner vocabCount={vocabCount ?? 0} />
+        <QuizRunner vocabCount={vocabCount} courses={courseOptions} />
 
         {vocabHistory.length > 0 && (
           <div className="flex flex-col gap-2">
@@ -71,20 +87,24 @@ export default async function EvaluationsPage() {
               const pct    = a.score != null ? Math.round(a.score * 100) : null;
               const isGood = pct != null && pct >= 70;
               return (
-                <div
+                <Link
                   key={a.id}
-                  className="flex items-center justify-between rounded-[14px] px-4 py-3"
+                  href={`/dashboard/evaluations/${a.id}`}
+                  className="flex items-center justify-between rounded-[14px] px-4 py-3 transition-opacity hover:opacity-80"
                   style={{ background: "#fff", border: "1px solid #EFEAE0" }}
                 >
-                  <span className="text-sm" style={{ color: "#4A463F" }}>
+                  <span className="flex items-center gap-2 text-sm" style={{ color: "#4A463F" }}>
                     {format(new Date(a.taken_at), "d MMMM yyyy", { locale: fr })}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </span>
                   {pct != null && (
                     <span className="text-sm font-bold" style={{ color: isGood ? "#0F9D6E" : "#B4292E" }}>
                       {pct} %
                     </span>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>

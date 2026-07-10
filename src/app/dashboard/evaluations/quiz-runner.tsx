@@ -17,14 +17,24 @@ type Phase =
 const GREEN = "#0F9D6E";
 const RED = "#B4292E";
 
-export default function QuizRunner({ vocabCount }: { vocabCount: number }) {
+type Course = { id: string; label: string; count: number };
+
+export default function QuizRunner({
+  vocabCount,
+  courses,
+}: {
+  vocabCount: number;
+  courses: Course[];
+}) {
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [loading, setLoading] = useState(false);
+  const [scope, setScope] = useState<string>("all");
 
   const start = async () => {
     setLoading(true);
     try {
-      const questions = await generateQuiz(undefined, 10);
+      const lessonRecordId = scope === "all" ? undefined : scope;
+      const questions = await generateQuiz(lessonRecordId, 10);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: [] });
       }
@@ -99,6 +109,30 @@ export default function QuizRunner({ vocabCount }: { vocabCount: number }) {
           Des questions FR → AR et AR → FR générées depuis ton glossaire
           personnel. Le score s&apos;affiche à la fin.
         </p>
+
+        {/* Portée : tout le glossaire ou un cours précis */}
+        {courses.length > 0 && (
+          <div className="space-y-1.5">
+            <label htmlFor="quiz-scope" className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+              Réviser
+            </label>
+            <select
+              id="quiz-scope"
+              value={scope}
+              onChange={(e) => setScope(e.target.value)}
+              className="w-full rounded-[13px] px-3.5 outline-none"
+              style={{ height: 46, background: "#FBF9F5", border: "1.5px solid #E9E3D8", fontSize: 14, color: "#1C1A17" }}
+            >
+              <option value="all">Tout le glossaire ({vocabCount} mots)</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label} ({c.count} mot{c.count > 1 ? "s" : ""})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <button
           onClick={start}
           disabled={loading}

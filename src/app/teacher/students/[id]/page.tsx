@@ -6,6 +6,8 @@ import { fr } from "date-fns/locale";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge, attendanceBadge } from "@/components/status-badge";
+import { AccordionGroup } from "@/components/accordion-group";
+import { groupByLesson } from "@/lib/group-by-lesson";
 import { ProfileNoteForm } from "./profile-note-form";
 import { StatusForm } from "./status-form";
 
@@ -14,13 +16,11 @@ export default async function StudentCardPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ all?: string; vocabAll?: string; grammarAll?: string }>;
+  searchParams: Promise<{ all?: string }>;
 }) {
   const { id } = await params;
-  const { all, vocabAll, grammarAll } = await searchParams;
+  const { all } = await searchParams;
   const showAllRecords = all === "true";
-  const showAllVocab = vocabAll === "true";
-  const showAllGrammar = grammarAll === "true";
   await requireTeacher();
   const supabase = await createClient();
 
@@ -53,18 +53,14 @@ export default async function StudentCardPage({
         .order("assigned_at", { ascending: true }),
       supabase
         .from("vocabulary")
-        .select("id, arabic_word, french_definition, created_at", {
-          count: "exact",
-        })
+        .select("id, arabic_word, french_definition, lesson_record_id, lesson_records(session_date)", { count: "exact" })
         .eq("student_id", id)
-        .order("created_at", { ascending: false })
-        .limit(showAllVocab ? 500 : 5),
+        .order("created_at", { ascending: true }),
       supabase
         .from("grammar_rules")
-        .select("id, title, content, created_at", { count: "exact" })
+        .select("id, title, content, lesson_record_id, lesson_records(session_date)", { count: "exact" })
         .eq("student_id", id)
-        .order("created_at", { ascending: false })
-        .limit(showAllGrammar ? 500 : 3),
+        .order("created_at", { ascending: true }),
     ]);
 
   const profile = Array.isArray(student.profiles)
@@ -74,10 +70,26 @@ export default async function StudentCardPage({
   const totalRecords = recordsRes.count ?? records.length;
   const noteContent = noteRes.data?.content ?? "";
   const pendingHw = hwRes.data ?? [];
-  const recentVocab = vocabRes.data ?? [];
-  const vocabCount = vocabRes.count ?? recentVocab.length;
-  const recentGrammar = grammarRes.data ?? [];
-  const grammarCount = grammarRes.count ?? recentGrammar.length;
+  const vocabCount = vocabRes.count ?? (vocabRes.data?.length ?? 0);
+  const grammarCount = grammarRes.count ?? (grammarRes.data?.length ?? 0);
+
+  // Numérotation « Cours N » : le plus ancien = Cours 1 (records triés desc).
+  const courseNumber = new Map<string, number>();
+  records.forEach((r, i) => courseNumber.set(r.id, totalRecords - i));
+
+  // Vocabulaire & grammaire regroupés par cours (accordéons)
+  const vocabGroups = groupByLesson(
+    (vocabRes.data ?? []).map((v) => {
+      const rec = Array.isArray(v.lesson_records) ? v.lesson_records[0] : v.lesson_records;
+      return { id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition, lessonRecordId: v.lesson_record_id, sessionDate: rec?.session_date ?? null };
+    }),
+  );
+  const grammarGroups = groupByLesson(
+    (grammarRes.data ?? []).map((g) => {
+      const rec = Array.isArray(g.lesson_records) ? g.lesson_records[0] : g.lesson_records;
+      return { id: g.id, title: g.title, content: g.content, lessonRecordId: g.lesson_record_id, sessionDate: rec?.session_date ?? null };
+    }),
+  );
 
   const name = profile?.full_name ?? "—";
 
@@ -139,10 +151,7 @@ export default async function StudentCardPage({
               <p className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>{label}</p>
             </>
           );
-          const cardStyle: React.CSSProperties = {
-            background: "#fff",
-            border: "1px solid #EFEAE0",
-          };
+          const cardStyle: React.CSSProperties = { background: "#fff", border: "1px solid #EFEAE0" };
           return anchor ? (
             <Link key={label} href={anchor} className="block rounded-[16px] p-3 text-center" style={cardStyle}>
               {content}
@@ -210,22 +219,14 @@ export default async function StudentCardPage({
       <div id="historique" className="space-y-2 scroll-mt-20">
         <div className="flex items-center justify-between px-0.5">
           <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-            Historique des séances ({totalRecords})
+            Cours ({totalRecords})
           </p>
           {showAllRecords ? (
-            <Link
-              href={`/teacher/students/${id}`}
-              className="font-semibold"
-              style={{ color: "#0F9D6E", fontSize: 12 }}
-            >
+            <Link href={`/teacher/students/${id}`} className="font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
               Voir moins
             </Link>
           ) : totalRecords > 8 ? (
-            <Link
-              href={`/teacher/students/${id}?all=true`}
-              className="font-semibold"
-              style={{ color: "#0F9D6E", fontSize: 12 }}
-            >
+            <Link href={`/teacher/students/${id}?all=true`} className="font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
               Voir tout ({totalRecords})
             </Link>
           ) : null}
@@ -244,10 +245,13 @@ export default async function StudentCardPage({
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                  {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
+                  Cours {courseNumber.get(r.id)}
                 </p>
                 <StatusBadge hue={badge.hue} label={badge.label} />
               </div>
+              <p style={{ color: "#A8A29E", fontSize: 11 }}>
+                {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
+              </p>
               {r.public_recap && (
                 <p className="leading-relaxed" style={{ color: "#4A463F", fontSize: 13 }}>
                   {r.public_recap}
@@ -258,66 +262,72 @@ export default async function StudentCardPage({
         })}
       </div>
 
-      {/* Vocabulaire récent */}
-      <div id="vocabulaire" className="rounded-xl border border-slate-200 bg-white p-4 space-y-2 scroll-mt-20">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-slate-700">
-            Vocabulaire {showAllVocab ? "" : "récent "}(total : {vocabCount})
-          </p>
-          {showAllVocab ? (
-            <Link href={`/teacher/students/${id}#vocabulaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
-              Voir moins
-            </Link>
-          ) : vocabCount > 5 ? (
-            <Link href={`/teacher/students/${id}?vocabAll=true#vocabulaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
-              Voir tout ({vocabCount})
-            </Link>
-          ) : null}
-        </div>
-        {recentVocab.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucun mot enregistré pour le moment.</p>
-        ) : (
-          <div className="space-y-1">
-            {recentVocab.map((v) => (
-              <div key={v.id} className="flex items-center justify-between gap-3 text-sm">
-                <span dir="rtl" lang="ar" className="font-medium text-slate-900">
+      {/* Vocabulaire par cours */}
+      <div id="vocabulaire" className="space-y-2 scroll-mt-20">
+        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
+          Vocabulaire ({vocabCount})
+        </p>
+        {vocabGroups.length === 0 && (
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun mot enregistré.</p>
+        )}
+        {vocabGroups.map((group) => (
+          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
+            {group.key !== "none" && (
+              <Link
+                href={`/teacher/students/${id}/sessions/${group.key}`}
+                className="inline-flex items-center gap-1 font-semibold"
+                style={{ color: "#0F9D6E", fontSize: 12 }}
+              >
+                Voir le cours →
+              </Link>
+            )}
+            {group.items.map((v) => (
+              <div
+                key={v.id}
+                className="flex items-center justify-between gap-3 rounded-[12px] px-3 py-2.5"
+                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+              >
+                <span className="text-sm" style={{ color: "#4A463F" }}>{v.french_definition}</span>
+                <span dir="rtl" lang="ar" className="font-arabic shrink-0" style={{ fontSize: 18, fontWeight: 700, color: "#0A553F" }}>
                   {v.arabic_word}
                 </span>
-                <span className="text-slate-600">{v.french_definition}</span>
               </div>
             ))}
-          </div>
-        )}
+          </AccordionGroup>
+        ))}
       </div>
 
-      {/* Grammaire récente */}
-      <div id="grammaire" className="rounded-xl border border-slate-200 bg-white p-4 space-y-2 scroll-mt-20">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-slate-700">
-            Règles {showAllGrammar ? "" : "récentes "}(total : {grammarCount})
-          </p>
-          {showAllGrammar ? (
-            <Link href={`/teacher/students/${id}#grammaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
-              Voir moins
-            </Link>
-          ) : grammarCount > 3 ? (
-            <Link href={`/teacher/students/${id}?grammarAll=true#grammaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
-              Voir tout ({grammarCount})
-            </Link>
-          ) : null}
-        </div>
-        {recentGrammar.length === 0 ? (
-          <p className="text-sm text-slate-500">Aucune règle enregistrée pour le moment.</p>
-        ) : (
-          recentGrammar.map((g) => (
-            <div key={g.id} className="text-sm">
-              <p className="font-medium text-slate-900">{g.title}</p>
-              <p className="text-slate-600 text-xs mt-0.5 line-clamp-2">
-                {g.content}
-              </p>
-            </div>
-          ))
+      {/* Grammaire par cours */}
+      <div id="grammaire" className="space-y-2 scroll-mt-20">
+        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
+          Règles de grammaire ({grammarCount})
+        </p>
+        {grammarGroups.length === 0 && (
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée.</p>
         )}
+        {grammarGroups.map((group) => (
+          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
+            {group.key !== "none" && (
+              <Link
+                href={`/teacher/students/${id}/sessions/${group.key}`}
+                className="inline-flex items-center gap-1 font-semibold"
+                style={{ color: "#0F9D6E", fontSize: 12 }}
+              >
+                Voir le cours →
+              </Link>
+            )}
+            {group.items.map((g) => (
+              <div
+                key={g.id}
+                className="rounded-[12px] px-3 py-2.5"
+                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+              >
+                <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
+                <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#8B857A" }}>{g.content}</p>
+              </div>
+            ))}
+          </AccordionGroup>
+        ))}
       </div>
 
     </div>

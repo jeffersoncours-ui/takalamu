@@ -50,6 +50,11 @@ export default async function CoursPage() {
   const assiduite =
     totalSessions > 0 ? Math.round((presentish / totalSessions) * 100) : null;
 
+  // Numérotation « Cours N » : le plus ancien = Cours 1. records est trié desc,
+  // donc le n° décroît du haut vers le bas.
+  const courseNumber = new Map<string, number>();
+  records.forEach((r, i) => courseNumber.set(r.id, totalSessions - i));
+
   return (
     <div className="space-y-1">
       {/* Salutation */}
@@ -125,7 +130,7 @@ export default async function CoursPage() {
               >
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
-                    {lesson?.title ?? "Cours sans leçon"}
+                    {lesson?.title ?? `Cours ${courseNumber.get(r.id)}`}
                   </div>
                   <StatusBadge hue={badge.hue} label={badge.label} />
                 </div>

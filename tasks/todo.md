@@ -2,6 +2,32 @@
 
 ---
 
+## Session 27 — Cours numérotés + revue de tentative + quiz par cours
+
+> **Décisions propriétaire (2026-07-10)**, après rapport + questions :
+> - Fiche prof : vocab/grammaire en accordéons par cours (comme côté élève), lien vers le détail de séance.
+> - Revue de tentative : vocabulaire seulement pour l'instant.
+> - **Nouveau** : l'élève choisit de tester tout le glossaire OU un cours précis (le RPC filtrait déjà par `lesson_id` défunt → rebrancher sur `lesson_record_id`).
+
+### Plan
+- [x] Migration 40 : `generate_individual_quiz` — filtre `p_lesson_id` (défunt) → `p_lesson_record_id` (séance). Drop+recreate, re-grant execute. Distracteurs toujours tirés du glossaire entier. Appliquée + testée.
+- [x] `database.types.ts` régénéré (signature RPC mise à jour)
+- [x] Suppression one-shot de la tentative de test (Anthony, 90 %, 10 juil.) + quiz orphelin associé — 0 restant
+- [x] `/dashboard/page.tsx` : « Cours sans leçon » → « Cours N » (numérotation chronologique croissante)
+- [x] Revue de tentative : `/dashboard/evaluations/[attemptId]` — rejoue le récap depuis `quiz_attempts.answers`, prompt reconstruit via lookup `vocabulary` par `vocab_id` ; liste des tentatives vocab rendue cliquable
+- [x] Quiz par cours : sélecteur `<select>` dans `QuizRunner` (« Tout le glossaire » / « Cours N » avec comptes) ; `generateQuiz` passe `p_lesson_record_id` ; page evaluations fournit `courseOptions` via `groupByLesson`
+- [x] Fiche prof `/teacher/students/[id]` : vocab + grammaire en accordéons « Cours N » (`AccordionGroup`/`groupByLesson`) avec lien « Voir le cours → » vers le détail de séance ; historique relibellé « Cours N »
+- [x] Vérif MCP : RPC filtré testé (tout=10, cours=10, séance vide=0), garde d'appartenance intacte (42501 sur student_id étranger), suppression tentative confirmée (0 restant), advisor sécurité inchangé (fonction recréée, mêmes WARN acceptés)
+- [x] Build + lint verts (26 routes, 0 nouvelle erreur)
+- [ ] Push
+
+### Review Session 27
+- **Cours numérotés** partout : dashboard élève et fiche prof affichent « Cours 1, 2… » (le plus ancien = Cours 1) au lieu de « Cours sans leçon »/dates. La date reste affichée en sous-titre.
+- **Revue de tentative de quiz** : chaque quiz vocabulaire passé est cliquable → nouvelle page qui rejoue le récapitulatif (✓/✗, ta réponse vs bonne réponse). Le « mot demandé » n'est pas stocké dans `quiz_attempts.answers` mais reconstruit à la lecture via un lookup du glossaire par `vocab_id` (l'opposé de la bonne réponse selon la direction). Si un mot a été supprimé depuis, on affiche quand même réponse/bonne réponse sans le prompt.
+- **Quiz au choix (tout / par cours)** : le RPC `generate_individual_quiz` filtrait par `lesson_id` (notion Programme défunte) → rebranché sur `lesson_record_id` (séance réelle). L'élève choisit « Tout le glossaire » ou un « Cours N » précis via un sélecteur. Les distracteurs restent tirés du glossaire **entier** (variété des choix même pour un mini-quiz de cours).
+- **Fiche prof réorganisée** : vocab et grammaire en accordéons par cours (comme côté élève), chaque groupe a un lien « Voir le cours → » vers le détail de séance en lecture seule. Historique des séances relibellé « Cours N ». Suppression de l'ancienne pagination « voir tout » vocab/grammaire (remplacée par les accordéons).
+- Migration 40 appliquée + prouvée par impersonation ; tentative de test purgée.
+
 ## Session 26 — Bug "0 séances" + correctifs fiche de cours + regroupement par cours
 
 > **Contexte** : premier vrai cours saisi par le propriétaire pour Anthony. Retours de test manuel + un bug critique trouvé en investigation.
