@@ -8,9 +8,9 @@
 > - Photo de profil uploadable pour élèves ET enseignants (remplace le rond-lettre).
 > - Renommer le compte Youssef → **"Jefferson"** (juste le prénom, `profiles.full_name`).
 > - Onglets **Essais, Disponibilités, Réservations** supprimés (nav + code + tables — vérifié 0 ligne dans les 3 tables, suppression sans perte).
-> - **Programme reste** (le programme évolue au fil des séances, pas figé).
 > - Cockpit simplifié en conséquence : sections "À documenter"/"Prochains cours" (dépendaient de `bookings`) + fonctionnalité "Préparer le cours" retirées.
 > - Tunnel public dormant entier retiré (`/essai`, `/offres`, `/inscription`) puisque `/essai` dépendait de `teacher_availability` qui disparaît — cohérent avec le reste (100% bouche-à-oreille depuis la session 22).
+> - **Retour propriétaire** : Programme finalement aussi supprimé (nav + route `/teacher/program`) — aucun autre consommateur dans le code (`lessons` reste lu directement par la fiche de fin de cours, indépendant de cette UI CRUD).
 
 ### Plan
 - [x] Migration 39 : `profiles.avatar_url text` ; extension grant colonne (`full_name, gender, avatar_url`) ; bucket Storage `avatars` (privé, policy owner-only `(storage.foldername(name))[1] = auth.uid()::text`) ; `DROP TABLE bookings, teacher_availability, trial_requests` (+ enums `booking_status`/`booking_type`) ; `DROP FUNCTION get_teacher_availability_by_gender, get_trial_taken_slots, get_teacher_booked_slots, notify_teachers_by_gender` (tous confirmés dead/vides avant suppression)
