@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { signOut } from "@/app/login/actions";
+import { ChangePasswordForm } from "./change-password-form";
 
 const MENU_ITEMS = [
   {
@@ -109,6 +110,8 @@ export default async function MorePage() {
           </Link>
         ))}
       </div>
+
+      <ChangePasswordForm />
 
       {/* Déconnexion */}
       <form action={signOut}>
