@@ -24,7 +24,7 @@
 - [x] Tests MCP : upload propre dossier ✔, écriture dans le dossier d'un autre élève bloquée (42501) ✔, lecture croisée bloquée (0 ligne visible) ✔, advisor sécurité propre après les DROP (mêmes WARN acceptés, aucune nouvelle catégorie) — compte de test entièrement nettoyé
 - [x] Renommage données : `profiles.full_name` Youssef → "Jefferson" (SQL direct, confirmé)
 - [x] Build + lint verts (27 routes, 0 nouvelle erreur — seul le lint pré-existant de `drawer-nav.tsx` subsiste)
-- [ ] Push
+- [x] Push
 
 ### Review Session 25
 - **Nav enseignant simplifiée** : Essais, Disponibilités, Réservations retirés (nav + code + tables `bookings`/`teacher_availability`/`trial_requests`, toutes vides — suppression sans perte de données réelles). Programme conservé sur demande explicite (curriculum vivant, pas figé).
