@@ -64,15 +64,14 @@ Un enseignant (homme) gère les élèves hommes, l'autre (femme) les élèves fe
 |---|---|---|
 | Frontend / app | **Next.js (App Router) + TypeScript**, déployé sur **Vercel** | UI, routing, API routes/server actions |
 | Auth + Base + Stockage | **Supabase** (Postgres, Auth, Storage, RLS, Realtime) | Identité, données, fichiers (docs/audio), chat temps réel |
-| Vidéo | **Bunny Stream** | Hébergement + streaming HLS adaptatif des vidéos (PAS Supabase) |
 | Visio individuelle | **Zoom / Google Meet** (lien externe) | Cours 1-à-1 |
 | Visio groupe | **Zoom Webinaire** | Conférence (caméras masquées, micros coupés, animateur seul) |
 | Paiement | **Revolut Business** | Encaissement, abonnements, factures |
 | Styling | **Tailwind CSS** | UI propre, moderne, responsive |
 
-**À ASSEMBLER, jamais à recoder** : la visio (Zoom), l'encaissement et les factures (Revolut), le streaming vidéo (Bunny). On les intègre via leurs API ; on ne reconstruit pas leur logique.
+**À ASSEMBLER, jamais à recoder** : la visio (Zoom), l'encaissement et les factures (Revolut). On les intègre via leurs API ; on ne reconstruit pas leur logique.
 
-**À CODER (le cœur de valeur)** : le suivi pédagogique, le carnet, le glossaire, la grammaire, les quiz, la progression, la messagerie, le planning, le système de vidéos forcées, les règles métier.
+**À CODER (le cœur de valeur)** : le suivi pédagogique, le carnet, le glossaire, la grammaire, les quiz, la progression, la messagerie, le planning, les règles métier.
 
 ---
 
@@ -81,7 +80,7 @@ Un enseignant (homme) gère les élèves hommes, l'autre (femme) les élèves fe
 Ces principes priment. Applique-les partout.
 
 1. **Sécurité d'abord, au niveau base.** Toute isolation de données passe par les **RLS policies Postgres (Supabase)**, jamais seulement par l'affichage. Politique **deny-by-default** : aucune ligne accessible sans policy explicite. Un élève ne doit jamais pouvoir recevoir, même via une requête manuelle, les données d'un autre élève ni aucune donnée privée enseignant.
-2. **Ne reconstruis pas la commodité.** Zoom, Revolut, Bunny = intégrations. N'écris pas de visio, de moteur de paiement, ni de transcodage vidéo.
+2. **Ne reconstruis pas la commodité.** Zoom, Revolut = intégrations. N'écris pas de visio, ni de moteur de paiement.
 3. **Conçu pour N enseignants**, pas exactement 2. Toute donnée « appartient à » un enseignant via une clé étrangère. N'écris jamais « si homme/femme » en dur : utilise les rôles et les relations.
 4. **Mobile-first, qualité moderne, zéro gamification.** Pas de badges, pas de streaks. Interface sobre, rapide, lisible sur un écran de téléphone.
 5. **Performance de saisie = priorité absolue sur la fiche de fin de cours.** Cet écran (§7.6) doit pouvoir être rempli en moins de 30 secondes. C'est le composant le plus critique de tout le produit.
@@ -111,7 +110,7 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 ### Identité & acteurs
 - **profiles** — extends `auth.users`. `role` (admin|teacher|student), `full_name`, `gender` (m|f), `email`.
 - **teachers** — `profile_id`, `bio`, `display_name`. (Données publiques de l'enseignant pour la vitrine.)
-- **students** — `profile_id`, `teacher_id` (FK, l'enseignant rattaché), `gender`, `status` (active|suspended_payment|suspended_absences), `onboarding_completed` (bool — a vu la vidéo de bienvenue), `unjustified_absences_count` (int, dérivé/maintenu).
+- **students** — `profile_id`, `teacher_id` (FK, l'enseignant rattaché), `gender`, `status` (active|suspended_payment|suspended_absences), `onboarding_completed` (bool), `unjustified_absences_count` (int, dérivé/maintenu).
 
 ### Programme (mode auteur — partagé entre enseignants)
 - **lessons** — la bibliothèque maîtresse, ordonnée. `order_index`, `title`, `objective`, `phase` (dechiffrage|lecture_oral|grammaire). Cases **optionnelles** : `reading_support` (réf. fichiers), `audio_asset_id` (FK, nullable), `grammar_point` (text, nullable), `homework_template` (text, nullable), `quiz_id` (nullable). Une leçon de phase « dechiffrage » peut n'avoir que `reading_support`.
@@ -138,15 +137,10 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 - **teacher_availability** — `teacher_id`, règles de dispo récurrentes (ex. jeudi/vendredi). Stockées en UTC.
 - **bookings** — `student_id`, `teacher_id`, `type` (individual|group), `scheduled_at` (UTC), `status` (booked|completed|cancelled|moved), `zoom_link`, `linked_book_session_id` (nullable). Pour l'individuel : l'élève place ses 4 créneaux/mois dans les dispos, **uniquement si le paiement est confirmé**.
 
-### Vidéos
-- **videos** — `type` (welcome|milestone), `teacher_id` (pour welcome : 1 par enseignant), `bunny_video_id`, `title`. *Sous-titres gravés dans la vidéo au montage : pas de piste de sous-titres séparée.*
-- **milestone_video_assignments** — `video_id`, `student_id` (vidéo de palier destinée à un élève précis), `assigned_at`.
-- **video_views** — `video_id`, `student_id`, `viewed_at` (null tant que non vue). Pour welcome : seul l'état « vue » est par élève, la vidéo reste. Pour milestone : à la complétion, déclenche la suppression Bunny (voir §7.8).
-
 ### Communication
 - **conversations** — `teacher_id`, `student_id` (1 par paire, cloisonnée).
 - **messages** — `conversation_id`, `sender_id`, `body`, `sent_at`, `read_at`. Temps réel via Supabase Realtime.
-- **notifications** — `user_id`, `type` (new_message|homework_due|eval_due|video_assigned), `payload` (jsonb), `read` (bool). **In-app uniquement** (pas d'email).
+- **notifications** — `user_id`, `type` (new_message|homework_due|eval_due), `payload` (jsonb), `read` (bool). **In-app uniquement** (pas d'email).
 
 ### Paiement
 - **payments** — `student_id`, `product` (individual_sub|book), `revolut_reference`, `plan` (1x|2x|3x|12x pour l'individuel ; single pour le groupe), `status` (pending|paid|failed|cancelled), `period` (nullable). La **réservation est débloquée uniquement quand `status = paid`** (confirmé par webhook Revolut). Les factures vivent chez Revolut ; on stocke la référence + un lien.
@@ -166,7 +160,6 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 - Un **admin** peut créer des comptes teacher.
 - **Auth Supabase** : jamais de mot de passe géré à la main. L'invitation envoie un lien sécurisé ; l'élève **choisit son mot de passe**. Reset géré par Supabase.
 - **Aucune donnée de carte** stockée : tout passe par Revolut.
-- **Vidéos** : URLs de lecture **signées à durée courte** (Bunny), jamais d'URL publique permanente. Progression validée **côté serveur** (voir §7.8).
 
 ---
 
@@ -183,7 +176,6 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 2. Essai **hors app** : un **mail transactionnel** envoie le lien Zoom.
 3. Si l'enseignant valide → bouton **« inviter »** (manuel) → mail d'invitation.
 4. L'élève crée son compte (choisit mot de passe) → entre.
-5. **1ʳᵉ connexion → vidéo de bienvenue obligatoire** (§7.8), avant toute autre action.
 - Conséquence : l'app ne contient que de **vrais élèves** invités.
 
 ### 7.3 Produit A — cours individuel
@@ -200,7 +192,7 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 - **Contenu réutilisable** : le livre (`books`) + ses notes + son quiz s'écrivent une fois ; rejouer = créer une nouvelle `book_session` (dates + inscrits). Mêmes règles d'absence/retard que l'individuel.
 
 ### 7.5 Espace élève (onglets)
-- **Tableau de bord** : accueil ; affiche les vidéos dues (bienvenue puis paliers — §7.8).
+- **Tableau de bord** : accueil.
 - **Cours déjà vus** : `lesson_records` triés par date ; supports téléchargeables.
 - **Vocabulaire** : `vocabulary` de l'élève, recherche FR↔AR.
 - **Règles de grammaire** : `grammar_rules` de l'élève.
@@ -213,7 +205,7 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 ### 7.6 Espace enseignant
 - **Cockpit (accueil)** : liste de ce qui attend — cours du jour, devoirs à corriger, messages non lus, élèves en attente.
 - **Fiche de fin de cours** *(critique, < 30 s — voir Principe 5)* : sélection élève → présence (present/absent/late) → leçon vue (avance le curseur `student_progress`) → dépôt supports → ajout vocab + règle du jour → devoir → **récap public** + **note privée de séance**. Une soumission alimente `lesson_records`, `vocabulary`, `grammar_rules`, `homework`.
-- **Fiche élève** : position (curseur), historique, vocab/grammaire accumulés, devoirs à corriger, le chat, emplacement vidéo de palier, **note de profil privée épinglée en haut**.
+- **Fiche élève** : position (curseur), historique, vocab/grammaire accumulés, devoirs à corriger, le chat, **note de profil privée épinglée en haut**.
 - **Mon programme (mode auteur)** : CRUD ordonné des `lessons` (gabarit § Modèle de données). Bâti en pré-rentrée.
 - **File de correction** : tous les `homework` au statut `rendu`, regroupés.
 - **Admin** (toi) : bouton **« ajouter un enseignant »**.
@@ -224,33 +216,21 @@ Schéma Postgres (Supabase). Tout `id` est un `uuid` par défaut. Tout a `create
 - Groupe : l'enseignant crée des `book_sessions` à heures fixes ; les inscrits payés s'y rattachent.
 - **Bouton « Rejoindre »** : c'est lui qui livre le lien Zoom. Il **cesse de le livrer à H+5 min** (règle de retard, §8).
 
-### 7.8 Système de vidéos
-**Deux types, même lecture forcée, cycle de vie opposé :**
-- **welcome** : commune, **permanente** (jamais supprimée), **1 par enseignant**, forcée à la 1ʳᵉ connexion, **incontournable** (passe **même** à < 30 min d'un cours). Seul `video_views.viewed_at` est par élève.
-- **milestone** : assignée à un élève, ponctuelle, s'affiche à la connexion **avant toute autre action**, **auto-supprimée** après visionnage complet (appel **API delete Bunny**).
-
-**Lecteur forcé (les deux)** : lecteur **custom sans barre de défilement**, pas d'avance rapide, **sous-titres gravés dans la vidéo**, **URL signée courte** (Bunny), **progression validée côté serveur** — l'app ne se débloque que lorsque le serveur confirme la lecture complète (suivi de la position de lecture envoyé au backend, pas une simple confiance au client).
-> Réalité assumée : « forcer » dans un navigateur n'est jamais absolu. Objectif = **pas pratique à contourner**, pas inviolable.
-
-**Exception des 30 min** : si l'élève se connecte à **moins de 30 min d'un cours réservé**, on **saute la barrière vidéo** (pour ne pas le faire tomber sous le +5 min) ; la vidéo **milestone** réapparaît à la connexion suivante. **Ne s'applique PAS à la welcome** (toujours incontournable).
-
-**Hébergement** : **Bunny Stream** (HLS adaptatif, anti-lag). Supabase ne stocke que la **référence** (`bunny_video_id`) + l'état de visionnage. Upload/suppression/signature via l'API Bunny.
-
-### 7.9 Messagerie
+### 7.8 Messagerie
 - Chat **temps réel** (Supabase Realtime), **cloisonné** par paire enseignant↔élève. Pas de numéro de téléphone échangé.
 - Alertes **in-app uniquement** (la cloche), pas d'email.
 
-### 7.10 Notifications
-- Une **cloche** unique, plusieurs déclencheurs : nouveau message, devoir à rendre, éval à faire, vidéo assignée.
+### 7.9 Notifications
+- Une **cloche** unique, plusieurs déclencheurs : nouveau message, devoir à rendre, éval à faire.
 - **In-app uniquement.** Ne reflètent que des statuts déjà existants (pas de sous-système lourd).
 - À distinguer des **mails transactionnels** (lien Zoom d'essai, invitation de compte, factures) qui, eux, partent par email.
 
-### 7.11 Paiement (intégration Revolut)
+### 7.10 Paiement (intégration Revolut)
 - Le **choix d'offre** se fait dans l'app ; l'encaissement, l'historique et les **factures** restent chez Revolut.
 - **Règle d'or** : `booking` impossible tant que `payment.status != paid`. La confirmation arrive via **webhook Revolut**.
 - Offres individuelles : 1x / 2x / 3x (réduction) / 12x. Groupe : paiement **unique**.
 
-### 7.12 Quiz / évaluations
+### 7.11 Quiz / évaluations
 - **Individuel (auto-généré)** : à partir du `vocabulary` de l'élève. Question = « que veut dire [arabic_word] ? », bonne réponse = `french_definition`, **distracteurs = 3 autres définitions tirées du glossaire de l'élève**. Aucune saisie manuelle. QCM uniquement (ne JAMAIS demander de taper la réponse en arabe : non corrigeable de façon fiable).
 - **Groupe** : `quiz_questions` saisies à la main, liées au livre.
 - Résultats dans `quiz_attempts`.
@@ -292,11 +272,11 @@ Logique à implémenter précisément, côté serveur :
 
 - **Next.js App Router + TypeScript**, server actions/route handlers pour la logique sensible (jamais de règle métier critique côté client uniquement).
 - **Tailwind**, mobile-first. Composants simples, accessibles, sobres.
-- **Variables d'environnement** (à prévoir, non commitées) : clés Supabase, clé API Bunny Stream, identifiants Revolut Business + secret de webhook, config Zoom.
+- **Variables d'environnement** (à prévoir, non commitées) : clés Supabase, identifiants Revolut Business + secret de webhook, config Zoom.
 - **Migrations Supabase** versionnées ; **RLS policies** écrites en même temps que chaque table (jamais après coup).
 - **Toutes les dates en UTC** en base ; conversion à l'affichage via librairie de fuseaux.
-- **Tester en priorité** : (a) l'isolation RLS entre élèves et l'inaccessibilité des notes privées, (b) le verrou « pas payé = pas de résa », (c) la lecture forcée des vidéos + l'exception 30 min, (d) la rapidité de la fiche de fin de cours.
+- **Tester en priorité** : (a) l'isolation RLS entre élèves et l'inaccessibilité des notes privées, (b) le verrou « pas payé = pas de résa », (c) la rapidité de la fiche de fin de cours.
 
 ---
 
-*Fin du dossier. Construis d'abord le socle (auth, rôles, RLS, modèle de données), puis le mode auteur (programme), puis la fiche de fin de cours, puis les espaces élève/enseignant, puis planning/paiement/vidéos/chat. En cas d'ambiguïté : applique les Principes directeurs (§3).*
+*Fin du dossier. Construis d'abord le socle (auth, rôles, RLS, modèle de données), puis le mode auteur (programme), puis la fiche de fin de cours, puis les espaces élève/enseignant, puis planning/paiement/chat. En cas d'ambiguïté : applique les Principes directeurs (§3).*

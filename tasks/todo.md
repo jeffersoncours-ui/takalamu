@@ -2,6 +2,26 @@
 
 ---
 
+## Session 28 — Retrait du scope vidéo + domaine tatakalamu.fr branché
+
+### Branche de session stale (constat en début de session)
+- [x] La branche assignée `claude/takalamu-development-3bqly8` forkait avant la session 12 (93 commits manquants : quiz, homework, pivot service, PayPal, Meet, suppression scheduling/essai/Programme…) et portait 14 commits à elle, tous déjà représentés autrement dans `main`. Réinitialisée sur `origin/main` (`git checkout -B claude/takalamu-development-3bqly8 origin/main`), aucune perte — voir `tasks/lessons.md`.
+
+### Retrait vidéos (doc)
+- [x] `CLAUDE.md` : retrait Bunny Stream (stack §2), §5 table `Vidéos` (videos/milestone_video_assignments/video_views), §6 mention URLs signées vidéo, §7.2 étape vidéo de bienvenue, §7.5 dashboard "vidéos dues", §7.6 "emplacement vidéo de palier", §7.8 section entière supprimée + renumérotation 7.9→7.11 devient 7.8→7.10, §11 test (c) vidéos, phrase finale, `onboarding_completed` description, `notifications.type` liste (`video_assigned` retiré)
+- [x] `.env.example` : bloc `BUNNY_STREAM_*` retiré
+- [ ] **DB (bloqué)** : `DROP TABLE videos, milestone_video_assignments, video_views` + retrait `video_type` enum + retrait `video_assigned` de `notification_type`. **MCP Supabase non autorisé dans cette session** (auth requise) → à faire dès que le connecteur est autorisé.
+- [ ] `database.types.ts` : régénérer après la migration DB pour retirer les types vidéo
+
+### Domaine tatakalamu.fr → Vercel (fait en direct avec le propriétaire, guidage pas-à-pas)
+- [x] Domaine ajouté au projet Vercel (`tatakalamu.fr` + `www.tatakalamu.fr`)
+- [x] DNS chez OVH : A `@` → `216.198.79.1` (remplace l'ancien A de parking OVH), CNAME `www` → `7d0172612168296d.vercel-dns-017.com.` (après suppression des restes TXT/AAAA de la redirection OVH par défaut qui bloquaient la coexistence avec le CNAME)
+- [x] Les deux domaines passés en **« Valid Configuration »** côté Vercel, certificat SSL généré
+- [x] Confirmé : la Production Vercel (donc `tatakalamu.fr`) déploie bien depuis la branche `main`
+- [ ] Resend / SMTP personnalisé / `EMAIL_FROM` : reporté (hors scope de cette session, cf. priorités en attente)
+
+---
+
 ## Session 27 — Cours numérotés + revue de tentative + quiz par cours
 
 > **Décisions propriétaire (2026-07-10)**, après rapport + questions :

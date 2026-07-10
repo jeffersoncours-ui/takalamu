@@ -1,5 +1,18 @@
 # Lessons
 
+## Session 28 (2026-07-10) — Branche stale + retrait vidéos + domaine tatakalamu.fr
+
+### Décisions
+- **Branche de session stale, encore une fois** (déjà rencontré en session 24, cf. plus bas) : `claude/takalamu-development-3bqly8` forkait avant la session 12, donc avant tout le pivot de service et 93 commits de travail. Réinitialisée sur `origin/main` avec `git checkout -B claude/takalamu-development-3bqly8 origin/main`, puis les 2 fichiers modifiés (CLAUDE.md, .env.example) réappliqués à la main sur la base fraîche. Aucune perte : les 14 commits propres à l'ancienne branche dataient tous d'avant le pivot (Bloc 3/4/5/6, quiz Q1, homework D1/D2 — versions pré-pivot, remplacées depuis par des implémentations différentes dans `main`). **Règle à systématiser (déjà notée en session 24, visiblement pas encore automatique)** : `git merge-base HEAD origin/main` + compter les commits `HEAD..origin/main` **avant** de commencer tout travail, pas seulement quand `tasks/todo.md` semble en retard — ici le todo.md de la branche stale ne montrait pas le retard aussi clairement qu'en session 24 car le propriétaire a commencé par une tâche indépendante (retrait vidéos + domaine) qui n'a pas touché aux fichiers produit.
+- **Vidéos définitivement hors périmètre** (décision propriétaire, pas un report). `CLAUDE.md` réécrit : plus de mention Bunny Stream, §7.8 "Système de vidéos" supprimé, sous-sections renumérotées. Rien n'était câblé côté app.
+- **Suppression DB différée** : nécessite le MCP Supabase, non autorisé dans cette session (OAuth interactif requis). Reporté.
+- **Domaine tatakalamu.fr branché en direct avec le propriétaire (non-technique)**, guidage écran-par-écran via captures :
+  - Le MCP Vercel n'a **aucun outil** pour ajouter un domaine ou poser une variable d'env (lecture seule sur ces aspects) — tout s'est fait via l'app mobile Vercel + OVH par le propriétaire, moi en copilote.
+  - Piège OVH : le domaine avait une redirection par défaut (A + AAAA + TXT `"3|welcome"` sur `www`, TXT `"1|www.tatakalamu.fr"` sur la racine) posée automatiquement à l'achat. Un CNAME ne peut pas coexister avec d'autres types sur le même sous-domaine (erreur explicite d'OVH) → il a fallu supprimer l'A, l'AAAA **et** le TXT sur `www` avant que le CNAME vers `vercel-dns-017.com` passe. La suppression via l'UI OVH mobile n'est pas toujours immédiatement effective : un retry après ~1 min a suffi.
+  - Vercel donne désormais des IP/CNAME "nouvelle génération" (`216.198.79.1` pour l'A racine, `<hash>.vercel-dns-0XX.com` pour le CNAME `www`) plutôt que les anciens `76.76.21.21`/`cname.vercel-dns.com` — les deux marchent mais Vercel recommande les nouveaux.
+  - Confirmé via `list_deployments` (Vercel) : la Production suit bien la branche `main` (dernier déploiement prod = commit `main`, alias `takalamu-git-main-...vercel.app`, mappé sur `takalamu.vercel.app` + désormais `tatakalamu.fr`/`www.tatakalamu.fr`, tous trois "Valid Configuration").
+  - **Le propriétaire n'est pas technique** : préférer un guidage à la question fermée ("clique sur X", "dis-moi ce que tu vois") plutôt que de lister toutes les étapes d'un coup ou d'utiliser du jargon (CNAME/propagation/SSL expliqués en une phrase simple à chaque fois qu'ils apparaissent). Une première réponse trop dense ("guide complet en 4 étapes avec jargon DNS") a dû être reprise après un retour "je ne sais pas faire ça".
+
 ## Session 27 (2026-07-10) — Cours numérotés + revue de tentative + quiz par cours
 
 ### Décisions
