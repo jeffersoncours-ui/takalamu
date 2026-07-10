@@ -1,6 +1,7 @@
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AvatarUpload } from "@/components/avatar-upload";
+import { ChangePasswordForm } from "@/components/change-password-form";
 import { NameForm } from "./name-form";
 
 export default async function TeacherProfilePage() {
@@ -37,6 +38,8 @@ export default async function TeacherProfilePage() {
       </div>
 
       <NameForm fullName={profile?.full_name ?? ""} />
+
+      <ChangePasswordForm />
     </div>
   );
 }

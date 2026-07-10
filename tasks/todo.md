@@ -2,6 +2,34 @@
 
 ---
 
+## Session 29 — Correctifs (email, mot de passe, chat, notifications) + nettoyage vidéos
+
+> Session dédiée à des correctifs demandés par le propriétaire, plus un
+> reliquat de la session 28 (retrait vidéos) devenu exécutable une fois le
+> MCP Supabase autorisé dans cette session.
+
+### Plan
+- [x] Email d'authentification du compte Jefferson : `prof.hommes@takalamu.test` → `jeffersoncours@gmail.com` (`auth.users.email`, `auth.identities.identity_data`/`provider_id`, `profiles.email`) — SQL direct, vérifié par relecture des 4 champs après coup.
+- [x] Mot de passe oublié : lien sur `/login`, page `/login/forgot-password` (`resetPasswordForEmail`), callback `/auth/confirm` (gère `token_hash`+`type` et `code`), page `/reset-password` (réutilise l'action `changePassword`). **Nécessite une action manuelle du propriétaire** : ajouter l'URL de redirection à l'allow-list Supabase (Authentication → URL Configuration → Redirect URLs) — impossible à faire via MCP.
+- [x] Mot de passe : composant `ChangePasswordForm` + action `changePassword` déplacés de `dashboard/more/` (élève uniquement) vers `src/components/` + `src/lib/actions/` (partagés) ; ajouté sur `/teacher/profile` (2ᵉ usage → extraction, pas prématuré).
+- [x] Bug chat "Youssef" : root cause trouvée — `teachers.display_name` n'avait pas suivi le renommage `profiles.full_name` (session 25). Page `/dashboard/messages` lit `teachers.display_name` directement. Fix en base : `display_name = 'Jefferson'`.
+- [x] Suppression "En ligne" (texte statique, aucun suivi de présence réel derrière) côté chat élève.
+- [x] Notifications : RPC `insert_notification` testée en conditions réelles (impersonation Anthony, transaction rollback) — fonctionne, grants et publication realtime corrects. 0 ligne en base car aucun déclencheur réel ne s'était encore produit (0 message envoyé, 0 paiement demandé, 0 devoir corrigé) — **sauf un vrai trou trouvé** : `homework_due` n'était jamais envoyé quand le prof assigne un devoir en fiche de fin de cours. Câblé dans `teacher/session/actions.ts`.
+- [x] Reliquat session 28 : migration 41 — `DROP TABLE videos, milestone_video_assignments, video_views` (0 ligne chacune, vérifié avant coupe) + `DROP TYPE video_type` + recréation de `notification_type` sans la valeur `video_assigned` (jamais utilisée en code). `database.types.ts` régénéré via MCP.
+- [x] Build + lint : 29 routes, 0 erreur TS (1 erreur ESLint pré-existante non liée dans `drawer-nav.tsx`, non touchée cette session).
+- [ ] Push
+
+### Reste à faire par le propriétaire (hors code)
+- Ajouter l'URL de callback à l'allow-list Supabase Auth (Authentication → URL Configuration → Redirect URLs) : `https://tatakalamu.fr/auth/confirm` (+ variante preview Vercel si besoin de tester avant le domaine définitif). Sans ça, `resetPasswordForEmail` échoue silencieusement (Supabase ignore un `redirectTo` hors allow-list).
+- Vérifier la réception réelle de l'email de reset (dépend du SMTP Supabase par défaut — non testable depuis ce sandbox, réseau `*.supabase.co` bloqué).
+- Suggestion (non demandée) : activer "Leaked Password Protection" dans Supabase Auth (advisor sécurité WARN pré-existant, sans lien avec cette session mais pertinent puisqu'on touche aux mots de passe).
+
+### Review Session 29
+- Les 4 champs identité (auth.users.email, auth.identities, profiles.email, teachers.display_name/profiles.full_name) sont maintenant cohérents pour le compte Jefferson.
+- Parcours mot de passe complet : changer (élève + prof, désormais partagé) et oublié (nouveau, bout en bout avec callback serveur).
+- Diagnostic notifications documenté avec preuve empirique — ce n'était pas un système cassé, juste un vrai gap (homework_due) + absence de déclencheurs réels pour l'unique élève actuel.
+- Nettoyage vidéos (reliquat) exécuté dès que possible, conforme à la décision propriétaire déjà actée en session 28.
+
 ## Session 27 — Cours numérotés + revue de tentative + quiz par cours
 
 > **Décisions propriétaire (2026-07-10)**, après rapport + questions :

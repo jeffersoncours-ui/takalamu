@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { changePassword } from "./actions";
+import { changePassword } from "@/lib/actions/change-password";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",

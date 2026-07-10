@@ -73,10 +73,7 @@ export default async function StudentMessagesPage() {
         </div>
         <div>
           <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{teacherName}</div>
-          <div className="flex items-center gap-1.5 font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
-            <span className="rounded-full" style={{ width: 7, height: 7, background: "#0F9D6E" }} />
-            En ligne
-          </div>
+          <div style={{ color: "#8B857A", fontSize: 12 }}>Enseignant</div>
         </div>
       </div>
 

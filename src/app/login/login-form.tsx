@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 
 import { signIn } from "./actions";
 
@@ -74,6 +75,11 @@ export function LoginForm() {
               </svg>
             )}
           </button>
+        </div>
+        <div className="mt-2 text-right">
+          <Link href="/login/forgot-password" style={{ fontSize: 13, fontWeight: 600, color: "#0F9D6E" }}>
+            Mot de passe oublié ?
+          </Link>
         </div>
       </div>
 

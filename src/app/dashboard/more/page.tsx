@@ -1,7 +1,7 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
-import { ChangePasswordForm } from "./change-password-form";
+import { ChangePasswordForm } from "@/components/change-password-form";
 import { MenuCardLink } from "@/components/menu-card-link";
 
 const MENU_ITEMS = [

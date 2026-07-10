@@ -6,7 +6,12 @@ import { homePathForRole } from "@/lib/auth";
 
 import { LoginForm } from "./login-form";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -38,6 +43,15 @@ export default async function LoginPage() {
             />
           </Link>
         </div>
+
+        {error ? (
+          <p
+            className="rounded-2xl px-4 py-3 text-center"
+            style={{ background: "#FDECEC", color: "#B4292E", border: "1px solid #F3B0B2", fontSize: 14 }}
+          >
+            {error}
+          </p>
+        ) : null}
 
         <div
           className="rounded-[20px] p-5"

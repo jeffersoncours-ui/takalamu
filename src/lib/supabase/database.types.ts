@@ -515,48 +515,6 @@ export type Database = {
           },
         ]
       }
-      milestone_video_assignments: {
-        Row: {
-          assigned_at: string
-          created_at: string
-          id: string
-          student_id: string
-          updated_at: string
-          video_id: string
-        }
-        Insert: {
-          assigned_at?: string
-          created_at?: string
-          id?: string
-          student_id: string
-          updated_at?: string
-          video_id: string
-        }
-        Update: {
-          assigned_at?: string
-          created_at?: string
-          id?: string
-          student_id?: string
-          updated_at?: string
-          video_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "milestone_video_assignments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "milestone_video_assignments_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           created_at: string
@@ -1036,86 +994,6 @@ export type Database = {
           },
         ]
       }
-      video_views: {
-        Row: {
-          created_at: string
-          id: string
-          student_id: string
-          updated_at: string
-          video_id: string
-          viewed_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          student_id: string
-          updated_at?: string
-          video_id: string
-          viewed_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          student_id?: string
-          updated_at?: string
-          video_id?: string
-          viewed_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "video_views_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "video_views_video_id_fkey"
-            columns: ["video_id"]
-            isOneToOne: false
-            referencedRelation: "videos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      videos: {
-        Row: {
-          bunny_video_id: string | null
-          created_at: string
-          id: string
-          teacher_id: string | null
-          title: string | null
-          type: Database["public"]["Enums"]["video_type"]
-          updated_at: string
-        }
-        Insert: {
-          bunny_video_id?: string | null
-          created_at?: string
-          id?: string
-          teacher_id?: string | null
-          title?: string | null
-          type: Database["public"]["Enums"]["video_type"]
-          updated_at?: string
-        }
-        Update: {
-          bunny_video_id?: string | null
-          created_at?: string
-          id?: string
-          teacher_id?: string | null
-          title?: string | null
-          type?: Database["public"]["Enums"]["video_type"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "videos_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       vocabulary: {
         Row: {
           arabic_word: string
@@ -1245,7 +1123,6 @@ export type Database = {
         | "new_message"
         | "homework_due"
         | "eval_due"
-        | "video_assigned"
         | "homework_corrected"
         | "payment_requested"
         | "payment_confirmed"
@@ -1265,7 +1142,6 @@ export type Database = {
         | "converted"
         | "declined"
       user_role: "admin" | "teacher" | "student"
-      video_type: "welcome" | "milestone"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1406,7 +1282,6 @@ export const Constants = {
         "new_message",
         "homework_due",
         "eval_due",
-        "video_assigned",
         "homework_corrected",
         "payment_requested",
         "payment_confirmed",
@@ -1428,7 +1303,6 @@ export const Constants = {
         "declined",
       ],
       user_role: ["admin", "teacher", "student"],
-      video_type: ["welcome", "milestone"],
     },
   },
 } as const

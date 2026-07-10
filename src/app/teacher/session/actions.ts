@@ -91,6 +91,23 @@ export async function submitSession(
     return { error: "Échec de l'enregistrement de la séance." };
   }
 
+  // Notifier l'élève si un devoir a été assigné pendant cette séance.
+  if (homework) {
+    const { data: student } = await supabase
+      .from("students")
+      .select("profile_id")
+      .eq("id", studentId)
+      .maybeSingle();
+
+    if (student?.profile_id) {
+      await supabase.rpc("insert_notification", {
+        p_user_id: student.profile_id,
+        p_type: "homework_due",
+        p_payload: { url: "/dashboard/homework" },
+      });
+    }
+  }
+
   revalidatePath("/teacher");
   redirect("/teacher?session=ok");
 }
