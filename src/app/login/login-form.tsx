@@ -76,11 +76,6 @@ export function LoginForm() {
             )}
           </button>
         </div>
-        <div className="mt-2 text-right">
-          <Link href="/login/forgot-password" style={{ fontSize: 13, fontWeight: 600, color: "#0F9D6E" }}>
-            Mot de passe oublié ?
-          </Link>
-        </div>
       </div>
 
       {state?.error ? (
@@ -97,6 +92,12 @@ export function LoginForm() {
       >
         {pending ? "Connexion…" : "Se connecter"}
       </button>
+
+      <div className="text-center pt-1">
+        <Link href="/login/forgot-password" style={{ fontSize: 13, fontWeight: 600, color: "#0F9D6E" }}>
+          Mot de passe oublié ?
+        </Link>
+      </div>
     </form>
   );
 }
