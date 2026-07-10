@@ -4,14 +4,13 @@ import { useState } from "react";
 import { AccordionGroup } from "@/components/accordion-group";
 import type { LessonGroup } from "@/lib/group-by-lesson";
 
-type VocabItem = {
+type GrammarItem = {
   id: string;
-  arabic_word: string;
-  french_definition: string;
-  root: string | null;
+  title: string;
+  content: string;
 };
 
-export default function VocabSearch({ groups }: { groups: LessonGroup<VocabItem>[] }) {
+export default function GrammarSearch({ groups }: { groups: LessonGroup<GrammarItem>[] }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
@@ -19,10 +18,7 @@ export default function VocabSearch({ groups }: { groups: LessonGroup<VocabItem>
     ...group,
     items: q
       ? group.items.filter(
-          (v) =>
-            v.arabic_word.includes(query.trim()) ||
-            v.french_definition.toLowerCase().includes(q) ||
-            (v.root && v.root.toLowerCase().includes(q)),
+          (r) => r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q),
         )
       : group.items,
   }));
@@ -50,7 +46,7 @@ export default function VocabSearch({ groups }: { groups: LessonGroup<VocabItem>
         </svg>
         <input
           type="search"
-          placeholder="Rechercher (arabe ou français)…"
+          placeholder="Rechercher une règle…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full rounded-[14px] pl-11 pr-4 outline-none"
@@ -65,7 +61,7 @@ export default function VocabSearch({ groups }: { groups: LessonGroup<VocabItem>
       </div>
 
       {!hasAnyItems && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun mot enregistré pour le moment.</p>
+        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée pour le moment.</p>
       )}
 
       {hasAnyItems && q && !hasAnyMatch && (
@@ -77,29 +73,18 @@ export default function VocabSearch({ groups }: { groups: LessonGroup<VocabItem>
           if (q && group.items.length === 0) return null;
           return (
             <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={!!q}>
-              {group.items.map((v) => (
+              {group.items.map((r) => (
                 <div
-                  key={v.id}
-                  className="flex items-start justify-between gap-4 rounded-[14px] px-3.5 py-3"
+                  key={r.id}
+                  className="rounded-[14px] px-3.5 py-3"
                   style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
                 >
-                  <div className="min-w-0">
-                    <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                      {v.french_definition}
-                    </p>
-                    {v.root && (
-                      <p className="mt-0.5" style={{ color: "#A8A29E", fontSize: 12 }}>
-                        Racine : {v.root}
-                      </p>
-                    )}
-                  </div>
+                  <p className="font-bold mb-1" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
                   <p
-                    className="font-arabic shrink-0"
-                    dir="rtl"
-                    lang="ar"
-                    style={{ fontSize: 22, fontWeight: 700, color: "#0A553F" }}
+                    className="leading-relaxed whitespace-pre-wrap"
+                    style={{ color: "#4A463F", fontSize: 14 }}
                   >
-                    {v.arabic_word}
+                    {r.content}
                   </p>
                 </div>
               ))}

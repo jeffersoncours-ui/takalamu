@@ -12,12 +12,11 @@ type ActionState = { error?: string };
 function zipVocab(formData: FormData) {
   const arabic = formData.getAll("vocab_arabic").map((v) => String(v).trim());
   const french = formData.getAll("vocab_french").map((v) => String(v).trim());
-  const root = formData.getAll("vocab_root").map((v) => String(v).trim());
 
-  const rows: { arabic_word: string; french_definition: string; root: string }[] = [];
+  const rows: { arabic_word: string; french_definition: string }[] = [];
   for (let i = 0; i < arabic.length; i++) {
     if (arabic[i] && french[i]) {
-      rows.push({ arabic_word: arabic[i], french_definition: french[i], root: root[i] ?? "" });
+      rows.push({ arabic_word: arabic[i], french_definition: french[i] });
     }
   }
   return rows;

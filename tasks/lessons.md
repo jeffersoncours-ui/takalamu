@@ -1,5 +1,13 @@
 # Lessons
 
+## Session 26 (2026-07-10) — Bug "0 séances" + regroupement par cours
+
+### Décisions
+- **Toujours vérifier `error` sur les requêtes Supabase qui embarquent des relations (`table(...)` imbriquées).** Le bug "0 séances" venait d'un `const { data } = await supabase...` sans check d'erreur — une requête PostgREST cassée (ambiguïté de relation) échoue silencieusement en `data: null`, indiscernable d'un "vraiment aucune ligne". Coûte cher à diagnostiquer a posteriori, coûte rien à préveni : toujours détruire `{ data, error }` et au minimum `console.error` si `error`.
+- **Deux FK entre les deux mêmes tables (sens opposés) = embed PostgREST ambigu.** `lessons.audio_asset_id → audio_assets` et `audio_assets.lesson_id → lessons` coexistent depuis la conception initiale (§5 du cahier des charges) — PostgREST ne peut pas deviner laquelle utiliser pour un embed imbriqué sans le hint `!nom_de_contrainte`. Réflexe à généraliser : avant d'écrire un embed à 2+ niveaux, vérifier dans `database.types.ts` → `Relationships` s'il existe plus d'une FK entre les tables concernées.
+- **Limite d'environnement confirmée à nouveau, sur un nouveau type de vérification** : `execute_sql` (MCP Supabase) exécute du SQL brut, pas des requêtes PostgREST — il ne peut donc pas reproduire une erreur d'ambiguïté d'embed (qui est une erreur de la couche PostgREST, pas de Postgres lui-même). Le fix a été validé par raisonnement sur le schéma (nom exact de la contrainte `lessons_audio_asset_fk` tiré de `database.types.ts`) et par preuve indirecte (données + RLS confirmées correctes en dessous), mais pas par un appel REST réel. À vérifier par le propriétaire sur l'app déployée.
+- **Composant `AccordionGroup` + utilitaire `groupByLesson`** : pattern réutilisable dès qu'une future liste doit se regrouper par séance (déjà utilisé 2x ce jour — vocabulaire et grammaire élève — donc extraction justifiée, pas prématurée).
+
 ## Session 25 (2026-07-10) — Photos de profil + nettoyage nav + suppression scheduling/essai
 
 ### Décisions

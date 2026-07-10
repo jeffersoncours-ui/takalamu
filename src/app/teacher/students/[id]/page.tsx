@@ -9,22 +9,18 @@ import { StatusBadge, attendanceBadge } from "@/components/status-badge";
 import { ProfileNoteForm } from "./profile-note-form";
 import { StatusForm } from "./status-form";
 
-const PHASE_LABEL: Record<string, string> = {
-  dechiffrage: "Déchiffrage",
-  lecture_oral: "Lecture/Oral",
-  grammaire: "Grammaire",
-};
-
 export default async function StudentCardPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ all?: string }>;
+  searchParams: Promise<{ all?: string; vocabAll?: string; grammarAll?: string }>;
 }) {
   const { id } = await params;
-  const { all } = await searchParams;
-  const showAll = all === "true";
+  const { all, vocabAll, grammarAll } = await searchParams;
+  const showAllRecords = all === "true";
+  const showAllVocab = vocabAll === "true";
+  const showAllGrammar = grammarAll === "true";
   await requireTeacher();
   const supabase = await createClient();
 
@@ -36,19 +32,14 @@ export default async function StudentCardPage({
 
   if (!student) notFound();
 
-  const [progressRes, recordsRes, noteRes, hwRes, vocabRes, grammarRes] =
+  const [recordsRes, noteRes, hwRes, vocabRes, grammarRes] =
     await Promise.all([
       supabase
-        .from("student_progress")
-        .select("current_lesson_id, lessons(title, phase)")
-        .eq("student_id", id)
-        .maybeSingle(),
-      supabase
         .from("lesson_records")
-        .select("id, session_date, attendance, public_recap, lessons(title)", { count: "exact" })
+        .select("id, session_date, attendance, public_recap", { count: "exact" })
         .eq("student_id", id)
         .order("session_date", { ascending: false })
-        .limit(showAll ? 200 : 8),
+        .limit(showAllRecords ? 200 : 8),
       supabase
         .from("student_profile_notes")
         .select("content")
@@ -67,24 +58,18 @@ export default async function StudentCardPage({
         })
         .eq("student_id", id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(showAllVocab ? 500 : 5),
       supabase
         .from("grammar_rules")
         .select("id, title, content, created_at", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: false })
-        .limit(3),
+        .limit(showAllGrammar ? 500 : 3),
     ]);
 
   const profile = Array.isArray(student.profiles)
     ? student.profiles[0]
     : student.profiles;
-  const progress = progressRes.data;
-  const currentLesson = progress
-    ? Array.isArray(progress.lessons)
-      ? progress.lessons[0]
-      : progress.lessons
-    : null;
   const records = recordsRes.data ?? [];
   const totalRecords = recordsRes.count ?? records.length;
   const noteContent = noteRes.data?.content ?? "";
@@ -140,23 +125,34 @@ export default async function StudentCardPage({
         <StatusForm studentId={id} currentStatus={student.status} />
       </div>
 
-      {/* Stats */}
+      {/* Stats — cliquables, ancrent vers la section correspondante */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "séances", value: totalRecords, accent: false },
-          { label: "abs. injust.", value: student.unjustified_absences_count, accent: false },
-          { label: "mots", value: vocabCount, accent: false },
-          { label: "règles", value: grammarCount, accent: false },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="rounded-[16px] p-3 text-center"
-            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
-          >
-            <p style={{ fontWeight: 800, fontSize: 22, color: "#1C1A17", lineHeight: 1 }}>{value}</p>
-            <p className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>{label}</p>
-          </div>
-        ))}
+          { label: "séances", value: totalRecords, anchor: "#historique" },
+          { label: "abs. injust.", value: student.unjustified_absences_count, anchor: null },
+          { label: "mots", value: vocabCount, anchor: "#vocabulaire" },
+          { label: "règles", value: grammarCount, anchor: "#grammaire" },
+        ].map(({ label, value, anchor }) => {
+          const content = (
+            <>
+              <p style={{ fontWeight: 800, fontSize: 22, color: "#1C1A17", lineHeight: 1 }}>{value}</p>
+              <p className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>{label}</p>
+            </>
+          );
+          const cardStyle: React.CSSProperties = {
+            background: "#fff",
+            border: "1px solid #EFEAE0",
+          };
+          return anchor ? (
+            <Link key={label} href={anchor} className="block rounded-[16px] p-3 text-center" style={cardStyle}>
+              {content}
+            </Link>
+          ) : (
+            <div key={label} className="rounded-[16px] p-3 text-center" style={cardStyle}>
+              {content}
+            </div>
+          );
+        })}
       </div>
 
       {/* Note privée épinglée */}
@@ -185,28 +181,6 @@ export default async function StudentCardPage({
         </svg>
       </Link>
 
-      {/* Leçon en cours */}
-      <div
-        className="rounded-[16px] p-4 space-y-1"
-        style={{ background: "#fff", border: "1px solid #EFEAE0" }}
-      >
-        <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
-          Leçon en cours
-        </p>
-        {currentLesson ? (
-          <div>
-            <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{currentLesson.title}</p>
-            {currentLesson.phase && (
-              <p style={{ color: "#8B857A", fontSize: 12 }}>
-                {PHASE_LABEL[currentLesson.phase] ?? currentLesson.phase}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun curseur défini.</p>
-        )}
-      </div>
-
       {/* Devoirs en attente */}
       {pendingHw.length > 0 && (
         <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 space-y-2">
@@ -233,12 +207,12 @@ export default async function StudentCardPage({
       )}
 
       {/* Historique des séances */}
-      <div className="space-y-2">
+      <div id="historique" className="space-y-2 scroll-mt-20">
         <div className="flex items-center justify-between px-0.5">
           <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
             Historique des séances ({totalRecords})
           </p>
-          {showAll ? (
+          {showAllRecords ? (
             <Link
               href={`/teacher/students/${id}`}
               className="font-semibold"
@@ -260,39 +234,49 @@ export default async function StudentCardPage({
           <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune séance enregistrée.</p>
         )}
         {records.map((r) => {
-          const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
           const badge = attendanceBadge(r.attendance);
           return (
-            <div
+            <Link
               key={r.id}
-              className="rounded-[14px] p-[13px] space-y-1"
+              href={`/teacher/students/${id}/sessions/${r.id}`}
+              className="block rounded-[14px] p-[13px] space-y-1 transition-opacity hover:opacity-80"
               style={{ background: "#fff", border: "1px solid #EFEAE0" }}
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                  {lesson?.title ?? "Sans leçon"}
+                  {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
                 </p>
                 <StatusBadge hue={badge.hue} label={badge.label} />
               </div>
-              <p style={{ color: "#A8A29E", fontSize: 11 }}>
-                {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
-              </p>
               {r.public_recap && (
                 <p className="leading-relaxed" style={{ color: "#4A463F", fontSize: 13 }}>
                   {r.public_recap}
                 </p>
               )}
-            </div>
+            </Link>
           );
         })}
       </div>
 
       {/* Vocabulaire récent */}
-      {recentVocab.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+      <div id="vocabulaire" className="rounded-xl border border-slate-200 bg-white p-4 space-y-2 scroll-mt-20">
+        <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-slate-700">
-            Vocabulaire récent (total : {vocabCount})
+            Vocabulaire {showAllVocab ? "" : "récent "}(total : {vocabCount})
           </p>
+          {showAllVocab ? (
+            <Link href={`/teacher/students/${id}#vocabulaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
+              Voir moins
+            </Link>
+          ) : vocabCount > 5 ? (
+            <Link href={`/teacher/students/${id}?vocabAll=true#vocabulaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
+              Voir tout ({vocabCount})
+            </Link>
+          ) : null}
+        </div>
+        {recentVocab.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucun mot enregistré pour le moment.</p>
+        ) : (
           <div className="space-y-1">
             {recentVocab.map((v) => (
               <div key={v.id} className="flex items-center justify-between gap-3 text-sm">
@@ -303,25 +287,38 @@ export default async function StudentCardPage({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Grammaire récente */}
-      {recentGrammar.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-2">
+      <div id="grammaire" className="rounded-xl border border-slate-200 bg-white p-4 space-y-2 scroll-mt-20">
+        <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-slate-700">
-            Règles récentes (total : {grammarCount})
+            Règles {showAllGrammar ? "" : "récentes "}(total : {grammarCount})
           </p>
-          {recentGrammar.map((g) => (
+          {showAllGrammar ? (
+            <Link href={`/teacher/students/${id}#grammaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
+              Voir moins
+            </Link>
+          ) : grammarCount > 3 ? (
+            <Link href={`/teacher/students/${id}?grammarAll=true#grammaire`} className="text-xs font-semibold" style={{ color: "#0F9D6E" }}>
+              Voir tout ({grammarCount})
+            </Link>
+          ) : null}
+        </div>
+        {recentGrammar.length === 0 ? (
+          <p className="text-sm text-slate-500">Aucune règle enregistrée pour le moment.</p>
+        ) : (
+          recentGrammar.map((g) => (
             <div key={g.id} className="text-sm">
               <p className="font-medium text-slate-900">{g.title}</p>
               <p className="text-slate-600 text-xs mt-0.5 line-clamp-2">
                 {g.content}
               </p>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
     </div>
   );

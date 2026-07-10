@@ -168,35 +168,30 @@ export function SessionForm({
         className="space-y-2.5 rounded-[16px] p-4"
         style={{ background: "#fff", border: "1px solid #EFEAE0" }}
       >
-        <div className="flex items-center justify-between">
-          <span style={sectionLabel}>Vocabulaire</span>
-          <button
-            type="button"
-            onClick={() => addRow(setVocabRows)}
-            className="font-bold"
-            style={{ color: "#0F9D6E", fontSize: 13 }}
-          >
-            + Mot
-          </button>
-        </div>
+        <span style={sectionLabel}>Vocabulaire</span>
         {vocabRows.map((id) => (
           <div key={id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
             <div className="grid grid-cols-2 gap-2">
               <input name="vocab_arabic" placeholder="mot (ar)" dir="rtl" className="font-arabic" style={inputStyle} />
               <input name="vocab_french" placeholder="définition (fr)" style={inputStyle} />
             </div>
-            <div className="flex gap-2">
-              <input name="vocab_root" placeholder="racine" dir="rtl" style={{ ...inputStyle, width: 120 }} />
-              <button
-                type="button"
-                onClick={() => removeRow(setVocabRows, id)}
-                style={{ color: "#A8A29E", fontSize: 12 }}
-              >
-                Retirer
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => removeRow(setVocabRows, id)}
+              style={{ color: "#A8A29E", fontSize: 12 }}
+            >
+              Retirer
+            </button>
           </div>
         ))}
+        <button
+          type="button"
+          onClick={() => addRow(setVocabRows)}
+          className="font-bold"
+          style={{ color: "#0F9D6E", fontSize: 13 }}
+        >
+          + Mot
+        </button>
       </div>
 
       {/* Grammaire */}
@@ -204,17 +199,7 @@ export function SessionForm({
         className="space-y-2.5 rounded-[16px] p-4"
         style={{ background: "#fff", border: "1px solid #EFEAE0" }}
       >
-        <div className="flex items-center justify-between">
-          <span style={sectionLabel}>Règles de grammaire</span>
-          <button
-            type="button"
-            onClick={() => addRow(setGrammarRows)}
-            className="font-bold"
-            style={{ color: "#0F9D6E", fontSize: 13 }}
-          >
-            + Règle
-          </button>
-        </div>
+        <span style={sectionLabel}>Règles de grammaire</span>
         {grammarRows.map((id) => (
           <div key={id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
             <input name="grammar_title" placeholder="titre" style={inputStyle} />
@@ -228,6 +213,14 @@ export function SessionForm({
             </button>
           </div>
         ))}
+        <button
+          type="button"
+          onClick={() => addRow(setGrammarRows)}
+          className="font-bold"
+          style={{ color: "#0F9D6E", fontSize: 13 }}
+        >
+          + Règle
+        </button>
       </div>
 
       {/* Devoir */}

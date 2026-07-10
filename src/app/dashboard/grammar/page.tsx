@@ -1,8 +1,7 @@
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { groupByLesson } from "@/lib/group-by-lesson";
+import GrammarSearch from "./grammar-search";
 
 export default async function GrammairePage() {
   await requireStudent();
@@ -10,8 +9,21 @@ export default async function GrammairePage() {
 
   const { data: rules } = await supabase
     .from("grammar_rules")
-    .select("id, title, content, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date)")
+    .order("created_at", { ascending: true });
+
+  const items = (rules ?? []).map((r) => {
+    const record = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
+    return {
+      id: r.id,
+      title: r.title,
+      content: r.content,
+      lessonRecordId: r.lesson_record_id,
+      sessionDate: record?.session_date ?? null,
+    };
+  });
+
+  const groups = groupByLesson(items);
 
   return (
     <div className="space-y-5">
@@ -23,38 +35,11 @@ export default async function GrammairePage() {
           Mes règles de grammaire
         </h1>
         <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
-          {rules?.length ?? 0} règle{(rules?.length ?? 0) > 1 ? "s" : ""}
+          {items.length} règle{items.length > 1 ? "s" : ""}
         </p>
       </div>
 
-      {!rules?.length && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>
-          Aucune règle enregistrée pour le moment.
-        </p>
-      )}
-
-      <div className="flex flex-col gap-3">
-        {rules?.map((r) => (
-          <div
-            key={r.id}
-            className="rounded-[16px] p-4"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
-          >
-            <div className="flex items-start justify-between gap-3 mb-1">
-              <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
-              <p className="shrink-0" style={{ color: "#A8A29E", fontSize: 11 }}>
-                {format(new Date(r.created_at), "d MMM yyyy", { locale: fr })}
-              </p>
-            </div>
-            <p
-              className="leading-relaxed whitespace-pre-wrap"
-              style={{ color: "#4A463F", fontSize: 14 }}
-            >
-              {r.content}
-            </p>
-          </div>
-        ))}
-      </div>
+      <GrammarSearch groups={groups} />
     </div>
   );
 }

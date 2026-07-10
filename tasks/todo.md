@@ -2,6 +2,32 @@
 
 ---
 
+## Session 26 — Bug "0 séances" + correctifs fiche de cours + regroupement par cours
+
+> **Contexte** : premier vrai cours saisi par le propriétaire pour Anthony. Retours de test manuel + un bug critique trouvé en investigation.
+> **Décisions propriétaire (2026-07-10)**, après rapport :
+> - Page détail de séance construite (récap + vocab/grammaire du jour + note privée + devoir), accessible en cliquant une fiche d'historique.
+> - Glossaire/grammaire élève : groupés par cours, ordre chronologique croissant (Cours 1 = premier), accordéons repliés par défaut, recherche globale qui déplie les groupes avec résultat.
+
+### Plan
+- [x] **Bug critique** : `/dashboard` (Cours) — requête `lessons(...).audio_assets(...)` ambiguë (2 FK entre les tables) → PostgREST rejette silencieusement, page affiche toujours 0 séances. Fix : qualifier avec `!lessons_audio_asset_fk`.
+- [x] `session-form.tsx` : bouton "+ Mot"/"+ Règle" déplacé en bas de liste (plus besoin de remonter) ; retrait du champ "racine" du vocabulaire (+ nettoyage `zipVocab` dans `actions.ts`)
+- [x] `/teacher/students/[id]` : retrait "Leçon en cours" (+ requête `student_progress` associée) ; retrait "Sans leçon" dans l'historique (date + statut en tête, recap en corps) ; stats cliquables (ancres vers les sections) ; ajout "voir tout" sur vocabulaire/grammaire (mirroir du pattern déjà existant sur l'historique) ; fiches d'historique cliquables
+- [x] Nouvelle page `/teacher/students/[id]/sessions/[recordId]` : détail lecture seule (récap, présence, vocab du jour, grammaire du jour, devoir éventuel, note privée, supports)
+- [x] `/dashboard/vocabulary` + `/dashboard/grammar` : regroupement par séance (`lesson_record_id`), accordéon (`AccordionGroup` partagé + `groupByLesson` util), "Cours 1..N" (ordre chronologique croissant), repliés par défaut, recherche globale auto-déplie les groupes correspondants ; ajout d'une barre de recherche sur la page grammaire (n'en avait pas)
+- [x] Vérification MCP : données/RLS reconfirmées par impersonation (Anthony voit sa séance + 24 mots + 1 règle liés) — **la correction PostgREST elle-même (`!lessons_audio_asset_fk`) n'a pas pu être testée en conditions réelles depuis ce bac à sable** (réseau vers `*.supabase.co` bloqué, `execute_sql` ne passe pas par la couche PostgREST) ; advisor sécurité inchangé (aucune migration cette session)
+- [x] Build + lint verts (26 routes, 0 nouvelle erreur)
+- [x] Push
+
+### Review Session 26
+- **Bug critique corrigé** : `/dashboard` affichait "0 séances" pour TOUS les élèves depuis l'ajout de la fonctionnalité audio (pas seulement Anthony) — deux clés étrangères opposées entre `lessons` et `audio_assets` rendaient la requête embarquée ambiguë pour PostgREST, qui la rejetait silencieusement (aucun `error` vérifié dans le code). Premier vrai signal utilisateur qui l'a révélé. **À faire par le propriétaire dès le prochain déploiement Vercel** : recharger le dashboard d'Anthony et confirmer que la séance du 8 juillet apparaît — je n'ai pas pu vérifier la résolution PostgREST elle-même depuis ce sandbox (réseau bloqué).
+- Fiche de fin de cours : ajout de vocabulaire/grammaire plus fluide (bouton en bas, pas besoin de remonter), champ racine retiré.
+- Fiche élève (prof) : "Leçon en cours"/"Sans leçon" retirés (résidus de Programme) ; stats + fiches d'historique cliquables ; nouvelle page détail de séance en lecture seule (`/teacher/students/[id]/sessions/[recordId]`) avec supports téléchargeables (URLs signées).
+- Glossaire et grammaire élève réorganisés en accordéon par séance ("Cours 1, 2…"), recherche globale conservée et auto-dépliante. Nouveau composant partagé `AccordionGroup` + utilitaire `groupByLesson` (réutilisable pour un futur regroupement similaire).
+- Aucune migration cette session — tout repose sur des colonnes/FK déjà en place.
+
+---
+
 ## Session 25 — Photos de profil + nettoyage nav enseignant + suppression scheduling/essai
 
 > **Décisions propriétaire (2026-07-10)**, actées après investigation + questions :

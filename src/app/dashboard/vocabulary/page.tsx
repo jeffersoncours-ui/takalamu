@@ -1,5 +1,6 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { groupByLesson } from "@/lib/group-by-lesson";
 import VocabSearch from "./vocab-search";
 
 export default async function VocabulairePage() {
@@ -8,8 +9,22 @@ export default async function VocabulairePage() {
 
   const { data: vocab } = await supabase
     .from("vocabulary")
-    .select("id, arabic_word, french_definition, root, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, arabic_word, french_definition, root, created_at, lesson_record_id, lesson_records(session_date)")
+    .order("created_at", { ascending: true });
+
+  const items = (vocab ?? []).map((v) => {
+    const record = Array.isArray(v.lesson_records) ? v.lesson_records[0] : v.lesson_records;
+    return {
+      id: v.id,
+      arabic_word: v.arabic_word,
+      french_definition: v.french_definition,
+      root: v.root,
+      lessonRecordId: v.lesson_record_id,
+      sessionDate: record?.session_date ?? null,
+    };
+  });
+
+  const groups = groupByLesson(items);
 
   return (
     <div className="space-y-5">
@@ -21,10 +36,10 @@ export default async function VocabulairePage() {
           Mon glossaire
         </h1>
         <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
-          {vocab?.length ?? 0} mot{(vocab?.length ?? 0) > 1 ? "s" : ""} appris
+          {items.length} mot{items.length > 1 ? "s" : ""} appris
         </p>
       </div>
-      <VocabSearch items={vocab ?? []} />
+      <VocabSearch groups={groups} />
     </div>
   );
 }

@@ -9,10 +9,14 @@ export default async function CoursPage() {
   const { profile } = await requireStudent();
   const supabase = await createClient();
 
-  const { data: recordsData } = await supabase
+  const { data: recordsData, error: recordsError } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets(storage_path, title))")
+    .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets!lessons_audio_asset_fk(storage_path, title))")
     .order("session_date", { ascending: false });
+
+  if (recordsError) {
+    console.error("lesson_records query failed:", recordsError.message);
+  }
 
   const records = recordsData ?? [];
   const firstName = (profile.full_name ?? "").trim().split(" ")[0] || "—";
