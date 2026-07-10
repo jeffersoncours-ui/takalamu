@@ -35,6 +35,7 @@
 - **Nettoyage bonus** : `get_teacher_booked_slots` (déjà mort depuis la session 24) supprimé au passage ; `src/lib/pricing.ts` et `sendTrialCode` (resend.ts) retirés, plus aucun consommateur.
 - **Preuve isolation avatars** : élève A upload dans son dossier ✔ ; A tente d'écrire dans le dossier de B → RLS bloque (42501) ✔ ; B tente de lire le fichier de A → 0 ligne visible ✔. Advisor sécurité : mêmes WARN acceptés qu'avant (pattern SECURITY DEFINER + vérif interne), 4 fonctions dead supprimées de la liste, aucune nouvelle catégorie.
 - **Piège rencontré** : `storage.objects` a un trigger `protect_delete()` qui bloque tout `DELETE` direct (même en tant que rôle privilégié) sauf si `set_config('storage.allow_delete_query', 'true', false)` est positionné dans la session — nécessaire pour nettoyer les données de test après preuve RLS.
+- **Retours propriétaire après livraison** : Programme finalement supprimé aussi (nav + route, aucun autre consommateur — `lessons` reste lu directement par la fiche de fin de cours) ; section "Leçon travaillée" + case "avancer le curseur" retirée de la fiche de fin de cours (liée à Programme). `session-form.tsx`/`session/new/page.tsx`/`session/actions.ts` simplifiés en conséquence — le formulaire n'envoie plus `p_lesson_id`/`p_advance_progress` à `submit_session_record` (tous deux optionnels côté RPC, aucun changement de migration nécessaire).
 
 ---
 
