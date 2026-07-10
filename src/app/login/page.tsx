@@ -25,29 +25,18 @@ export default async function LoginPage() {
     <main className="flex flex-1 items-center justify-center px-6 py-16" style={{ background: "#F7F4EE" }}>
       <div className="w-full max-w-sm space-y-7">
         <div className="flex flex-col items-center text-center space-y-3">
-          <Link href="/" className="flex flex-col items-center gap-2">
+          <Link href="/" className="flex flex-col items-center gap-3">
             <img
               src="/logo.png"
               alt=""
-              style={{ height: 64, width: "auto" }}
+              style={{ height: 104, width: "auto" }}
             />
             <img
               src="/wordmark.png"
-              alt="كلموا"
-              style={{ height: 36, width: "auto" }}
+              alt="تتكلموا"
+              style={{ height: 64, width: "auto" }}
             />
           </Link>
-          <div>
-            <h1
-              className="leading-tight"
-              style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 28, color: "#1C1A17" }}
-            >
-              Mon espace
-            </h1>
-            <p className="font-medium mt-1" style={{ color: "#8B857A", fontSize: 14 }}>
-              Connecte-toi avec ton compte.
-            </p>
-          </div>
         </div>
 
         <div

@@ -24,15 +24,14 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"
-              alt="Takalamu"
+              alt=""
               style={{ height: 30, width: "auto" }}
             />
-            <span
-              className="text-base font-semibold"
-              style={{ color: "#1C1A17", fontFamily: "var(--font-spectral)" }}
-            >
-              Takalamu
-            </span>
+            <img
+              src="/wordmark.png"
+              alt="تتكلموا"
+              style={{ height: 22, width: "auto" }}
+            />
           </div>
           <NotifBell userId={userId} initialNotifs={notifs ?? []} />
         </div>
