@@ -67,17 +67,17 @@ export async function requestTrial(
 
   const supabase = await createClient();
 
-  // Anti-double-booking : vérifier que le créneau n'est pas déjà pris
+  // Anti-double-booking : re-vérifier via la RPC (le client anon n'a pas de
+  // policy SELECT sur trial_requests — un SELECT direct renverrait toujours 0 ligne).
   if (scheduledAt) {
-    const { data: existing } = await supabase
-      .from("trial_requests")
-      .select("id")
-      .eq("gender", gender)
-      .eq("scheduled_at", scheduledAt)
-      .neq("status", "declined")
-      .maybeSingle();
+    const { data: taken } = await supabase.rpc("get_trial_taken_slots", {
+      p_gender: gender,
+    });
 
-    if (existing) {
+    const isTaken = (taken ?? []).some(
+      (r) => new Date(r.slot_at).toISOString() === scheduledAt,
+    );
+    if (isTaken) {
       return { error: "Ce créneau vient d'être réservé. Merci d'en choisir un autre." };
     }
   }
@@ -93,6 +93,10 @@ export async function requestTrial(
   });
 
   if (insertError) {
+    // 23505 = index unique trial_requests_slot_unique (créneau pris entre-temps)
+    if (insertError.code === "23505") {
+      return { error: "Ce créneau vient d'être réservé. Merci d'en choisir un autre." };
+    }
     return { error: "Une erreur est survenue. Merci de réessayer." };
   }
 

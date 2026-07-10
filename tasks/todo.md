@@ -2,6 +2,161 @@
 
 ---
 
+## Session 23 — Reset comptes de test, compte réel Anthony, mot de passe élève, vérification E2E
+
+> **Statut : TERMINÉ.** Premier vrai élève sur la plateforme.
+
+### Plan
+- [x] Suppression des 4 comptes élèves de test (Ali, Omar, Fatima, Aisha) + toutes leurs données liées (cascade `auth.users` → `profiles`/`students`/`lesson_records`/`vocabulary`/`grammar_rules`/`homework`/`payments`/`conversations`/`messages`) + 1 notification orpheline nettoyée manuellement
+- [x] **Changement de mot de passe côté élève** (`/dashboard/more`) : action `changePassword` (`supabase.auth.updateUser`) + `ChangePasswordForm` — nécessaire car les comptes élèves sont désormais créés avec un mot de passe fixe communiqué directement par l'enseignant (session 22 : plus de flux d'invitation email systématique)
+- [x] **Création du compte réel « Anthony »** (premier vrai élève) : email temporaire `anthony@takalamu.test` (à mettre à jour dès qu'il fournit sa vraie adresse), mot de passe généré aléatoirement, rattaché à Youssef, méthode SQL identique au script `seed_test_accounts.sql` original (`auth.users` + `auth.identities` + `public.students`, trigger `handle_new_user` vérifié pour la création du profil)
+- [x] **Tentative de test E2E navigateur réel** (Playwright + Chromium local) : bloquée par la politique réseau du bac à sable (egress `*.supabase.co` refusé, `403` sur le tunnel CONNECT) — confirmé par `curl -v`, déjà documenté en session 1. Nettoyage : serveur de dev arrêté, `.env.local` temporaire supprimé.
+- [x] **Vérification de bout en bout par impersonation SQL** (méthode de repli, conforme à CLAUDE.md §4) : `submit_session_record` (présence, leçon, récap, note privée, devoir, 4 mots de vocabulaire, 1 règle de grammaire, référence de fichier) → `generate_individual_quiz` (4 questions mixées AR↔FR, aucune fuite de réponse) → `submit_individual_quiz` (score 2/4 recalculé serveur, review détaillée correcte)
+- [x] Nettoyage des données de test générées pour la vérification (lesson_record, vocab, grammar, homework, quiz_attempt) — le vrai premier cours sera saisi par le propriétaire lui-même
+- [x] Connexion réelle d'Anthony **confirmée fonctionnelle** par le propriétaire (test hors sandbox)
+
+### Review Session 23
+- Base remise à zéro côté élèves : plus aucun compte de test, uniquement les 2 enseignants + Anthony (premier vrai élève).
+- **Limite d'environnement confirmée à nouveau** : ce sandbox ne peut pas atteindre `*.supabase.co` en sortant — tout test nécessitant un vrai aller-retour réseau (login via l'app, appels REST Auth) doit passer soit par le MCP Supabase (`execute_sql`, qui lui fonctionne), soit être vérifié par le propriétaire directement sur la vraie app (Vercel). Ne plus retenter de lancer le serveur de dev local contre la prod dans ce sandbox — le proxy le bloque systématiquement.
+- La logique métier (RPC, quiz, anti-triche) est prouvée saine par impersonation SQL — c'est la méthode fiable pour ce type de vérification ici.
+- **TODO connu** : remplacer l'email temporaire `anthony@takalamu.test` par sa vraie adresse dès qu'il la communique.
+
+---
+
+## Session 22 — Pivot modèle de service (Session tab, paiement libre, vitrine dormante)
+
+> **Décisions propriétaire (2026-07-01)**, actées après audit + avis donné :
+> - **Onglet réservation → « Session ».** Plus d'auto-réservation élève : le créneau est fixé par le prof (arrangement via chat externe), la page n'affiche que le prochain cours (lien Meet, countdown identique à l'existant, rappel du jour, rappel caméra/posture texte).
+> - **Paiement 100 % libre, post-payé, montant variable.** Fin de l'abonnement/formules. Le prof envoie lui-même une demande de paiement (montant + élève au choix) depuis un petit formulaire dans l'app — pas de sollicitation de Claude à chaque fois. Élève garde un historique en lecture seule + bouton PayPal.
+> - **Cron de relances mensuelles (session 21) supprimé** : incompatible avec « c'est moi qui décide » (aurait pu emailer automatiquement).
+> - **Plus de verrou paiement à la création d'un cours.** Suspension gérée manuellement par le prof (statut existant sur la fiche élève).
+> - **Vitrine gardée dormante** (code intact, accessible par URL directe) mais **`/` devient une redirection pure vers `/login`** — aucune page d'accueil publique affichée.
+> - **Création de compte élève 100 % manuelle**, indépendante du tunnel d'essai : petit formulaire côté `/teacher/students` (prénom/nom/email/genre), plus de notion de « code d'essai ».
+
+### Plan
+- [x] Migration 35 : `notification_type` += `session_reminder`
+- [x] Migration 36 : `payments.label` (text, nullable) ; `bookings.reminder_sent` (bool, default false)
+- [x] Migration 37 (**faille RLS découverte en test, hors plan initial**) : `bookings_teacher_all` ne vérifiait pas que `student_id` appartient à l'enseignant — corrigé
+- [x] `database.types.ts` régénéré (enum + 2 colonnes)
+- [x] Suppression code mort self-serve élève : `src/lib/booking.ts`, `dashboard/bookings/booking-slots.tsx`, `dashboard/bookings/actions.ts`
+- [x] Création de créneau côté prof : `/teacher/bookings` + `createBookingByTeacher` (aucun verrou paiement, ownership re-vérifiée serveur ET RLS)
+- [x] Session tab élève : helper partagé `src/lib/next-course.ts`, page réécrite (`NextCourseHero` inchangé + bandeau « aujourd'hui » Europe/Paris + rappel caméra/posture + état vide adapté)
+- [x] `dashboard/page.tsx` (« Cours ») simplifié : historique + stats seulement
+- [x] `dashboard-tabs.tsx` : « Réserver » → « Session »
+- [x] Cron `/api/cron/session-reminders` (Bearer `CRON_SECRET`, fenêtre Europe/Paris via date-fns-tz) → email + notif + `reminder_sent=true`
+- [x] Suppression cron abonnement session 21 (route + `vercel.json`)
+- [x] Paiement libre côté prof : `SendPaymentForm` sur `/teacher/payments` + `sendPaymentRequest`
+- [x] Paiement élève simplifié : retrait `PaymentRequestForm`/`requestPayment`, affichage préfère `payments.label`
+- [x] Création manuelle d'élève : `NewStudentForm` sur `/teacher/students` + `createStudentManually`
+- [x] Racine publique → `redirect("/login")`, `testimonials.tsx` supprimé, `/offres` `/essai` `/inscription` intacts et dormants
+- [x] Preuves MCP (voir Review) + advisor sécurité = 0 nouveau lint
+- [x] Build + tsc + lint verts (mêmes 3 erreurs déjà connues, 0 nouvelle)
+
+### Review Session 22
+
+**État au 2026-07-10 — pivot complet vers un modèle de service à la confiance, réalisé.**
+
+- **Session tab** : plus d'auto-réservation élève. Le prof fixe le créneau (`/teacher/bookings`, formulaire « + Fixer une séance », aucun verrou paiement). L'élève voit sur « Session » : le `NextCourseHero` inchangé (countdown, bouton Rejoindre 3 états), un bandeau « C'est aujourd'hui ! » (calculé en Europe/Paris via `date-fns-tz`, jamais un décalage codé en dur — Principe 7), et un rappel statique caméra/posture. État vide renvoie vers Messages plutôt que vers un self-serve disparu.
+- **Rappel du jour** : cron quotidien 06:00 UTC (`session-reminders`), fenêtre calculée en jour calendaire Paris, email Resend + notification cloche + `bookings.reminder_sent` pour dédupliquer — prouvé empiriquement (fenêtre correcte, dédup effective à 0 candidat après passage).
+- **Paiement 100 % libre** : plus de formule/abonnement. L'enseignant envoie une demande ad-hoc (montant + libellé libres) depuis `/teacher/payments` — aucune sollicitation de Claude nécessaire à l'usage. L'élève garde un historique en lecture seule + bouton PayPal sur les lignes en attente. Cron de relances automatiques de la session 21 **supprimé** (incompatible avec « c'est moi qui décide »).
+- **Création manuelle d'élève** : `/teacher/students`, indépendante du tunnel d'essai (`trial_requests`), réutilise le pattern `inviteUserByEmail` déjà éprouvé. Admin peut assigner à n'importe quel enseignant, un enseignant normal ne peut créer que pour lui-même.
+- **Vitrine dormante** : `/` redirige vers `/login`, aucune page d'accueil publique affichée. `/offres`, `/essai`, `/inscription` restent pleinement fonctionnels par URL directe (code intact, juste plus liés depuis nulle part).
+- **Faille RLS trouvée et corrigée en cours de route** : la nouvelle capacité « le prof crée directement une réservation » exposait un trou préexistant dans `bookings_teacher_all` — la policy vérifiait `teacher_id = current_teacher_id()` mais jamais que le `student_id` visé appartenait à ce même enseignant. Un enseignant aurait pu créer une réservation pour l'élève d'un collègue en indiquant simplement son propre `teacher_id`. Prouvé exploitable (INSERT réussi), corrigé migration 37 (`WITH CHECK` avec `EXISTS` sur `students`), re-prouvé bloqué (42501) puis re-prouvé que le cas légitime fonctionne toujours.
+
+**Preuves MCP (toutes nettoyées après coup)** :
+- Booking cross-teacher avant fix : 1 ligne insérée (faille confirmée) → après fix : 42501 (bloqué)
+- Booking légitime (Khadija → sa propre élève Fatima) : succès, `teacher_id`/`student_id` cohérents
+- Paiement libre avec `label` custom : insert + lecture conformes
+- Fenêtre cron du jour (Europe/Paris → bornes UTC) : capture la bonne réservation ; après `reminder_sent=true`, 0 candidat restant (dédup prouvée)
+- Advisor sécurité : 0 nouveau lint (mêmes WARN pré-existants, tous déjà acceptés/documentés)
+
+**Différé / à surveiller** :
+- Pas de suspension automatique pour impayés répétés — gérée manuellement par le prof (statut existant sur la fiche élève), décision explicite du propriétaire pour rester simple.
+- `/teacher/trials` (backend du tunnel d'essai) laissé tel quel — dormant comme le reste de la vitrine, aucune raison de le retirer.
+- Build vert (32 routes), poussé sur `claude/takalamu-platform-dev-46gpjg`.
+
+---
+
+## Session 21 — Paiement PayPal (compte perso, liens PayPal.Me + relances mensuelles)
+
+> **Décision propriétaire (2026-07-01)** : PayPal remplace Revolut pour l'encaissement,
+> avec le **compte PayPal personnel** du propriétaire (pas de compte Business), l'argent
+> étant ensuite reversé sur Revolut manuellement.
+> **Conséquence technique** : pas d'API Orders ni de webhook PayPal (réservés aux comptes
+> Business) → flux = liens **PayPal.Me à montant exact** + **confirmation manuelle** par
+> l'enseignant dans l'app (bouton « Confirmer » existant). Modèle validé : 1er paiement
+> immédiat même en 12×, puis **email automatique de relance** à chaque échéance mensuelle.
+> Design `/inscription` : à faire APRÈS cette phase, séparément (demande propriétaire).
+
+### Plan
+- [x] `src/lib/paypal.ts` : `paypalMeUrl(amountCents)` depuis `PAYPAL_ME_USERNAME` (guard si absent)
+- [x] `src/lib/resend.ts` : `sendPaymentLink()` (montant, référence, lien PayPal, échéance)
+- [x] `/inscription` : `createEnrollment` ne tente plus Revolut → génère réf `TK-…` + lien PayPal.Me ; écran `PayScreen` = bouton « Payer X € via PayPal » + consigne référence dans la note ; email envoyé au prospect avec le même lien ; validation serveur du plan ajoutée (avant, une valeur arbitraire passait pour « hourly »)
+- [x] `inviteStudent` : si `chosen_plan` présent, crée la ligne `payments` (status `paid`, montant 1er versement, référence, `period` = mois courant) — l'enseignant n'invite qu'après avoir vu l'argent arriver sur PayPal
+- [x] Cron quotidien Vercel `/api/cron/payment-reminders` (Bearer `CRON_SECRET`) : ancre = 1er versement payé, intervalle = 12/nb versements mois (12x→1, 3x→4, 2x→6) ; à échéance → ligne pending (dédup par `period` YYYY-MM) + email PayPal.Me + notif in-app
+- [x] `vercel.json` : cron 08:00 UTC quotidien
+- [x] `/dashboard/payments` : bouton « Payer X € via PayPal » + rappel de référence sur les lignes pending
+- [x] `.env.example` : `PAYPAL_ME_USERNAME`, `CRON_SECRET` (Revolut marqué DORMANT)
+- [x] Build vert + tsc clean + push
+
+### À faire côté propriétaire (hors code)
+- [ ] Renseigner `PAYPAL_ME_USERNAME` dans Vercel (pseudo paypal.me du compte perso)
+- [ ] Générer et renseigner `CRON_SECRET` dans Vercel (`openssl rand -hex 32`)
+- [ ] Toujours en attente : domaine OVH → Resend → `EMAIL_FROM` (sans ça, les emails partent de onboarding@resend.dev, tests uniquement)
+
+### Différé / notes
+- Suspension automatique si échéance impayée après N jours (règle §8.6) : le cron pourrait la déclencher — période de grâce à décider par le propriétaire. Pour l'instant suspension manuelle (fiche élève).
+- ⚠️ Mise en garde transmise au propriétaire : encaisser une activité commerciale régulière sur un compte PayPal perso = risque de limitation du compte par PayPal (ToS). Assumé à cette échelle.
+
+### Suite de session (2026-07-01) — demandes propriétaire
+- [x] **Visio : Google Meet au lieu de Zoom** (décision propriétaire — Zoom gratuit coupe à 45 min ; Meet gratuit ne coupe pas en 1-à-1). Le cahier des charges prévoyait déjà « Zoom / Google Meet » pour l'individuel. Changement purement cosmétique + suppression de variables mortes : libellés enseignant (« Pas de lien Google Meet », placeholder `meet.google.com`), textes vitrine, commentaires `join-window.ts`, bloc `ZOOM_*` de `.env.example` retiré (jamais câblé — Meet = lien collé à la main, aucune API). Colonne `zoom_link` conservée en base (interne, invisible — même logique que `revolut_reference`). Mécanisme inchangé : le prof colle le lien, l'élève rejoint via le bouton fenêtré (−10 min / +10 min).
+- [x] **Code Revolut SUPPRIMÉ** (décision propriétaire — plus de mode dormant) : `revolut.ts`, webhook `/api/webhooks/revolut`, section `.env.example`, 4 mentions texte/commentaires mises à jour. Les colonnes `revolut_reference` / `revolut_order_id` restent en base comme référence de paiement générique (renommer = migration sans valeur).
+- [x] **Design system appliqué à `/inscription`** : fond transparent (Warp visible), `Card` = bordure verte 1.5px + surpiqûre dashed −7px, boutons pleins verts = surpiqûre blanche −4px (style partagé `primaryBtnStyle`), boîte de référence TK = surpiqûre verte −5px, bouton PayPal = surpiqûre blanche. Cohérent avec `/essai` et `/offres`.
+- [x] Build vert + tsc clean + push.
+
+---
+
+## Session 20 — Revue complète du code + simplifications
+
+> **Statut : TERMINÉ.** Revue de l'intégralité de `src/` (110 fichiers) sur branche dupliquée de `main`.
+
+### Plan
+- [x] Lire tout le code applicatif (lib, public, dashboard, teacher, composants, webhook, migrations concernées)
+- [x] **Bug corrigé — anti-double-booking essai** : `requestTrial` faisait un SELECT direct sur `trial_requests` avec le client anon ; aucune policy SELECT anon n'existe → le contrôle renvoyait toujours « libre » (protection uniquement visuelle). Remplacé par la RPC existante `get_trial_taken_slots` (SECURITY DEFINER, grantée anon).
+- [x] Dépendances mortes retirées : `three`, `@react-three/fiber`, `@types/three` (résidus de la tentative Three.js abandonnée en session 19)
+- [x] `revolut.ts` : `require("crypto")` → import top-level (erreur lint)
+- [x] `drawer-nav.tsx` : `useRouter` importé/instancié jamais utilisé — retiré
+- [x] `inscription/funnel.tsx` : prop `onSuccess` jamais appelée, état `codeInput` jamais lu, prop `prospect` inutilisée (`void prospect`) — retirés
+- [x] `inscription/actions.ts` : variables `fullName`/`firstName`/`lastName` inutilisées — retirées
+- [x] `page.tsx` (home) : fragment sans `key` dans la boucle STEPS (warning React) → `<Fragment key>` ; `idx` inutilisé retiré
+- [x] `layout.tsx` : poids Outfit **600** utilisé (notes session 18) mais non chargé — ajouté
+- [x] `eslint.config.mjs` : dossier `design/**` (handoff statique) exclu du lint
+- [x] Lint : 36 → 21 problèmes (6 → 3 erreurs) ; build vert
+
+### Restes assumés (pas des bugs)
+- 3 erreurs lint `react-hooks/set-state-in-effect` (join-button, next-course-hero, drawer-nav) : pattern intentionnel d'init d'horloge côté client (anti-hydration-mismatch) et fermeture du drawer au changement de route. Ne pas « corriger » sans re-tester l'hydration.
+- 18 warnings `_prev`/`_formData` unused : signature imposée par `useActionState`.
+
+### Décisions propriétaire (2026-07-01) + exécution
+- [x] **ColorTweaker retiré** (accord propriétaire) : import + rendu supprimés de la home, `color-tweaker.tsx` supprimé. Les valeurs par défaut `--site-*` vivent dans `globals.css` — aucun impact visuel.
+- [x] **Témoignages placeholder** : le propriétaire les laisse tels quels pour l'instant.
+- [x] **Verrou base créneaux d'essai** (accord propriétaire) : migration 34 appliquée — index unique partiel `trial_requests_slot_unique (gender, scheduled_at) WHERE scheduled_at IS NOT NULL AND status <> 'declined'`. `requestTrial` mappe l'erreur 23505 sur le message « créneau vient d'être réservé ». Preuves MCP : insert nominal ✓, doublon même genre = 23505 ✓, même créneau autre genre passe ✓, décliné libère le créneau ✓, données de test nettoyées ✓, advisor 0 nouveau lint ✓.
+- [ ] **Factorisation des styles répétés de la vitrine** (carte blanche/verte avec surpiqûre, boutons CTA) en petits composants partagés — zéro delta visuel mais diff étendu. Toujours en attente d'accord.
+
+### Tâches restantes (reprises de la session 19)
+- [ ] Page `/inscription` : appliquer design system (cartes + boutons)
+- [ ] Domaine OVH → Resend → `EMAIL_FROM=noreply@takalamu.com` (Vercel env vars)
+- [ ] Revolut Merchant API keys (après création de l'entité)
+- [ ] Bunny Stream : upload vidéos de bienvenue + milestone
+- [ ] Zoom : enforcement serveur lien (bouton cesse à H+10 min)
+
+### Review Session 20
+- Revue exhaustive : la base est saine — RLS-first respecté partout, server actions correctement gardées (`requireTeacher`/`requireStudent`/`requireAdmin`), aucune règle métier côté client seul, `createAdminClient()` limité aux cas légitimes (invitations auth, webhook, vérif code d'essai).
+- Un seul vrai bug trouvé et corrigé (anti-double-booking essai, silencieusement inopérant à cause du deny-by-default RLS). Le reste : code mort et hygiène.
+- Build vert (35 routes), poussé sur `claude/takalamu-platform-dev-46gpjg`.
+
+---
+
 ## Session 19 — Refonte visuelle vitrine + design system public
 
 > **Statut : TERMINÉ.**

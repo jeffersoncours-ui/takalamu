@@ -11,7 +11,7 @@ const spectral = Spectral({
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["700", "800", "900"],
+  weight: ["600", "700", "800", "900"],
 });
 
 const inter = Inter({

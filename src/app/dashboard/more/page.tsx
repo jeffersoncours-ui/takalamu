@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { signOut } from "@/app/login/actions";
+import { ChangePasswordForm } from "./change-password-form";
 
 const MENU_ITEMS = [
   {
@@ -48,7 +49,7 @@ const MENU_ITEMS = [
   {
     href: "/dashboard/payments",
     label: "Mes paiements",
-    desc: "Abonnement et historique",
+    desc: "Historique et demandes en attente",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
@@ -109,6 +110,8 @@ export default async function MorePage() {
           </Link>
         ))}
       </div>
+
+      <ChangePasswordForm />
 
       {/* Déconnexion */}
       <form action={signOut}>

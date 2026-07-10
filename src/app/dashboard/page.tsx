@@ -4,36 +4,17 @@ import { fr } from "date-fns/locale";
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge, attendanceBadge } from "@/components/status-badge";
-import { NextCourseHero } from "./next-course-hero";
 
 export default async function CoursPage() {
-  const { profile, studentId } = await requireStudent();
+  const { profile } = await requireStudent();
   const supabase = await createClient();
 
-  const nowIso = new Date().toISOString();
+  const { data: recordsData } = await supabase
+    .from("lesson_records")
+    .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets(storage_path, title))")
+    .order("session_date", { ascending: false });
 
-  const [recordsRes, studentRes, nextBookingRes] = await Promise.all([
-    supabase
-      .from("lesson_records")
-      .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets(storage_path, title))")
-      .order("session_date", { ascending: false }),
-    supabase
-      .from("students")
-      .select("teacher_id, student_progress(lessons:current_lesson_id(title)), teachers:teacher_id(display_name)")
-      .eq("id", studentId)
-      .maybeSingle(),
-    supabase
-      .from("bookings")
-      .select("scheduled_at, zoom_link")
-      .eq("student_id", studentId)
-      .eq("status", "booked")
-      .gte("scheduled_at", nowIso)
-      .order("scheduled_at", { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const records = recordsRes.data ?? [];
+  const records = recordsData ?? [];
   const firstName = (profile.full_name ?? "").trim().split(" ")[0] || "—";
 
   // Batch-generate signed URLs for lesson audio (1 h TTL)
@@ -65,25 +46,6 @@ export default async function CoursPage() {
   const assiduite =
     totalSessions > 0 ? Math.round((presentish / totalSessions) * 100) : null;
 
-  // Prochain cours
-  const nextBooking = nextBookingRes.data;
-  const student = studentRes.data;
-  const progress = student
-    ? Array.isArray(student.student_progress)
-      ? student.student_progress[0]
-      : student.student_progress
-    : null;
-  const currentLesson = progress
-    ? Array.isArray(progress.lessons)
-      ? progress.lessons[0]
-      : progress.lessons
-    : null;
-  const teacher = student
-    ? Array.isArray(student.teachers)
-      ? student.teachers[0]
-      : student.teachers
-    : null;
-
   return (
     <div className="space-y-1">
       {/* Salutation */}
@@ -98,28 +60,6 @@ export default async function CoursPage() {
           {firstName}
         </div>
       </div>
-
-      {/* Hero prochain cours */}
-      {nextBooking ? (
-        <NextCourseHero
-          scheduledAt={nextBooking.scheduled_at}
-          lessonTitle={currentLesson?.title ?? "Cours individuel"}
-          teacherName={teacher?.display_name ?? "ton enseignant"}
-          zoomLink={nextBooking.zoom_link}
-        />
-      ) : (
-        <div
-          className="rounded-[20px] p-5 text-center"
-          style={{ background: "#FBF9F5", border: "1px solid #E9E3D8" }}
-        >
-          <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 15 }}>
-            Aucun cours à venir
-          </p>
-          <p className="mt-1" style={{ color: "#8B857A", fontSize: 13 }}>
-            Réserve un créneau dans l&apos;onglet Réserver.
-          </p>
-        </div>
-      )}
 
       {/* Parcours */}
       <div

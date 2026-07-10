@@ -22,7 +22,7 @@ export function BookingActions({
 
   return (
     <div className="space-y-2">
-      {/* Lien Zoom */}
+      {/* Lien Google Meet */}
       {!editingZoom ? (
         <div className="flex items-center gap-3">
           {currentZoomLink ? (
@@ -35,7 +35,7 @@ export function BookingActions({
               {currentZoomLink}
             </a>
           ) : (
-            <span className="text-sm text-slate-400">Pas de lien Zoom</span>
+            <span className="text-sm text-slate-400">Pas de lien Google Meet</span>
           )}
           <button
             onClick={() => setEditingZoom(true)}
@@ -51,7 +51,7 @@ export function BookingActions({
             name="zoom_link"
             type="url"
             defaultValue={currentZoomLink ?? ""}
-            placeholder="https://zoom.us/j/..."
+            placeholder="https://meet.google.com/..."
             className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
           />
           <button

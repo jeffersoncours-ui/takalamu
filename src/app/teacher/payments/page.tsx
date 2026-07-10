@@ -1,11 +1,14 @@
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PaymentActions } from "./payment-actions";
+import { SendPaymentForm } from "./send-payment-form";
 import { StatusBadge, paymentBadge } from "@/components/status-badge";
 import type { Database } from "@/lib/supabase/database.types";
 
 type PaymentPlan = Database["public"]["Enums"]["payment_plan"];
 
+// Libellés de secours pour les paiements historiques (formules abandonnées) —
+// les nouvelles demandes portent leur propre `label` libre.
 const PLAN_LABEL: Record<PaymentPlan, string> = {
   "1x": "Annuel 1×",
   "2x": "Annuel 2×",
@@ -18,7 +21,7 @@ const PLAN_LABEL: Record<PaymentPlan, string> = {
 
 const PRODUCT_LABEL: Record<string, string> = {
   individual_sub: "Abonnement individuel",
-  individual_hour: "Heure à la carte",
+  individual_hour: "Cours d'arabe",
   book: "Cours de groupe",
 };
 
@@ -26,11 +29,21 @@ export default async function TeacherPaymentsPage() {
   await requireTeacher();
   const supabase = await createClient();
 
+  const { data: studentRows } = await supabase
+    .from("students")
+    .select("id, profiles(full_name)")
+    .eq("status", "active");
+
+  const students = (studentRows ?? []).map((s) => {
+    const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
+    return { id: s.id, name: profile?.full_name ?? "Élève" };
+  });
+
   // Pot commun : tous les paiements, pending en premier
   const { data: payments } = await supabase
     .from("payments")
     .select(
-      "id, product, plan, status, created_at, revolut_reference, student_id, students(profiles(full_name))",
+      "id, product, plan, label, status, created_at, revolut_reference, student_id, students(profiles(full_name))",
     )
     .order("status", { ascending: true }) // pending < paid alphabetically… use created_at fallback
     .order("created_at", { ascending: false });
@@ -81,6 +94,8 @@ export default async function TeacherPaymentsPage() {
         </div>
       </div>
 
+      <SendPaymentForm students={students} />
+
       {/* En attente */}
       {pending.length > 0 && (
         <section className="space-y-2">
@@ -100,7 +115,7 @@ export default async function TeacherPaymentsPage() {
                 <div>
                   <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{studentName(p)}</p>
                   <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12 }}>
-                    Abonnement individuel
+                    {p.label ?? (PRODUCT_LABEL[p.product] ?? p.product)}
                     {p.plan ? ` · ${PLAN_LABEL[p.plan]}` : ""} ·{" "}
                     {new Date(p.created_at).toLocaleDateString("fr-FR")}
                   </p>
@@ -135,7 +150,7 @@ export default async function TeacherPaymentsPage() {
               <div>
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>{studentName(p)}</p>
                 <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12 }}>
-                  {PRODUCT_LABEL[p.product] ?? p.product}
+                  {p.label ?? (PRODUCT_LABEL[p.product] ?? p.product)}
                   {p.plan ? ` · ${PLAN_LABEL[p.plan]}` : ""} ·{" "}
                   {new Date(p.created_at).toLocaleDateString("fr-FR")}
                 </p>

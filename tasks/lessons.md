@@ -1,5 +1,67 @@
 # Lessons
 
+## Session 23 (2026-07-10) — Reset comptes, compte réel Anthony, mot de passe élève, E2E
+
+### Décisions
+
+- **Comptes élèves désormais créés avec mot de passe fixe communiqué directement par l'enseignant** (plus de flux d'invitation email systématique — cohérent avec le pivot bouche-à-oreille de la session 22). Conséquence directe : il fallait un moyen pour l'élève de changer ce mot de passe une fois connecté — construit dans la foulée (`supabase.auth.updateUser()` côté serveur, aucun privilège admin requis, la session courante suffit).
+- **Création de compte réel via SQL direct (`crypt()` + `gen_salt('bf')`) plutôt que `inviteUserByEmail`.** Choisi pour donner un accès immédiat (mot de passe fixe connu tout de suite) plutôt que de dépendre de la délivrabilité d'un email d'invitation Supabase Auth (SMTP par défaut, non configuré avec un domaine vérifié). Méthode identique à `seed_test_accounts.sql`, donc déjà « éprouvée » sur le papier — mais voir piège ci-dessous.
+- **Suppression complète des comptes de test avant le premier vrai élève.** Propre : `DELETE FROM auth.users` cascade correctement à travers tout le schéma (profils, students, lesson_records, vocabulary, grammar_rules, homework, payments, conversations, messages) — seule une notification a dû être nettoyée manuellement (son `payload.conversation_id` n'est pas une FK, donc pas de cascade sur une donnée JSON qui référence un id supprimé ailleurs — à garder en tête si d'autres tables stockent des références jsonb non-FK).
+
+### Pièges
+
+- **« Vérifié via `crypt()` en SQL » ≠ « le login fonctionne réellement ».** Les comptes de test (session 1) étaient documentés comme `password_ok=true`, mais cette vérification ne faisait que comparer le hash en SQL — jamais un vrai appel à `supabase.auth.signInWithPassword()`. En tentant un test E2E réel cette session, la connexion a échoué avec « Identifiants invalides » — panique de courte durée jusqu'à comprendre que c'est le **réseau du sandbox qui bloque `*.supabase.co`** (confirmé par `curl -v` : `403` sur le tunnel `CONNECT`), pas un problème de compte. **Leçon** : ne jamais interpréter un message d'erreur générique de l'app (« Identifiants invalides », qui `catch`-all toute erreur de `signInWithPassword`) comme une preuve du contenu réel de l'erreur — toujours vérifier la couche réseau en premier avec un test isolé (`curl -v` direct) avant de soupçonner les données.
+- **Ce sandbox ne peut PAS lancer le serveur de dev contre la vraie base Supabase pour un test navigateur.** `chromium-cli` n'est pas installé dans cet environnement (malgré la mention dans le skill `run`) ; Playwright global existe (`/opt/node22/lib/node_modules/playwright`, Chromium binaire `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`) et peut piloter un navigateur — mais ça ne sert à rien ici puisque le réseau vers Supabase est bloqué. **Ne plus retenter cette approche** : pour toute vérification de logique métier, utiliser directement le MCP Supabase (`execute_sql` avec impersonation de rôle) — c'est la seule voie qui fonctionne de façon fiable dans ce sandbox, et elle a largement suffi à prouver tout le flux (RPC, anti-triche du quiz, cascade de suppression).
+- **Nettoyer les données de test générées pour une vérification n'est pas optionnel quand un vrai compte est concerné.** Contrairement aux comptes de seed (Ali/Omar/etc., purement fictifs), Anthony est un vrai élève — laisser une fausse leçon/quiz dans son historique après un test de vérification aurait été trompeur pour le propriétaire ET pour l'élève. Toujours nettoyer après un test sur un compte réel, même si la vérification elle-même n'était pas destinée à être visible.
+
+## Session 22 (2026-07-10) — Pivot service à la confiance (Session tab, paiement libre, vitrine dormante)
+
+### Décisions
+
+- **Auditer avant de coder sur un pivot métier — payant.** Le propriétaire a explicitement demandé un audit complet avant tout code sur cette session. L'audit (RLS live, schéma live, comptes réels via MCP) a révélé que `prep_notes` existait en base sans migration fichier correspondante (dérive silencieuse) et a permis de dimensionner correctement chaque décision (ex. confirmer que `teacher_availability` est aussi utilisée par le tunnel `/essai` public, donc à ne pas toucher).
+- **Une nouvelle capacité d'écriture peut exposer une policy RLS jamais testée en pratique.** `bookings_teacher_all` existait depuis la session 1 mais n'avait jamais servi à un INSERT réel côté teacher (seul le student insérait). Donner au prof la capacité de créer directement une réservation a immédiatement révélé que le `WITH CHECK` ne vérifiait que `teacher_id`, jamais la cohérence `student_id → teacher_id`. **Leçon générale : chaque fois qu'une policy `FOR ALL` déjà en place devient réellement exercée pour la première fois (nouveau bouton, nouvelle action), la re-tester en conditions d'attaque avant de livrer** — une policy « jamais cassée » peut simplement n'avoir jamais été sollicitée.
+- **Défense en profondeur : app + RLS, jamais l'un sans l'autre.** L'action serveur `createBookingByTeacher` faisait déjà l'ownership check via un SELECT scopé RLS (`students_select_teacher`) — donc l'app était déjà sûre. Mais la RLS elle-même restait perméable à un appel direct (Postgrest, mauvais futur refactor, bug applicatif). Corrigé au niveau base (migration 37), conformément au Principe 1 de CLAUDE.md — jamais se reposer uniquement sur l'affichage/l'app.
+- **Paiement post-payé, montant libre, initié par l'enseignant seul.** Remplace complètement les formules (1x/2x/3x/12x). `payments.label` (texte libre) ajouté pour ne plus mentir sur la nature du paiement (ne plus afficher « Abonnement individuel » pour un paiement ad-hoc). Fallback vers les anciens libellés de plan conservé uniquement pour l'affichage des 3 paiements seed historiques.
+- **« Ne pas dépendre de Claude pour une action répétitive. »** Le propriétaire voulait initialement me demander d'envoyer chaque email de paiement manuellement. Recommandation donnée et acceptée : construire un petit formulaire in-app à la place — plus résilient, pas de single point of failure sur la disponibilité d'une session Claude Code.
+- **Vitrine « dormante » ≠ vitrine supprimée.** Pattern déjà établi avec Revolut (session 20) et repris ici : le funnel public (`/offres`, `/essai`, `/inscription`, `trial_requests`, `/teacher/trials`) reste intact et fonctionnel par URL directe, seule la racine `/` redirige vers `/login`. Coût de maintenir ≈ nul, coût de reconstruire un jour ≈ élevé.
+- **Contenu remplacé (pas dormant) = supprimé, pas commenté.** `booking-slots.tsx`, `dashboard/bookings/actions.ts` (self-serve), `testimonials.tsx`, le cron d'abonnement session 21 : tous supprimés franchement (pas de code mort laissé), car il n'y a aucun scénario où on les rebrancherait tels quels — contrairement à Revolut/vitrine qui pourraient revenir en l'état.
+- **Helper partagé dès la 2ᵉ occurrence.** La requête « prochain cours + contexte pédagogique » était dupliquée entre `dashboard/page.tsx` et la nouvelle page Session → extraite dans `src/lib/next-course.ts` avant que les deux ne divergent silencieusement.
+
+### Pièges
+
+- **Réactivation Supabase (pause plan gratuit) : après `restore_project`, le statut passe par `COMING_UP` avant `ACTIVE_HEALTHY`.** Interroger la base pendant `COMING_UP` renvoie des résultats trompeurs (`auth.users` = 0, `relation "profiles" does not exist`) qui ressemblent à une perte de données mais ne le sont pas — toujours attendre `ACTIVE_HEALTHY` avant de tirer une conclusion.
+- **`date-fns-tz` v3 : `fromZonedTime`/`formatInTimeZone`**, pas `zonedTimeToUtc` (API v1/v2). Toujours vérifier la version installée avant d'écrire du code fuseau horaire — les noms de fonctions changent entre versions majeures.
+- **Prouver une faille RLS avant de la corriger, pas seulement après.** Insérer réellement (dans une transaction `BEGIN...ROLLBACK`) avec le rôle impersonné AVANT le fix pour confirmer que le trou existe vraiment (ici : 1 ligne insérée), puis re-tester après coup pour confirmer le blocage (42501) ET que le cas légitime n'a pas été cassé au passage. Un seul des deux tests ne suffit pas.
+
+## Session 21 (2026-07-01) — Paiement PayPal.Me (compte perso) + relances cron
+
+### Décisions
+
+- **PayPal compte PERSONNEL = pas d'API Orders ni de webhook** (réservés aux comptes Business). Architecture retenue : liens **PayPal.Me à montant exact** (`paypal.me/{user}/{montant}EUR`) + référence `TK-…` que l'élève met dans la note du paiement + **confirmation manuelle** par l'enseignant (`confirm_payment` existant). Aucune surface d'attaque nouvelle : rien à vérifier cryptographiquement, c'est l'humain qui valide.
+- **Échéancier sans table dédiée.** Les échéances 2x/3x/12x se déduisent de `payments` : ancre = `created_at` du 1er versement `paid`, intervalle = `12 / installments` mois, prochaine échéance = ancre + (nb payés × intervalle). Dédup des relances par `period` (YYYY-MM) sur la ligne pending créée par le cron. Zéro migration.
+- **Vercel Cron + `CRON_SECRET`** : quand la variable d'env existe, Vercel envoie automatiquement `Authorization: Bearer <secret>` sur les routes déclarées dans `vercel.json` → un simple check d'égalité suffit à fermer la route au public.
+- **Le 1er paiement est enregistré à l'invitation** (`inviteStudent`) : l'enseignant vérifie l'argent sur PayPal avant de cliquer « Inviter l'élève », le code crée alors la ligne `payments` paid avec le montant du 1er versement + la référence de la demande. Le verrou « pas payé = pas de résa » est satisfait dès l'entrée de l'élève.
+- **Revolut conservé mais dormant** (`revolut.ts` + webhook) : si un compte Business existe un jour, on rebranche sans réécrire.
+
+### Pièges
+
+- **Narrowing TS d'un type predicate via variable aliasée** (`const isAnnual = isAnnualPlanKey(x)`) : fragile sur les propriétés d'objet. Appeler le predicate directement dans la condition (`isAnnualPlanKey(plan) ? … : …`) garantit le narrowing.
+- **`createEnrollment` acceptait n'importe quelle string comme plan** (tout non-annuel était traité « hourly »). Toute server action qui reçoit un identifiant de plan doit le valider explicitement contre la liste connue.
+
+## Session 20 (2026-07-01) — Revue complète du code
+
+### Décisions
+
+- **Un SELECT côté serveur avec le client anon sur une table deny-by-default ne renvoie jamais d'erreur — juste 0 ligne.** C'est le piège le plus sournois du modèle RLS : le contrôle anti-double-booking de `requestTrial` « fonctionnait » (aucune erreur, tests passants) mais ne détectait jamais rien. Règle : toute vérification serveur faite pour un utilisateur anon DOIT passer par une RPC SECURITY DEFINER (ou l'admin client) — jamais par un SELECT direct. Auditer ce pattern à chaque nouvelle action anon.
+- **Après un pivot technique, purger les dépendances de la piste abandonnée.** `three` + `@react-three/fiber` + `@types/three` sont restés dans package.json après l'abandon de Three.js (session 19) au profit de `@paper-design/shaders-react`. Vérifier `package.json` en fin de session quand une approche a été essayée puis remplacée.
+- **`next/font` ne charge que les poids déclarés.** Utiliser `fontWeight: 600` alors que la police est chargée en `["700","800","900"]` produit un faux gras synthétisé par le navigateur, silencieusement. Toute nouvelle valeur de `fontWeight` doit exister dans la déclaration du layout.
+- **Les erreurs `react-hooks/set-state-in-effect` ne sont pas toutes à corriger.** L'init d'horloge client (`setNow(new Date())` dans un effect au montage) est le pattern anti-hydration-mismatch documenté ici depuis la refonte UI. Restructurer pour satisfaire le linter réintroduirait le crash d'hydration React 19. Les laisser, les documenter.
+
+### Pièges
+
+- **`.map()` retournant un fragment `<>...</>` : la key doit être sur le fragment**, pas sur le premier enfant. `<Fragment key={...}>` (import explicite) est obligatoire — un fragment court `<>` ne peut pas porter de key. Le warning React n'apparaît qu'à l'exécution, pas au build.
+- **Le dossier `design/` (handoff HTML/JS statique) était linté** et générait des erreurs parasites dans le rapport. `globalIgnores` dans `eslint.config.mjs` règle ça proprement.
+
 ## Session 19 (2026-06-26) — Refonte visuelle vitrine + design system public
 
 ### Décisions

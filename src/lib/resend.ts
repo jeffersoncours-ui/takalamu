@@ -54,3 +54,94 @@ export async function sendTrialCode(params: {
   if (error) return { error: error.message };
   return {};
 }
+
+/** Email de rappel envoyé le matin du jour de la séance. */
+export async function sendSessionReminder(params: {
+  to: string;
+  firstName: string;
+  scheduledAt: string;
+  zoomLink: string | null;
+}): Promise<{ error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { error: "RESEND_API_KEY non configurée." };
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { to, firstName, scheduledAt, zoomLink } = params;
+  const heure = new Date(scheduledAt).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
+
+  const body = [
+    `Bonjour ${firstName},`,
+    "",
+    `Petit rappel : ton cours d'arabe a lieu aujourd'hui à ${heure} (heure de Paris).`,
+    "",
+    zoomLink ? `Lien de connexion : ${zoomLink}` : "Le lien sera disponible dans ton espace peu avant le cours.",
+    "",
+    "Avant de rejoindre, pense à :",
+    "- Allumer ta caméra pendant toute la séance",
+    "- T'installer assis(e) à une table, dans une position adaptée",
+    "",
+    "À tout à l'heure,",
+    "L'équipe Takalamu",
+  ].join("\n");
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Rappel — ton cours d'arabe aujourd'hui à ${heure}`,
+    text: body,
+  });
+
+  if (error) return { error: error.message };
+  return {};
+}
+
+/** Email avec le lien de paiement PayPal (1er versement ou échéance mensuelle). */
+export async function sendPaymentLink(params: {
+  to: string;
+  firstName: string;
+  amountCents: number;
+  reference: string;
+  paypalUrl: string;
+  /** Ex. « Abonnement annuel — 3e versement sur 12 » ou « Heure à la carte ». */
+  label: string;
+}): Promise<{ error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { error: "RESEND_API_KEY non configurée." };
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { to, firstName, amountCents, reference, paypalUrl, label } = params;
+  const amount = (amountCents / 100).toFixed(2).replace(".", ",");
+
+  const body = [
+    `Bonjour ${firstName},`,
+    "",
+    `Voici ton lien de paiement pour : ${label}.`,
+    "",
+    `Montant : ${amount} €`,
+    `Référence : ${reference}`,
+    "",
+    `Payer maintenant : ${paypalUrl}`,
+    "",
+    `Important : indique bien la référence ${reference} dans la note du paiement PayPal,`,
+    "pour qu'on puisse valider ton règlement rapidement.",
+    "",
+    "À bientôt,",
+    "L'équipe Takalamu",
+  ].join("\n");
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `Ton paiement Takalamu — ${amount} € (réf. ${reference})`,
+    text: body,
+  });
+
+  if (error) return { error: error.message };
+  return {};
+}

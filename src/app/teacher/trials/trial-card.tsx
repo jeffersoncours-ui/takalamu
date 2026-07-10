@@ -228,7 +228,7 @@ export function TrialCard({ trial }: { trial: Trial }) {
           </button>
         )}
 
-        {/* Inviter manuellement (garde-fou si Revolut webhook pas encore actif) */}
+        {/* Inviter l'élève une fois le paiement PayPal reçu (vérification manuelle) */}
         {trial.status === "completed" && (
           <button
             onClick={handleInvite}
