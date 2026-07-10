@@ -17,11 +17,21 @@
 - [x] Notifications : RPC `insert_notification` testée en conditions réelles (impersonation Anthony, transaction rollback) — fonctionne, grants et publication realtime corrects. 0 ligne en base car aucun déclencheur réel ne s'était encore produit (0 message envoyé, 0 paiement demandé, 0 devoir corrigé) — **sauf un vrai trou trouvé** : `homework_due` n'était jamais envoyé quand le prof assigne un devoir en fiche de fin de cours. Câblé dans `teacher/session/actions.ts`.
 - [x] Reliquat session 28 : migration 41 — `DROP TABLE videos, milestone_video_assignments, video_views` (0 ligne chacune, vérifié avant coupe) + `DROP TYPE video_type` + recréation de `notification_type` sans la valeur `video_assigned` (jamais utilisée en code). `database.types.ts` régénéré via MCP.
 - [x] Build + lint : 29 routes, 0 erreur TS (1 erreur ESLint pré-existante non liée dans `drawer-nav.tsx`, non touchée cette session).
-- [ ] Push
+- [x] Push sur `claude/takalamu-dev-resume-4t29kz`
+
+### Correctif complémentaire (même session) — mis-tap "mot de passe oublié"
+- **Test réel du propriétaire** : changement de mot de passe prof validé (nouveau accepté, ancien rejeté), mais aucun message d'erreur affiché avec l'ancien mot de passe — redirection "automatique" vers `/login/forgot-password`.
+- **Root cause** : pas un bug de logique — le lien "Mot de passe oublié ?" était collé juste au-dessus du bouton "Se connecter", aligné à droite. Sur mobile, un tap légèrement décalé activait le lien au lieu du bouton, donnant l'impression d'une redirection automatique sans erreur (confirmé par capture d'écran du propriétaire).
+- [x] Lien recentré + déplacé sous le bouton "Se connecter" avec espace de séparation (`login-form.tsx`). Build vérifié vert.
+- [x] Push (commit séparé)
+
+### Déploiement
+- [x] Validé par le propriétaire → fast-forward `claude/takalamu-dev-resume-4t29kz` vers `main` ET vers `claude/new-project-setup-1jcgwf` (branche de prod Vercel, tant que le réglage "Production Branch" n'est pas corrigé sur vercel.com — voir session 28). Les deux étaient strictement à jour (aucun autre commit entre-temps), fast-forward propre sans conflit ni force.
 
 ### Reste à faire par le propriétaire (hors code)
 - Ajouter l'URL de callback à l'allow-list Supabase Auth (Authentication → URL Configuration → Redirect URLs) : `https://tatakalamu.fr/auth/confirm` (+ variante preview Vercel si besoin de tester avant le domaine définitif). Sans ça, `resetPasswordForEmail` échoue silencieusement (Supabase ignore un `redirectTo` hors allow-list).
 - Vérifier la réception réelle de l'email de reset (dépend du SMTP Supabase par défaut — non testable depuis ce sandbox, réseau `*.supabase.co` bloqué).
+- Toujours pas de correctif racine pour la synchronisation branche main ↔ branche de prod Vercel : trouver et corriger le réglage "Production Branch" sur vercel.com (voir session 28) pour qu'un futur merge sur `main` déploie automatiquement, sans resynchronisation manuelle à chaque session.
 - Suggestion (non demandée) : activer "Leaked Password Protection" dans Supabase Auth (advisor sécurité WARN pré-existant, sans lien avec cette session mais pertinent puisqu'on touche aux mots de passe).
 
 ### Review Session 29
@@ -29,6 +39,8 @@
 - Parcours mot de passe complet : changer (élève + prof, désormais partagé) et oublié (nouveau, bout en bout avec callback serveur).
 - Diagnostic notifications documenté avec preuve empirique — ce n'était pas un système cassé, juste un vrai gap (homework_due) + absence de déclencheurs réels pour l'unique élève actuel.
 - Nettoyage vidéos (reliquat) exécuté dès que possible, conforme à la décision propriétaire déjà actée en session 28.
+- Bug de mis-tap "mot de passe oublié" trouvé et corrigé après test réel du propriétaire sur mobile, avant tout merge.
+- **Déployé en production** (main + branche Vercel synchronisées manuellement, fast-forward propre).
 
 ## Session 27 — Cours numérotés + revue de tentative + quiz par cours
 
