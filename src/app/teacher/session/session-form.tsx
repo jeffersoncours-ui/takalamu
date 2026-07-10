@@ -10,9 +10,7 @@ type Student = {
   id: string;
   name: string;
   status: string;
-  currentLessonId: string | null;
 };
-type Lesson = { id: string; title: string };
 
 /** Couleur de sélection par statut de présence. */
 const PRESENCE_COLOR: Record<string, { border: string; bg: string; text: string; dot: string }> = {
@@ -50,11 +48,9 @@ function nowLocalValue(): string {
 
 export function SessionForm({
   students,
-  lessons,
   defaultStudentId,
 }: {
   students: Student[];
-  lessons: Lesson[];
   defaultStudentId?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitSession, {});
@@ -64,7 +60,6 @@ export function SessionForm({
     : students[0];
 
   const [studentId, setStudentId] = useState(initialStudent?.id ?? "");
-  const [lessonId, setLessonId] = useState(initialStudent?.currentLessonId ?? "");
   const [dateLocal, setDateLocal] = useState(nowLocalValue());
   const [presence, setPresence] = useState(ATTENDANCE_STATUSES[0].value);
 
@@ -86,8 +81,6 @@ export function SessionForm({
 
   function onStudentChange(id: string) {
     setStudentId(id);
-    const s = students.find((x) => x.id === id);
-    setLessonId(s?.currentLessonId ?? "");
   }
 
   return (
@@ -141,27 +134,6 @@ export function SessionForm({
             );
           })}
         </div>
-      </div>
-
-      {/* Leçon + avance du curseur */}
-      <div className="space-y-1.5">
-        <label htmlFor="lesson_id" style={sectionLabel}>Leçon travaillée</label>
-        <select
-          id="lesson_id"
-          name="lesson_id"
-          value={lessonId}
-          onChange={(e) => setLessonId(e.target.value)}
-          style={inputStyle}
-        >
-          <option value="">— Aucune / révision —</option>
-          {lessons.map((l) => (
-            <option key={l.id} value={l.id}>{l.title}</option>
-          ))}
-        </select>
-        <label className="mt-1 flex items-center gap-2" style={{ color: "#4A463F", fontSize: 13 }}>
-          <input type="checkbox" name="advance_progress" defaultChecked className="accent-emerald-600" />
-          Avancer le curseur de progression à cette leçon
-        </label>
       </div>
 
       {/* Date de séance */}

@@ -54,8 +54,6 @@ export async function submitSession(
     return { error: "Date de séance invalide." };
   }
 
-  const lessonId = String(formData.get("lesson_id") ?? "").trim() || null;
-  const advanceProgress = formData.get("advance_progress") === "on";
   const publicRecap = String(formData.get("public_recap") ?? "").trim() || null;
   const privateNote = String(formData.get("private_note") ?? "").trim() || null;
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
@@ -82,8 +80,6 @@ export async function submitSession(
     p_student_id: studentId,
     p_session_date: sessionDate,
     p_attendance: attendance,
-    p_lesson_id: lessonId ?? undefined,
-    p_advance_progress: advanceProgress,
     p_public_recap: publicRecap ?? undefined,
     p_private_note: privateNote ?? undefined,
     p_homework_instructions: homework ?? undefined,
