@@ -21,9 +21,15 @@
 - [x] Nouvelle page `/dashboard/profile` + formulaire (prénom, genre, adresse, date de naissance, parcours scolaire) + server action appelant la RPC
 - [x] Suppression cron : `src/app/api/cron/session-reminders/route.ts`, entrée `vercel.json`, `sendSessionReminder` dans `resend.ts` (plus jamais appelée) + `CRON_SECRET` retiré de `.env.example`
 - [x] `notification_type = 'session_reminder'` et `bookings.reminder_sent` : laissés en base (impact minimal, migration destructive non justifiée) — documentés comme vestiges
-- [ ] **Tests MCP — BLOQUÉ** : Supabase MCP non autorisé dans cette session (auth OAuth requise, non déclenchable en non-interactif). À faire dès autorisation : élève modifie ses propres infos ; élève NE PEUT PAS modifier `status`/`teacher_id`/`unjustified_absences_count` via la RPC ; élève bloqué en écriture directe sur `role`/`email` de son profil (preuve du correctif sécurité) ; migration 38 pas encore appliquée en base (fichier versionné, jamais exécuté contre le vrai projet)
+- [x] **Migration 38 appliquée en base** (`apply_migration`, une fois le connecteur Supabase autorisé par le propriétaire en cours de session)
+- [x] **Tests MCP** (compte de test jetable créé/nettoyé, aucune donnée réelle touchée) :
+  - A. RPC `update_own_student_info` : élève modifie nom/genre/adresse/naissance/parcours → toutes les valeurs écrites correctement, `status`/`teacher_id`/`unjustified_absences_count` inchangés ✔
+  - B. PATCH direct élève sur `students.status`/`teacher_id` → RLS filtre silencieusement (0 ligne modifiée, aucune policy self-update n'existe sur `students`) ✔
+  - C. PATCH direct élève sur `profiles.role` → rejeté avec `permission denied for table profiles` (grant colonne-level) ✔ preuve du correctif sécurité
+  - D. Un compte non-élève (testé avec l'admin) appelle la RPC → rejeté `not a student` (42501) ✔
+  - Advisor sécurité post-migration : la nouvelle RPC porte le même WARN "SECURITY DEFINER exécutable par anon/authenticated" que toutes les RPC existantes du projet (pattern accepté, vérification d'appartenance interne) — aucun nouveau type de lint
 - [x] Build + lint verts (32 routes, 0 nouvelle erreur — le seul lint error préexistant est dans `drawer-nav.tsx`, non touché)
-- [ ] Push
+- [x] Push
 
 ### Review Session 24
 - Refonte livrée : onglet **Révision** (ex-Session) héberge Évaluations/Glossaire/Grammaire ; onglet **Plus** garde Paiements + nouvelle carte **Mon profil** (adresse, date de naissance, parcours scolaire, en plus de prénom/genre déjà existants).
@@ -31,7 +37,8 @@
 - Nouveau composant partagé `src/components/menu-card-link.tsx` (déduplique le pattern carte-menu utilisé par Plus et Révision).
 - **RPC `update_own_student_info`** (SECURITY DEFINER) : seul chemin d'écriture pour les nouvelles colonnes élève-éditables. Une policy RLS classique aurait été insuffisante car `students` a des colonnes sensibles (`status`, `teacher_id`, `unjustified_absences_count`) et élève/enseignant partagent le même rôle Postgres `authenticated` — impossible de restreindre par colonne via GRANT dans ce cas précis (contrairement à `profiles`, où élève et enseignant n'ont besoin d'éditer que les 2 mêmes colonnes).
 - **Trou de sécurité corrigé au passage** : `profiles_update_own` (migration 01, jamais retouchée depuis) autorisait la modification de n'importe quelle colonne de sa propre ligne `profiles`, y compris `role` et `email` — un élève aurait pu s'auto-promouvoir admin via un PATCH REST direct (aucun flux applicatif ne l'utilisait, donc non détecté jusqu'ici). Corrigé par un `GRANT UPDATE` restreint aux colonnes `full_name`/`gender`.
-- **Non testé empiriquement** : le MCP Supabase n'est pas autorisé dans cette session (OAuth non déclenchable en non-interactif) → migration 38 écrite et versionnée mais **jamais appliquée à la base réelle**, RLS/RPC non prouvées par `execute_sql`. À faire dès que le propriétaire autorise le connecteur Supabase.
+- **MCP Supabase autorisé en cours de session** (le propriétaire a corrigé la connexion connecteur claude.ai) : migration 38 appliquée en base réelle, RPC + correctif RLS prouvés empiriquement (voir Plan ci-dessus, tests A-D), compte de test nettoyé. Boucle CLAUDE.md §4 refermée.
+- **Quiz de test "Hhhh"** (grammaire, source du souci signalé par le propriétaire) : déjà supprimé par le propriétaire lui-même via `/teacher/evaluations` avant vérification — confirmé absent en base. Un autre quiz de seed (`"Quiz livre test"`, scope group/book, `teacher_id` null) reste en base, non demandé à retirer — laissé tel quel.
 - Domaine réel communiqué par le propriétaire : **tatakalamu.fr** (pas takalamu.com/.fr) — à utiliser pour `EMAIL_FROM` sur Vercel quand Resend sera branché dessus.
 
 ---
