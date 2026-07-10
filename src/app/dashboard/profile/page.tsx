@@ -1,5 +1,6 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { AvatarUpload } from "@/components/avatar-upload";
 import { ProfileForm } from "./profile-form";
 
 export default async function ProfilePage() {
@@ -11,6 +12,14 @@ export default async function ProfilePage() {
     .select("address, birth_date, school_background")
     .eq("id", studentId)
     .maybeSingle();
+
+  let avatarUrl: string | null = null;
+  if (profile.avatar_url) {
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(profile.avatar_url, 3600);
+    avatarUrl = signed?.signedUrl ?? null;
+  }
 
   return (
     <div className="space-y-6">
@@ -24,6 +33,16 @@ export default async function ProfilePage() {
         <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
           Tes informations personnelles.
         </p>
+      </div>
+
+      <div
+        className="rounded-2xl p-4"
+        style={{ background: "#fff", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+      >
+        <AvatarUpload
+          currentUrl={avatarUrl}
+          fallbackLetter={profile.full_name?.[0]?.toUpperCase() ?? "?"}
+        />
       </div>
 
       <ProfileForm

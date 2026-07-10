@@ -139,73 +139,6 @@ export type Database = {
           },
         ]
       }
-      bookings: {
-        Row: {
-          created_at: string
-          id: string
-          linked_book_session_id: string | null
-          prep_notes: string | null
-          reminder_sent: boolean
-          scheduled_at: string
-          status: Database["public"]["Enums"]["booking_status"]
-          student_id: string
-          teacher_id: string
-          type: Database["public"]["Enums"]["booking_type"]
-          updated_at: string
-          zoom_link: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          linked_book_session_id?: string | null
-          prep_notes?: string | null
-          reminder_sent?: boolean
-          scheduled_at: string
-          status?: Database["public"]["Enums"]["booking_status"]
-          student_id: string
-          teacher_id: string
-          type: Database["public"]["Enums"]["booking_type"]
-          updated_at?: string
-          zoom_link?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          linked_book_session_id?: string | null
-          prep_notes?: string | null
-          reminder_sent?: boolean
-          scheduled_at?: string
-          status?: Database["public"]["Enums"]["booking_status"]
-          student_id?: string
-          teacher_id?: string
-          type?: Database["public"]["Enums"]["booking_type"]
-          updated_at?: string
-          zoom_link?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_linked_book_session_id_fkey"
-            columns: ["linked_book_session_id"]
-            isOneToOne: false
-            referencedRelation: "book_sessions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       books: {
         Row: {
           created_at: string
@@ -717,6 +650,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -726,6 +660,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -735,6 +670,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -1065,44 +1001,6 @@ export type Database = {
           },
         ]
       }
-      teacher_availability: {
-        Row: {
-          created_at: string
-          day_of_week: number
-          end_time: string
-          id: string
-          start_time: string
-          teacher_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          day_of_week: number
-          end_time: string
-          id?: string
-          start_time: string
-          teacher_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          day_of_week?: number
-          end_time?: string
-          id?: string
-          start_time?: string
-          teacher_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "teacher_availability_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       teachers: {
         Row: {
           bio: string | null
@@ -1134,80 +1032,6 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: true
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trial_requests: {
-        Row: {
-          assigned_teacher_id: string | null
-          chosen_plan: string | null
-          chosen_product: string | null
-          created_at: string
-          email: string
-          first_name: string
-          gender: Database["public"]["Enums"]["gender_type"]
-          id: string
-          last_name: string
-          level: string | null
-          message: string | null
-          revolut_order_id: string | null
-          scheduled_at: string | null
-          status: Database["public"]["Enums"]["trial_status"]
-          trial_code: string | null
-          trial_code_expires_at: string | null
-          trial_code_used: boolean
-          trial_paid: boolean
-          updated_at: string
-        }
-        Insert: {
-          assigned_teacher_id?: string | null
-          chosen_plan?: string | null
-          chosen_product?: string | null
-          created_at?: string
-          email: string
-          first_name: string
-          gender: Database["public"]["Enums"]["gender_type"]
-          id?: string
-          last_name: string
-          level?: string | null
-          message?: string | null
-          revolut_order_id?: string | null
-          scheduled_at?: string | null
-          status?: Database["public"]["Enums"]["trial_status"]
-          trial_code?: string | null
-          trial_code_expires_at?: string | null
-          trial_code_used?: boolean
-          trial_paid?: boolean
-          updated_at?: string
-        }
-        Update: {
-          assigned_teacher_id?: string | null
-          chosen_plan?: string | null
-          chosen_product?: string | null
-          created_at?: string
-          email?: string
-          first_name?: string
-          gender?: Database["public"]["Enums"]["gender_type"]
-          id?: string
-          last_name?: string
-          level?: string | null
-          message?: string | null
-          revolut_order_id?: string | null
-          scheduled_at?: string | null
-          status?: Database["public"]["Enums"]["trial_status"]
-          trial_code?: string | null
-          trial_code_expires_at?: string | null
-          trial_code_used?: boolean
-          trial_paid?: boolean
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trial_requests_assigned_teacher_id_fkey"
-            columns: ["assigned_teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
         ]
@@ -1361,37 +1185,8 @@ export type Database = {
           id: string
         }[]
       }
-      get_teacher_availability_by_gender: {
-        Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
-        Returns: {
-          day_of_week: number
-          end_time: string
-          start_time: string
-        }[]
-      }
-      get_teacher_booked_slots: {
-        Args: { p_from?: string; p_teacher_id: string }
-        Returns: {
-          scheduled_at: string
-          status: string
-        }[]
-      }
-      get_trial_taken_slots: {
-        Args: { p_gender: Database["public"]["Enums"]["gender_type"] }
-        Returns: {
-          slot_at: string
-        }[]
-      }
       insert_notification: {
         Args: { p_payload: Json; p_type: string; p_user_id: string }
-        Returns: undefined
-      }
-      notify_teachers_by_gender: {
-        Args: {
-          p_gender: Database["public"]["Enums"]["gender_type"]
-          p_payload?: Json
-          p_type: Database["public"]["Enums"]["notification_type"]
-        }
         Returns: undefined
       }
       submit_grammar_quiz: {
@@ -1439,8 +1234,6 @@ export type Database = {
         | "absent_justified"
         | "absent_unjustified"
         | "late"
-      booking_status: "booked" | "completed" | "cancelled" | "moved"
-      booking_type: "individual" | "group"
       gender_type: "m" | "f"
       homework_status: "a_rendre" | "rendu" | "corrige" | "vu"
       lesson_phase: "dechiffrage" | "lecture_oral" | "grammaire"
@@ -1602,8 +1395,6 @@ export const Constants = {
         "absent_unjustified",
         "late",
       ],
-      booking_status: ["booked", "completed", "cancelled", "moved"],
-      booking_type: ["individual", "group"],
       gender_type: ["m", "f"],
       homework_status: ["a_rendre", "rendu", "corrige", "vu"],
       lesson_phase: ["dechiffrage", "lecture_oral", "grammaire"],

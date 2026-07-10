@@ -1,4 +1,5 @@
 import { requireStudent } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
 import { ChangePasswordForm } from "./change-password-form";
 import { MenuCardLink } from "@/components/menu-card-link";
@@ -34,6 +35,15 @@ const MENU_ITEMS = [
 
 export default async function MorePage() {
   const { profile } = await requireStudent();
+  const supabase = await createClient();
+
+  let avatarUrl: string | null = null;
+  if (profile.avatar_url) {
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(profile.avatar_url, 3600);
+    avatarUrl = signed?.signedUrl ?? null;
+  }
 
   return (
     <div className="space-y-6">
@@ -43,10 +53,15 @@ export default async function MorePage() {
         style={{ background: "#0A553F", boxShadow: "0 16px 32px rgba(10,85,63,.32)" }}
       >
         <div
-          className="flex items-center justify-center rounded-full text-white font-semibold text-xl shrink-0"
+          className="flex items-center justify-center overflow-hidden rounded-full text-white font-semibold text-xl shrink-0"
           style={{ width: 58, height: 58, background: "rgba(255,255,255,.18)", fontFamily: "var(--font-spectral)" }}
         >
-          {profile.full_name?.[0]?.toUpperCase() ?? "?"}
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            profile.full_name?.[0]?.toUpperCase() ?? "?"
+          )}
         </div>
         <div>
           <p className="text-white font-semibold text-lg leading-tight" style={{ fontFamily: "var(--font-spectral)" }}>

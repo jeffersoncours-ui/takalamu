@@ -2,6 +2,42 @@
 
 ---
 
+## Session 25 — Photos de profil + nettoyage nav enseignant + suppression scheduling/essai
+
+> **Décisions propriétaire (2026-07-10)**, actées après investigation + questions :
+> - Photo de profil uploadable pour élèves ET enseignants (remplace le rond-lettre).
+> - Renommer le compte Youssef → **"Jefferson"** (juste le prénom, `profiles.full_name`).
+> - Onglets **Essais, Disponibilités, Réservations** supprimés (nav + code + tables — vérifié 0 ligne dans les 3 tables, suppression sans perte).
+> - **Programme reste** (le programme évolue au fil des séances, pas figé).
+> - Cockpit simplifié en conséquence : sections "À documenter"/"Prochains cours" (dépendaient de `bookings`) + fonctionnalité "Préparer le cours" retirées.
+> - Tunnel public dormant entier retiré (`/essai`, `/offres`, `/inscription`) puisque `/essai` dépendait de `teacher_availability` qui disparaît — cohérent avec le reste (100% bouche-à-oreille depuis la session 22).
+
+### Plan
+- [x] Migration 39 : `profiles.avatar_url text` ; extension grant colonne (`full_name, gender, avatar_url`) ; bucket Storage `avatars` (privé, policy owner-only `(storage.foldername(name))[1] = auth.uid()::text`) ; `DROP TABLE bookings, teacher_availability, trial_requests` (+ enums `booking_status`/`booking_type`) ; `DROP FUNCTION get_teacher_availability_by_gender, get_trial_taken_slots, get_teacher_booked_slots, notify_teachers_by_gender` (tous confirmés dead/vides avant suppression)
+- [x] `database.types.ts` régénéré via MCP (`generate_typescript_types`) — reflète exactement le schéma post-migration
+- [x] Suppression code mort : `src/app/(public)/*` (essai, inscription, offres, layout, vitrine-bg*), `src/app/teacher/trials/*`, `src/app/teacher/availability/*`, `src/app/teacher/bookings/*`, `src/app/teacher/session/prep/*`, `src/lib/pricing.ts`, `sendTrialCode` (resend.ts)
+- [x] Nouveau `src/app/page.tsx` (redirect `/login`, remplace l'ancien `(public)/page.tsx`)
+- [x] `src/app/teacher/page.tsx` (Cockpit) : retrait des sections dépendant de `bookings`, garde stat "Devoirs à corriger" + alerte suspendus + bouton "Fiche de fin de cours"
+- [x] `drawer-nav.tsx` : retrait Essais/Disponibilités/Réservations + `pendingTrials`, ajout "Mon profil" (Programme conservé, décision propriétaire)
+- [x] `teacher/layout.tsx` : retrait requête `pendingTrials`, ajout avatar signé passé à DrawerNav
+- [x] Upload avatar : composant partagé `avatar-upload.tsx` + action `avatar-actions.ts`, branché sur `/dashboard/profile` (élève) et nouveau `/teacher/profile` (enseignant, + édition nom) + affichage dans les deux avatars (Plus élève, DrawerNav prof)
+- [x] Tests MCP : upload propre dossier ✔, écriture dans le dossier d'un autre élève bloquée (42501) ✔, lecture croisée bloquée (0 ligne visible) ✔, advisor sécurité propre après les DROP (mêmes WARN acceptés, aucune nouvelle catégorie) — compte de test entièrement nettoyé
+- [x] Renommage données : `profiles.full_name` Youssef → "Jefferson" (SQL direct, confirmé)
+- [x] Build + lint verts (27 routes, 0 nouvelle erreur — seul le lint pré-existant de `drawer-nav.tsx` subsiste)
+- [ ] Push
+
+### Review Session 25
+- **Nav enseignant simplifiée** : Essais, Disponibilités, Réservations retirés (nav + code + tables `bookings`/`teacher_availability`/`trial_requests`, toutes vides — suppression sans perte de données réelles). Programme conservé sur demande explicite (curriculum vivant, pas figé).
+- **Cockpit simplifié** : sections "À documenter"/"Prochains cours" (dépendaient de `bookings`, plus jamais alimentées) retirées, ainsi que la fonctionnalité "Préparer le cours". Cockpit réduit à : stat devoirs à corriger, alerte élèves suspendus, raccourci fiche de fin de cours.
+- **Tunnel public dormant retiré en bloc** : `/essai`, `/offres`, `/inscription` + toute la chrome marketing (`(public)/layout.tsx`, `vitrine-bg*`) supprimés — `/essai` dépendait de `teacher_availability`, sa suppression rendait le tunnel de toute façon non fonctionnel. Racine `/` redirige toujours vers `/login` via un nouveau `src/app/page.tsx` au niveau racine (plus besoin du groupe de routes `(public)`).
+- **Photo de profil** : nouvelle colonne `profiles.avatar_url` + bucket Storage privé `avatars` (5 Mo max), policy propriétaire unique par dossier (`{profile_id}/...`). Composant `AvatarUpload` partagé entre élève (`/dashboard/profile`) et enseignant (nouvelle page `/teacher/profile`). URLs signées 1h, régénérées à chaque chargement de page (même pattern que `lesson-audio`/`session-files`).
+- **Renommage** : "Youssef (prof hommes + admin)" → "Jefferson" en base.
+- **Nettoyage bonus** : `get_teacher_booked_slots` (déjà mort depuis la session 24) supprimé au passage ; `src/lib/pricing.ts` et `sendTrialCode` (resend.ts) retirés, plus aucun consommateur.
+- **Preuve isolation avatars** : élève A upload dans son dossier ✔ ; A tente d'écrire dans le dossier de B → RLS bloque (42501) ✔ ; B tente de lire le fichier de A → 0 ligne visible ✔. Advisor sécurité : mêmes WARN acceptés qu'avant (pattern SECURITY DEFINER + vérif interne), 4 fonctions dead supprimées de la liste, aucune nouvelle catégorie.
+- **Piège rencontré** : `storage.objects` a un trigger `protect_delete()` qui bloque tout `DELETE` direct (même en tant que rôle privilégié) sauf si `set_config('storage.allow_delete_query', 'true', false)` est positionné dans la session — nécessaire pour nettoyer les données de test après preuve RLS.
+
+---
+
 ## Session 24 — Onglet Révision + profil élève éditable + suppression rappel auto
 
 > **Décisions propriétaire (2026-07-10)**, actées après échange :

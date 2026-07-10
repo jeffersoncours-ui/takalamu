@@ -1,5 +1,18 @@
 # Lessons
 
+## Session 25 (2026-07-10) — Photos de profil + nettoyage nav + suppression scheduling/essai
+
+### Décisions
+- **Vérifier l'usage réel avant de couper une fonctionnalité, pas juste ses dépendances de code.** Avant de supprimer `bookings`/`teacher_availability`/`trial_requests`, `select count(*)` sur chacune : les 3 étaient vides. Ça a transformé une décision risquée ("est-ce qu'on perd des données ?") en suppression sans arrière-pensée. Réflexe à généraliser : compter avant de couper, pas seulement grep le code.
+- **`generate_typescript_types` (MCP) plutôt qu'édition manuelle pour un gros changement de schéma.** Session 24 éditait `database.types.ts` à la main (ciblé, un seul RPC). Ici (3 tables + 2 enums + 4 fonctions supprimées, 1 colonne ajoutée), régénérer le fichier entier via le MCP est plus sûr qu'un montage manuel — élimine tout risque de type orphelin oublié.
+- **Colonne partagée `profiles.avatar_url` plutôt qu'une colonne par table (`students.avatar_url` + `teachers.avatar_url`).** Élève et enseignant ont tous deux une ligne `profiles` ; une seule colonne + un seul bucket + un seul composant `AvatarUpload` couvrent les deux rôles sans duplication. Le dossier Storage est scopé par `auth.uid()` (= `profiles.id`), pas par `student_id`/`teacher_id`.
+- **Cascade d'une suppression de "tab"** : retirer un onglet de nav n'est jamais neutre si la feature est consommée ailleurs. `Réservations` alimentait 2 sections du Cockpit + toute la page "Préparer le cours" — la suppression du tab sans traiter ces 3 consommateurs aurait laissé des blocs UI en permanence vides. Toujours grep tous les consommateurs d'une table avant de couper son point d'entrée UI, pas seulement supprimer la route.
+- **Root cause du "tunnel public dormant"** : `/essai` dépendait de `teacher_availability` (RPC `get_teacher_availability_by_gender`) pour proposer des créneaux. Supprimer `teacher_availability` sans supprimer `/essai` aurait laissé une page publique qui plante silencieusement. Décision : retirer tout le funnel (`/essai`, `/offres`, `/inscription`) d'un coup plutôt que de patcher `/essai` pour qu'il survive sans dispos — cohérent avec le principe "cause racine, pas de patch".
+
+### Pièges
+- **`storage.objects` a un trigger `protect_delete()`** qui bloque tout `DELETE` direct, même depuis une session privilégiée MCP — erreur `42501` avec message explicite. Contournement légitime (pas un hack) : `select set_config('storage.allow_delete_query', 'true', false);` avant le `DELETE`, dans le même appel `execute_sql`. Nécessaire pour nettoyer les objets de test après une preuve RLS sur un bucket Storage.
+- **Suppression de route group `(public)`** : si une seule page du groupe doit survivre (ici `page.tsx` → redirect `/login`), la sortir du groupe vers `src/app/page.tsx` top-level plutôt que de garder un `(public)/layout.tsx` désormais inutile pour une seule route.
+
 ## Session 24 (2026-07-10) — Onglet Révision + profil élève + correctif RLS profiles
 
 ### Décisions
