@@ -1049,6 +1049,10 @@ export type Database = {
     Functions: {
       cancel_payment: { Args: { p_payment_id: string }; Returns: undefined }
       confirm_payment: { Args: { p_payment_id: string }; Returns: undefined }
+      delete_session_record: {
+        Args: { p_record_id: string }
+        Returns: undefined
+      }
       generate_individual_quiz: {
         Args: {
           p_lesson_record_id?: string
@@ -1106,6 +1110,20 @@ export type Database = {
           p_full_name: string
           p_gender: Database["public"]["Enums"]["gender_type"]
           p_school_background?: string
+        }
+        Returns: undefined
+      }
+      update_session_record: {
+        Args: {
+          p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_grammar?: Json
+          p_homework_instructions?: string
+          p_private_note?: string
+          p_public_recap?: string
+          p_record_id: string
+          p_session_date: string
+          p_support_files?: Json
+          p_vocab?: Json
         }
         Returns: undefined
       }

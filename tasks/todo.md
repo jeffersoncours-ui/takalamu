@@ -2,6 +2,39 @@
 
 ---
 
+## Session 30 (suite) — Modifier / supprimer un cours depuis la fiche prof
+
+> **Contexte** : le propriétaire a testé le Cours 2 d'Anthony en direct sur le site
+> et a dû envoyer la fiche avant de l'avoir terminée (bug d'usage réel). Demande :
+> pouvoir modifier ou supprimer un cours après coup depuis la fiche prof.
+> **Consigne explicite** : développer sur la branche de session (pas de merge
+> main/prod avant test manuel du propriétaire lui-même).
+
+### Plan
+- [x] Migration 43 : deux nouvelles RPC `SECURITY INVOKER` (s'appuient sur les policies `*_teacher_all` déjà en place, migration 03/10 — aucun changement RLS nécessaire) :
+  - `update_session_record(...)` : même signature que `submit_session_record` + `p_record_id`. Remplace intégralement vocab/grammaire liés (comme la création, la fiche envoie toujours la liste complète). Devoir jamais écrasé/supprimé silencieusement si déjà rendu/corrigé par l'élève (`status != 'a_rendre'`) — seul le texte est alors modifiable. Note privée : upsert/delete simple. Recalcule le compteur d'absences injustifiées si la présence change (symétrique à `submit_session_record`), y compris réactivation si ça repasse sous le seuil de suspension.
+  - `delete_session_record(p_record_id)` : supprime la séance + vocab/grammaire liés. Devoir jamais touché par l'élève → supprimé ; devoir déjà rendu/corrigé → détaché (`lesson_record_id = NULL`, jamais perdu). Note privée : `ON DELETE CASCADE` déjà en place. Décompte le compteur d'absences si la séance en comptait une, réactive le compte si besoin.
+- [x] `database.types.ts` régénéré (2 nouvelles entrées `Functions`)
+- [x] `src/lib/session-form-zip.ts` : extraction de `zipVocab`/`zipGrammar` (dupliqués dans `session/actions.ts`, maintenant réutilisés aussi par `edit/actions.ts` — 2ᵉ usage, extraction justifiée)
+- [x] Page détail prof (`sessions/[recordId]/page.tsx`) : boutons **Modifier** (lien) et **Supprimer** (`DeleteSessionButton`, confirmation navigateur avant soumission — action destructive avec cascade)
+- [x] `sessions/[recordId]/actions.ts` : `deleteSession` (nettoie les fichiers Storage best-effort puis appelle la RPC)
+- [x] Nouvelle page `sessions/[recordId]/edit/` : `EditSessionForm` (même look que la fiche de création, préremplie — élève figé en lecture seule, vocab/grammaire préremplis et retirables, supports existants avec case à cocher conserver/retirer + ajout de nouveaux) + `actions.ts` (`updateSession`, notifie l'élève uniquement si un devoir apparaît là où il n'y en avait pas avant)
+- [x] Build + lint verts (30 routes, 0 nouvelle erreur — seule l'erreur pré-existante `drawer-nav.tsx` subsiste)
+- [x] Vérification MCP exhaustive (impersonation Jefferson/Khadija, tout en transactions `BEGIN...ROLLBACK`, **aucune donnée réelle d'Anthony touchée** — reconfirmé après coup : Cours 1 = 24 vocab/1 grammaire/recap inchangés, Cours 2 = 3 vocab inchangés, compteur d'absences 0/active inchangé) :
+  - `update_session_record` : bascule présence → compteur d'absences +1 puis retour à 0 en annulant ✔ ; vocabulaire/grammaire intégralement remplacés (ancien mot disparu, nouveau présent) ✔ ; note privée créée ✔ ; devoir déjà "rendu" → vider les instructions NE le supprime PAS ✔, modifier le texte fonctionne sans toucher au statut/à la pièce jointe ✔
+  - `delete_session_record` : séance + vocab/grammaire supprimés ✔ ; devoir "a_rendre" (jamais touché) supprimé avec la séance ✔ ; devoir "corrigé" (avec note + fichier) **détaché mais conservé** (`lesson_record_id = NULL`) ✔ ; compteur d'absences décrémenté ✔, réactivation automatique du compte testée (3 absences + `suspended_absences` → suppression d'une séance comptante → 2 + `active`) ✔
+  - Accès refusé : Khadija (autre enseignante) sur le vrai Cours 1 d'Anthony → `42501 Séance introuvable ou non autorisée` sur `update_session_record` ET `delete_session_record` ✔
+  - Advisor sécurité : `update_session_record`/`delete_session_record` n'apparaissent PAS dans la liste des fonctions `SECURITY DEFINER` (normal, elles sont `SECURITY INVOKER` — s'appuient sur RLS + vérification interne), aucun nouveau WARN
+- [ ] **En attente du test manuel du propriétaire** sur la branche de session avant tout merge vers `main`/prod
+
+### Review (provisoire, en attente de validation)
+- Deux nouvelles actions disponibles sur la fiche de détail prof d'un cours : **Modifier** (formulaire préremplie, mêmes champs que la création) et **Supprimer** (confirmation navigateur, cascade complète).
+- Protection des données réelles : un devoir déjà rendu ou corrigé par l'élève ne peut jamais être supprimé/écrasé silencieusement par une modification ou suppression du cours parent — seul son texte de consigne reste modifiable, le reste (statut, fichiers, note, correction) est préservé.
+- Le compteur d'absences injustifiées (§8) reste cohérent quelle que soit l'opération : modifier la présence d'un cours existant ou supprimer un cours qui comptait comme absence recalcule et, si besoin, réactive automatiquement un compte suspendu repassé sous le seuil.
+- Pas encore mergé sur `main`/prod — le propriétaire va tester lui-même sur le site (preview Vercel de la branche de session) avant validation finale.
+
+---
+
 ## Session 30 — Taille du quiz vocabulaire = moitié du glossaire du périmètre
 
 > **Demande propriétaire** : le quiz vocabulaire générait toujours jusqu'à 10 questions,

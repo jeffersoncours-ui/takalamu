@@ -9,18 +9,19 @@ import { isAttendanceStatus } from "@/lib/attendance";
 import { zipVocab, zipGrammar } from "@/lib/session-form-zip";
 
 type ActionState = { error?: string };
+type SupportFile = { path: string; name: string };
 
-export async function submitSession(
+export async function updateSession(
+  studentId: string,
+  recordId: string,
   _prev: ActionState,
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionState> {
   await requireTeacher();
 
-  const studentId = String(formData.get("student_id") ?? "").trim();
   const attendance = String(formData.get("attendance") ?? "").trim();
   const sessionDateIso = String(formData.get("session_date_iso") ?? "").trim();
 
-  if (!studentId) return { error: "Sélectionne un élève." };
   if (!isAttendanceStatus(attendance)) return { error: "Présence invalide." };
 
   const sessionDate = sessionDateIso || new Date().toISOString();
@@ -34,10 +35,15 @@ export async function submitSession(
 
   const supabase = await createClient();
 
-  // Upload support files to Storage
-  const rawFiles = formData.getAll("support_files");
-  const supportFiles: { path: string; name: string }[] = [];
+  // Fichiers existants conservés (cases cochées) + nouveaux uploads ajoutés
+  const existingFiles: SupportFile[] = JSON.parse(
+    String(formData.get("existing_files_json") ?? "[]")
+  );
+  const keptPaths = new Set(formData.getAll("keep_file").map((v) => String(v)));
+  const removedFiles = existingFiles.filter((f) => !keptPaths.has(f.path));
+  const supportFiles: SupportFile[] = existingFiles.filter((f) => keptPaths.has(f.path));
 
+  const rawFiles = formData.getAll("support_files");
   for (const raw of rawFiles) {
     if (!(raw instanceof File) || raw.size === 0) continue;
     const ext = raw.name.split(".").pop() ?? "";
@@ -50,8 +56,19 @@ export async function submitSession(
     }
   }
 
-  const { data: recordId, error } = await supabase.rpc("submit_session_record", {
-    p_student_id: studentId,
+  if (removedFiles.length > 0) {
+    await supabase.storage.from("session-files").remove(removedFiles.map((f) => f.path));
+  }
+
+  // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)
+  const { data: existingHomework } = await supabase
+    .from("homework")
+    .select("id")
+    .eq("lesson_record_id", recordId)
+    .maybeSingle();
+
+  const { error } = await supabase.rpc("update_session_record", {
+    p_record_id: recordId,
     p_session_date: sessionDate,
     p_attendance: attendance,
     p_public_recap: publicRecap ?? undefined,
@@ -62,12 +79,11 @@ export async function submitSession(
     p_support_files: supportFiles,
   });
 
-  if (error || !recordId) {
-    return { error: "Échec de l'enregistrement de la séance." };
+  if (error) {
+    return { error: "Échec de la mise à jour de la séance." };
   }
 
-  // Notifier l'élève si un devoir a été assigné pendant cette séance.
-  if (homework) {
+  if (homework && !existingHomework) {
     const { data: student } = await supabase
       .from("students")
       .select("profile_id")
@@ -83,6 +99,7 @@ export async function submitSession(
     }
   }
 
-  revalidatePath("/teacher");
-  redirect("/teacher?session=ok");
+  revalidatePath(`/teacher/students/${studentId}`);
+  revalidatePath(`/teacher/students/${studentId}/sessions/${recordId}`);
+  redirect(`/teacher/students/${studentId}/sessions/${recordId}`);
 }

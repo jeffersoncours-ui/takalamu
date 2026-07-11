@@ -6,6 +6,8 @@ import { fr } from "date-fns/locale";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge, attendanceBadge, homeworkBadge } from "@/components/status-badge";
+import { deleteSession } from "./actions";
+import { DeleteSessionButton } from "./delete-session-button";
 
 type SupportFile = { path: string; name: string };
 
@@ -97,6 +99,18 @@ export default async function SessionDetailPage({
           {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
         </h1>
         <StatusBadge hue={badge.hue} label={badge.label} />
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Link
+          href={`/teacher/students/${id}/sessions/${recordId}/edit`}
+          className="flex-1 flex items-center justify-center rounded-[12px] py-2.5 font-semibold text-sm transition-opacity hover:opacity-85"
+          style={{ background: "#EAEFFD", color: "#2C4BB8", border: "1px solid #C5D2F7" }}
+        >
+          Modifier
+        </Link>
+        <DeleteSessionButton action={deleteSession.bind(null, id, recordId)} />
       </div>
 
       {/* Récap public */}
