@@ -1,5 +1,13 @@
 # Lessons
 
+## Session 30 (2026-07-11) — Taille du quiz vocabulaire = moitié du glossaire
+
+### Décisions
+- **Une taille de quiz fixe (10) déconnectée du contenu réel n'a de sens que par accident.** Avec 24 mots au Cours 1 d'Anthony, `p_size=10` produisait un quiz qui ignorait plus de la moitié du glossaire testable. Passé à un calcul dérivé (`round(count/2)`) plutôt qu'une constante — cohérent avec le principe « pas de valeur magique déconnectée des données ».
+- **Changer un DEFAULT de paramètre Postgres (10 → NULL) ne nécessite PAS de DROP + CREATE**, contrairement à un renommage de paramètre (leçon session 27). `CREATE OR REPLACE FUNCTION` accepte un nouveau DEFAULT tant que noms et types de paramètres restent identiques. Un seul cas exige le DROP : renommage ou changement de type.
+- **Round vs floor pour "la moitié" d'un nombre impair** : `ROUND(x/2.0)` (arrondi au plus proche, PostgreSQL arrondit .5 vers le haut) choisi plutôt que `FLOOR` — 29 mots → 15 questions, pas 14. Pas de spec explicite du propriétaire sur le cas impair, mais "la moitié" se lit plus naturellement comme un arrondi au plus proche qu'une troncature systématique vers le bas.
+- **Tester l'arrondi sur un total impair nécessite des données que la base réelle ne contient pas encore** (Anthony a exactement 24 mots, un seul cours). Solution : `INSERT` temporaire (5 mots de plus) **dans la même transaction** que l'appel RPC de test, puis `ROLLBACK` — aucune donnée réelle jamais persistée, mais le cas impair (29) est quand même vérifié empiriquement plutôt que déduit par lecture de code seule.
+
 ## Session 29 (2026-07-10) — Correctifs (email, mot de passe, chat, notifications) + nettoyage vidéos
 
 ### Décisions

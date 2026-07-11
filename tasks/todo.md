@@ -2,6 +2,37 @@
 
 ---
 
+## Session 30 — Taille du quiz vocabulaire = moitié du glossaire du périmètre
+
+> **Demande propriétaire** : le quiz vocabulaire générait toujours jusqu'à 10 questions,
+> peu importe le nombre de mots réellement disponibles (ex. 24 mots au Cours 1
+> d'Anthony → toujours 10). Nouvelle règle : le nombre de questions doit être la
+> **moitié** du vocabulaire du périmètre choisi (tout le glossaire, ou un cours
+> précis via le sélecteur existant) — 24 mots → 12 questions.
+
+### Plan
+- [x] Migration 42 : `generate_individual_quiz` — `p_size` passe de `DEFAULT 10` à `DEFAULT NULL` ; quand NULL, calcule `GREATEST(1, ROUND(count_du_périmètre / 2.0))`. Signature inchangée (mêmes types) → `CREATE OR REPLACE` sans DROP. Reste overridable explicitement si besoin futur.
+- [x] `dashboard/evaluations/actions.ts` : `generateQuiz` n'envoie plus `p_size: 10` — laisse le serveur calculer.
+- [x] `dashboard/evaluations/quiz-runner.tsx` : appel sans taille fixe ; texte dynamique "N questions pour ce quiz" recalculé côté client selon le périmètre sélectionné (tout le glossaire ou un cours), cohérent avec le calcul serveur.
+- [x] `database.types.ts` régénéré via MCP — aucun diff (le paramètre `p_size` avait déjà un défaut donc était déjà typé optionnel avant cette session).
+- [x] Vérification MCP (impersonation Anthony, transactions rollback, aucune donnée réelle modifiée) :
+  - Tout le glossaire (24 mots) → 12 questions ✔
+  - Filtré sur le Cours 1 (24 mots, seul cours existant) → 12 questions ✔
+  - Override explicite `p_size=5` toujours fonctionnel → 5 ✔
+  - Arrondi sur un total impair (29 mots, insert temporaire dans la même transaction puis rollback) → round(29/2)=15 ✔ (arrondi à l'entier le plus proche, pas de troncature)
+  - Après rollback : 24 mots exactement pour Anthony (aucune trace de test) ✔
+  - Advisor sécurité : 0 nouveau lint (mêmes WARN pré-existants acceptés) ✔
+- [x] Build + lint verts (28 routes, 0 nouvelle erreur — seule l'erreur lint pré-existante de `drawer-nav.tsx` subsiste, non touchée)
+- [x] Push sur `claude/takalamu-session-30-zwsp29`
+
+### Review Session 30
+- Le quiz vocabulaire (tout le glossaire ou un cours précis via le sélecteur) génère désormais un nombre de questions égal à la moitié (arrondie) du vocabulaire du périmètre choisi, au lieu d'un plafond fixe de 10 déconnecté du contenu réel.
+- Les distracteurs restent tirés de l'ensemble du glossaire (décision session 27, inchangée) — seule la **taille** du quiz change.
+- `p_size` reste un paramètre optionnel de la RPC (override explicite toujours possible si un besoin futur apparaît), mais plus aucun appel client ne le fixe en dur.
+- Pas encore mergé sur `main` — en attente de validation propriétaire avant déploiement (pattern habituel des sessions précédentes).
+
+---
+
 ## Session 29 — Correctifs (email, mot de passe, chat, notifications) + nettoyage vidéos
 
 > Session dédiée à des correctifs demandés par le propriétaire, plus un
