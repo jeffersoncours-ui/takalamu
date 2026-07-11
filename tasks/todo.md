@@ -25,13 +25,14 @@
   - `delete_session_record` : séance + vocab/grammaire supprimés ✔ ; devoir "a_rendre" (jamais touché) supprimé avec la séance ✔ ; devoir "corrigé" (avec note + fichier) **détaché mais conservé** (`lesson_record_id = NULL`) ✔ ; compteur d'absences décrémenté ✔, réactivation automatique du compte testée (3 absences + `suspended_absences` → suppression d'une séance comptante → 2 + `active`) ✔
   - Accès refusé : Khadija (autre enseignante) sur le vrai Cours 1 d'Anthony → `42501 Séance introuvable ou non autorisée` sur `update_session_record` ET `delete_session_record` ✔
   - Advisor sécurité : `update_session_record`/`delete_session_record` n'apparaissent PAS dans la liste des fonctions `SECURITY DEFINER` (normal, elles sont `SECURITY INVOKER` — s'appuient sur RLS + vérification interne), aucun nouveau WARN
-- [ ] **En attente du test manuel du propriétaire** sur la branche de session avant tout merge vers `main`/prod
+- [x] Test manuel du propriétaire sur la preview Vercel de la branche de session → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel (`claude/new-project-setup-1jcgwf`) depuis la branche de session, aucun conflit (les deux étaient strictement à jour au démarrage de cette étape)
 
-### Review (provisoire, en attente de validation)
+### Review
 - Deux nouvelles actions disponibles sur la fiche de détail prof d'un cours : **Modifier** (formulaire préremplie, mêmes champs que la création) et **Supprimer** (confirmation navigateur, cascade complète).
 - Protection des données réelles : un devoir déjà rendu ou corrigé par l'élève ne peut jamais être supprimé/écrasé silencieusement par une modification ou suppression du cours parent — seul son texte de consigne reste modifiable, le reste (statut, fichiers, note, correction) est préservé.
 - Le compteur d'absences injustifiées (§8) reste cohérent quelle que soit l'opération : modifier la présence d'un cours existant ou supprimer un cours qui comptait comme absence recalcule et, si besoin, réactive automatiquement un compte suspendu repassé sous le seuil.
-- Pas encore mergé sur `main`/prod — le propriétaire va tester lui-même sur le site (preview Vercel de la branche de session) avant validation finale.
+- **Déployé en production** (main + branche Vercel synchronisées, fast-forward propre) après validation manuelle du propriétaire sur la preview.
 
 ---
 
