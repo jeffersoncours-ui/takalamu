@@ -1,5 +1,13 @@
 # Lessons
 
+## Session 30 (suite 2, 2026-07-11) — Retrait de la revue des anciennes tentatives de quiz
+
+### Décisions
+- **Une fonctionnalité livrée une session plus tôt (session 27, même jour) peut être annulée après le premier vrai test utilisateur, sans que ce soit un échec.** La « revue de tentative » avait été explicitement demandée en session 27 ; le propriétaire l'a testée en conditions réelles et a changé d'avis (« le but c'est qu'il en fasse un max », pas de suivi historique par l'élève). Réflexe à garder : ne pas hésiter à défaire proprement une décision produit récente quand le test réel contredit l'intuition initiale — supprimer franchement (route + requêtes + liens), pas commenter/masquer.
+- **Distinction gardée entre « feedback immédiat » et « historique consultable ».** Le score + revue détaillée affichés juste après avoir terminé un quiz (écran "Done" de `QuizRunner`) sont restés intacts — c'est un feedback pédagogique sur l'action en cours, pas un accès à d'anciens tests. Seule la possibilité de revenir plus tard consulter d'anciennes tentatives (liste + lien vers `/dashboard/evaluations/[attemptId]`) a été retirée. Cette distinction évite de sur-corriger une demande formulée en termes généraux (« il peut revoir les anciens tests ») en supprimant aussi le feedback du quiz en cours, qui n'était pas visé.
+- **Suppression franche d'une route devenue mort, pas de garde résiduelle.** `/dashboard/evaluations/[attemptId]/page.tsx` supprimé entièrement dès que plus aucun lien ne pointait dessus, plutôt que laissé accessible par URL directe — cohérent avec le principe déjà établi (« contenu remplacé = supprimé, pas dormant », session 22), à distinguer du cas où une route reste volontairement dormante par décision produit explicite (ex. vitrine publique).
+- **`quiz_attempts` continue d'être alimentée en base** — aucune raison de toucher au schéma ou d'arrêter l'enregistrement, seule la restitution côté élève change. Garde la donnée disponible si un futur besoin (ex. vue prof) apparaît, sans migration à refaire.
+
 ## Session 30 (suite, 2026-07-11) — Modifier / supprimer un cours (fiche prof)
 
 ### Décisions
