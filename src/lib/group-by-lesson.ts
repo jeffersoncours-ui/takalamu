@@ -5,9 +5,14 @@ export type LessonGroup<T> = {
   items: T[];
 };
 
-type Groupable = { lessonRecordId: string | null; sessionDate: string | null };
+type Groupable = {
+  lessonRecordId: string | null;
+  sessionDate: string | null;
+  customTitle?: string | null;
+};
 
-/** Regroupe des entrées (vocabulaire, grammaire…) par séance, "Cours 1" = la plus ancienne. */
+/** Regroupe des entrées (vocabulaire, grammaire…) par séance, "Cours 1" = la plus ancienne
+ *  (sauf si l'enseignant a saisi un nom de cours, qui prime alors sur la numérotation). */
 export function groupByLesson<T extends Groupable>(items: T[]): LessonGroup<T>[] {
   const withRecord = items.filter((i) => i.lessonRecordId);
   const withoutRecord = items.filter((i) => !i.lessonRecordId);
@@ -24,6 +29,7 @@ export function groupByLesson<T extends Groupable>(items: T[]): LessonGroup<T>[]
     .map(([key, groupItems]) => ({
       key,
       sessionDate: groupItems[0].sessionDate,
+      customTitle: groupItems[0].customTitle ?? null,
       items: groupItems,
     }))
     .sort((a, b) => {
@@ -31,7 +37,7 @@ export function groupByLesson<T extends Groupable>(items: T[]): LessonGroup<T>[]
       if (!b.sessionDate) return -1;
       return new Date(a.sessionDate).getTime() - new Date(b.sessionDate).getTime();
     })
-    .map((g, idx) => ({ ...g, label: `Cours ${idx + 1}` }));
+    .map((g, idx) => ({ ...g, label: g.customTitle?.trim() || `Cours ${idx + 1}` }));
 
   const groups: LessonGroup<T>[] = recordGroups;
   if (withoutRecord.length > 0) {

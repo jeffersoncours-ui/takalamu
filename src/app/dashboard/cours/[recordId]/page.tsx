@@ -22,7 +22,7 @@ export default async function StudentSessionPage({
 
   const { data: record } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, support_files")
+    .select("id, session_date, attendance, public_recap, support_files, custom_title")
     .eq("id", recordId)
     .eq("student_id", studentId)
     .maybeSingle();
@@ -98,7 +98,7 @@ export default async function StudentSessionPage({
             className="leading-tight"
             style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 24, color: "#1C1A17" }}
           >
-            {courseNumber > 0 ? `Cours ${courseNumber}` : "Cours"}
+            {record.custom_title || (courseNumber > 0 ? `Cours ${courseNumber}` : "Cours")}
           </h1>
           <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
             {format(new Date(record.session_date), "EEEE d MMMM yyyy", { locale: fr })}

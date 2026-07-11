@@ -395,6 +395,7 @@ export type Database = {
         Row: {
           attendance: Database["public"]["Enums"]["attendance_status"]
           created_at: string
+          custom_title: string | null
           id: string
           lesson_id: string | null
           public_recap: string | null
@@ -407,6 +408,7 @@ export type Database = {
         Insert: {
           attendance: Database["public"]["Enums"]["attendance_status"]
           created_at?: string
+          custom_title?: string | null
           id?: string
           lesson_id?: string | null
           public_recap?: string | null
@@ -419,6 +421,7 @@ export type Database = {
         Update: {
           attendance?: Database["public"]["Enums"]["attendance_status"]
           created_at?: string
+          custom_title?: string | null
           id?: string
           lesson_id?: string | null
           public_recap?: string | null
@@ -1148,6 +1151,7 @@ export type Database = {
         Args: {
           p_advance_progress?: boolean
           p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_custom_title?: string
           p_formulations?: Json
           p_grammar?: Json
           p_homework_instructions?: string
@@ -1174,6 +1178,7 @@ export type Database = {
       update_session_record: {
         Args: {
           p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_custom_title?: string
           p_formulations?: Json
           p_grammar?: Json
           p_homework_instructions?: string

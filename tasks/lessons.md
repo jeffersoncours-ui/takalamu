@@ -503,3 +503,26 @@
 - **Ne pas inventer de données.** Le hero paiements enseignant affiche des
   compteurs (et non des montants en €) car la table `payments` n'a pas de colonne
   montant — rester honnête plutôt que d'afficher un faux « 1 240 € ».
+
+## Nom de cours personnalisé (session 30, suite 5)
+
+- **Champ « obligatoire » = obligation double, pas juste HTML `required`.** Le
+  propriétaire voulait le nom du cours obligatoire à *chaque* fiche. Le
+  `required` HTML seul est contournable (RPC appelée directement, JS désactivé) ;
+  la vraie garantie est le `RAISE EXCEPTION` dans la RPC elle-même si le champ
+  est vide après `BTRIM`. Testé explicitement en tentant un titre `'   '`.
+- **Une seule numérotation, calculée à N endroits indépendants.** "Cours N"
+  n'est pas un champ stocké mais un calcul (`groupByLesson`, ou des `Map`
+  `courseNumber` ad hoc dans `dashboard/page.tsx` et
+  `teacher/students/[id]/page.tsx`). Ajouter un remplaçant a demandé de toucher
+  8 fichiers séparément — pas de source de vérité unique. Prochaine fois qu'un
+  besoin similaire apparaît, envisager de centraliser ce calcul (actuellement
+  dupliqué par nécessité historique, pas par choix).
+- **Pas de backfill = décision explicite du propriétaire**, pas un oubli : les
+  séances existantes gardent `custom_title IS NULL` et retombent sur "Cours N"
+  jusqu'à renommage manuel via "Modifier" (fonctionnalité déjà existante,
+  session 30 suite 2).
+- **Supabase MCP a semblé "non autorisé"** au début de cette tâche (message
+  système), mais un simple appel `list_tables` a prouvé que la connexion
+  fonctionnait en réalité — toujours vérifier avec un appel léger avant de
+  bloquer une tâche sur un message d'indisponibilité présumée.

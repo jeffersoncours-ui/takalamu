@@ -28,6 +28,9 @@ export async function submitSession(
     return { error: "Date de séance invalide." };
   }
 
+  const customTitle = String(formData.get("custom_title") ?? "").trim();
+  if (!customTitle) return { error: "Le nom du cours est obligatoire." };
+
   const publicRecap = String(formData.get("public_recap") ?? "").trim() || null;
   const privateNote = String(formData.get("private_note") ?? "").trim() || null;
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
@@ -60,6 +63,7 @@ export async function submitSession(
       p_student_id: studentId,
       p_session_date: sessionDate,
       p_attendance: attendance,
+      p_custom_title: customTitle,
       p_public_recap: publicRecap ?? undefined,
       p_private_note: privateNote ?? undefined,
       p_homework_instructions: homework ?? undefined,

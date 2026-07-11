@@ -22,7 +22,7 @@ export default async function SessionDetailPage({
 
   const { data: record } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, support_files, students(profiles(full_name))")
+    .select("id, session_date, attendance, public_recap, support_files, custom_title, students(profiles(full_name))")
     .eq("id", recordId)
     .eq("student_id", id)
     .maybeSingle();
@@ -98,12 +98,19 @@ export default async function SessionDetailPage({
 
       {/* En-tête */}
       <div className="flex items-center justify-between gap-3 px-0.5">
-        <h1
-          className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
-        >
-          {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
-        </h1>
+        <div>
+          <h1
+            className="leading-tight"
+            style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+          >
+            {record.custom_title || format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+          </h1>
+          {record.custom_title && (
+            <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+              {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+            </p>
+          )}
+        </div>
         <StatusBadge hue={badge.hue} label={badge.label} />
       </div>
 

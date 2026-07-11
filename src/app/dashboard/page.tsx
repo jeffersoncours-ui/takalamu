@@ -12,7 +12,7 @@ export default async function CoursPage() {
 
   const { data: recordsData, error: recordsError } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, lessons(title, audio_asset_id, audio_assets!lessons_audio_asset_fk(storage_path, title))")
+    .select("id, session_date, attendance, public_recap, custom_title, lessons(title, audio_asset_id, audio_assets!lessons_audio_asset_fk(storage_path, title))")
     .order("session_date", { ascending: false });
 
   if (recordsError) {
@@ -132,7 +132,7 @@ export default async function CoursPage() {
                 <Link href={`/dashboard/cours/${r.id}`} className="block transition-opacity hover:opacity-80">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-1.5 font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
-                      {lesson?.title ?? `Cours ${courseNumber.get(r.id)}`}
+                      {r.custom_title || lesson?.title || `Cours ${courseNumber.get(r.id)}`}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6" />
                       </svg>

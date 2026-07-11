@@ -9,7 +9,7 @@ export default async function GrammairePage() {
 
   const { data: rules } = await supabase
     .from("grammar_rules")
-    .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date)")
+    .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
 
   const items = (rules ?? []).map((r) => {
@@ -20,6 +20,7 @@ export default async function GrammairePage() {
       content: r.content,
       lessonRecordId: r.lesson_record_id,
       sessionDate: record?.session_date ?? null,
+      customTitle: record?.custom_title ?? null,
     };
   });
 

@@ -1309,3 +1309,38 @@ Logs Supabase API : 200 partout, pas d'erreur serveur.
   natifs (plus rapides à saisir, incassables) — conforme au principe « saisie < 30s ».
 - Sélecteur de police/accent du proto : volontairement figé (Spectral + Jakarta +
   #0F9D6E) comme recommandé par le handoff.
+
+---
+
+## Session 30 (suite 5) — Nom de cours personnalisé (remplace « Cours N »)
+
+Demande propriétaire : remplacer l'affichage auto "Cours 1", "Cours 2"… (calculé
+par `groupByLesson` selon la date) par un nom que l'enseignant tape lui-même dans
+la fiche de fin de cours, **obligatoire à chaque nouvelle fiche**. Les séances déjà
+existantes (déjà affichées "Cours 1"/"Cours 2") gardent leur numérotation
+automatique — pas de backfill, l'enseignant les renommera à la main via "Modifier"
+s'il le souhaite.
+
+- [x] Migration 45 : colonne `lesson_records.custom_title text` (nullable, pas de
+      backfill) + `submit_session_record`/`update_session_record` étendues avec
+      `p_custom_title` **obligatoire côté serveur** (RAISE EXCEPTION si vide, pas
+      seulement un `required` HTML)
+- [x] Champ "Nom du cours" ajouté dans `session-form.tsx` (création) et
+      `edit-session-form.tsx` (édition), positionné entre "Date de la séance" et
+      "Récap public" comme demandé
+- [x] `groupByLesson` : nouveau champ `customTitle` optionnel, prime sur
+      `Cours ${idx+1}` quand renseigné (fallback conservé pour les anciennes
+      séances)
+- [x] Tous les affichages "Cours N" mis à jour pour préférer `custom_title` :
+      dashboard élève (historique + détail séance), fiche élève côté enseignant
+      (historique + accordéons vocab/grammaire/formulations), détail séance
+      enseignant (nouveau sous-titre date), filtre "cours" du quiz (évaluations)
+- [x] `database.types.ts` : édition ciblée (vérifiée identique à
+      `generate_typescript_types` après coup)
+- [x] Testé via MCP (impersonation, transaction ROLLBACK) : titre vide rejeté à
+      la création ET à la modification, titre trimé correctement, enseignante
+      Khadija bloquée sur une séance de l'élève de Jefferson, renommage légitime
+      fonctionnel
+- [x] `npm run build` + `npm run lint` : verts (seule erreur = `drawer-nav.tsx`,
+      pré-existante, déjà documentée)
+- [ ] Validation propriétaire sur la preview, puis merge `main` / prod

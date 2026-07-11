@@ -173,6 +173,19 @@ export function SessionForm({
         <input type="hidden" name="session_date_iso" value={sessionIso} />
       </div>
 
+      {/* Nom du cours */}
+      <div className="space-y-1.5">
+        <label htmlFor="custom_title" style={sectionLabel}>Nom du cours</label>
+        <input
+          id="custom_title"
+          name="custom_title"
+          type="text"
+          required
+          placeholder="ex. Les couleurs, Le passé simple…"
+          style={inputStyle}
+        />
+      </div>
+
       {/* Récap public */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">

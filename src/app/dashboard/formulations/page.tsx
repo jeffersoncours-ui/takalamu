@@ -9,7 +9,7 @@ export default async function FormulationsPage() {
 
   const { data: forms } = await supabase
     .from("formulations")
-    .select("id, arabic_text, french_text, created_at, lesson_record_id, lesson_records(session_date)")
+    .select("id, arabic_text, french_text, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
 
   const items = (forms ?? []).map((f) => {
@@ -20,6 +20,7 @@ export default async function FormulationsPage() {
       french_text: f.french_text,
       lessonRecordId: f.lesson_record_id,
       sessionDate: record?.session_date ?? null,
+      customTitle: record?.custom_title ?? null,
     };
   });
 

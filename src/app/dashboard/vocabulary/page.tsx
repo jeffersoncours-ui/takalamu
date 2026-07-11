@@ -9,7 +9,7 @@ export default async function VocabulairePage() {
 
   const { data: vocab } = await supabase
     .from("vocabulary")
-    .select("id, arabic_word, french_definition, root, created_at, lesson_record_id, lesson_records(session_date)")
+    .select("id, arabic_word, french_definition, root, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
 
   const items = (vocab ?? []).map((v) => {
@@ -21,6 +21,7 @@ export default async function VocabulairePage() {
       root: v.root,
       lessonRecordId: v.lesson_record_id,
       sessionDate: record?.session_date ?? null,
+      customTitle: record?.custom_title ?? null,
     };
   });
 

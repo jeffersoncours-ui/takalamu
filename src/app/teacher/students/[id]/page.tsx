@@ -36,7 +36,7 @@ export default async function StudentCardPage({
     await Promise.all([
       supabase
         .from("lesson_records")
-        .select("id, session_date, attendance, public_recap", { count: "exact" })
+        .select("id, session_date, attendance, public_recap, custom_title", { count: "exact" })
         .eq("student_id", id)
         .order("session_date", { ascending: false })
         .limit(showAllRecords ? 200 : 8),
@@ -53,17 +53,17 @@ export default async function StudentCardPage({
         .order("assigned_at", { ascending: true }),
       supabase
         .from("vocabulary")
-        .select("id, arabic_word, french_definition, lesson_record_id, lesson_records(session_date)", { count: "exact" })
+        .select("id, arabic_word, french_definition, lesson_record_id, lesson_records(session_date, custom_title)", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: true }),
       supabase
         .from("grammar_rules")
-        .select("id, title, content, lesson_record_id, lesson_records(session_date)", { count: "exact" })
+        .select("id, title, content, lesson_record_id, lesson_records(session_date, custom_title)", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: true }),
       supabase
         .from("formulations")
-        .select("id, arabic_text, french_text, lesson_record_id, lesson_records(session_date)", { count: "exact" })
+        .select("id, arabic_text, french_text, lesson_record_id, lesson_records(session_date, custom_title)", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: true }),
     ]);
@@ -87,19 +87,19 @@ export default async function StudentCardPage({
   const vocabGroups = groupByLesson(
     (vocabRes.data ?? []).map((v) => {
       const rec = Array.isArray(v.lesson_records) ? v.lesson_records[0] : v.lesson_records;
-      return { id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition, lessonRecordId: v.lesson_record_id, sessionDate: rec?.session_date ?? null };
+      return { id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition, lessonRecordId: v.lesson_record_id, sessionDate: rec?.session_date ?? null, customTitle: rec?.custom_title ?? null };
     }),
   );
   const grammarGroups = groupByLesson(
     (grammarRes.data ?? []).map((g) => {
       const rec = Array.isArray(g.lesson_records) ? g.lesson_records[0] : g.lesson_records;
-      return { id: g.id, title: g.title, content: g.content, lessonRecordId: g.lesson_record_id, sessionDate: rec?.session_date ?? null };
+      return { id: g.id, title: g.title, content: g.content, lessonRecordId: g.lesson_record_id, sessionDate: rec?.session_date ?? null, customTitle: rec?.custom_title ?? null };
     }),
   );
   const formGroups = groupByLesson(
     (formRes.data ?? []).map((f) => {
       const rec = Array.isArray(f.lesson_records) ? f.lesson_records[0] : f.lesson_records;
-      return { id: f.id, arabic_text: f.arabic_text, french_text: f.french_text, lessonRecordId: f.lesson_record_id, sessionDate: rec?.session_date ?? null };
+      return { id: f.id, arabic_text: f.arabic_text, french_text: f.french_text, lessonRecordId: f.lesson_record_id, sessionDate: rec?.session_date ?? null, customTitle: rec?.custom_title ?? null };
     }),
   );
 
@@ -257,7 +257,7 @@ export default async function StudentCardPage({
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-                  Cours {courseNumber.get(r.id)}
+                  {r.custom_title || `Cours ${courseNumber.get(r.id)}`}
                 </p>
                 <StatusBadge hue={badge.hue} label={badge.label} />
               </div>

@@ -19,12 +19,12 @@ export default async function EvaluationsPage() {
   const [{ data: vocab }, { data: forms }, { data: grammarQuizzes }] = await Promise.all([
     supabase
       .from("vocabulary")
-      .select("id, created_at, lesson_record_id, lesson_records(session_date)")
+      .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
       .eq("student_id", studentId)
       .order("created_at", { ascending: true }),
     supabase
       .from("formulations")
-      .select("id, created_at, lesson_record_id, lesson_records(session_date)")
+      .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
       .eq("student_id", studentId)
       .order("created_at", { ascending: true }),
     student?.teacher_id
@@ -42,12 +42,22 @@ export default async function EvaluationsPage() {
 
   // Cours (séances) ayant du vocabulaire / des formulations, numérotés « Cours 1, 2… »
   const toCourseOptions = (
-    rows: { lesson_record_id: string | null; lesson_records: { session_date: string }[] | { session_date: string } | null }[],
+    rows: {
+      lesson_record_id: string | null;
+      lesson_records:
+        | { session_date: string; custom_title: string | null }[]
+        | { session_date: string; custom_title: string | null }
+        | null;
+    }[],
   ) =>
     groupByLesson(
       rows.map((r) => {
         const record = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
-        return { lessonRecordId: r.lesson_record_id, sessionDate: record?.session_date ?? null };
+        return {
+          lessonRecordId: r.lesson_record_id,
+          sessionDate: record?.session_date ?? null,
+          customTitle: record?.custom_title ?? null,
+        };
       }),
     )
       .filter((g) => g.key !== "none")

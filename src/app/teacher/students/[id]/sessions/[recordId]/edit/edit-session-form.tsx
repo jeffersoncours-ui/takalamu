@@ -49,6 +49,7 @@ export function EditSessionForm({
   recordId,
   studentName,
   sessionDateIso,
+  customTitle,
   attendance: initialAttendance,
   publicRecap,
   privateNote,
@@ -63,6 +64,7 @@ export function EditSessionForm({
   recordId: string;
   studentName: string;
   sessionDateIso: string;
+  customTitle: string;
   attendance: AttendanceStatus;
   publicRecap: string;
   privateNote: string;
@@ -161,6 +163,20 @@ export function EditSessionForm({
           style={inputStyle}
         />
         <input type="hidden" name="session_date_iso" value={sessionIso} />
+      </div>
+
+      {/* Nom du cours */}
+      <div className="space-y-1.5">
+        <label htmlFor="custom_title" style={sectionLabel}>Nom du cours</label>
+        <input
+          id="custom_title"
+          name="custom_title"
+          type="text"
+          required
+          defaultValue={customTitle}
+          placeholder="ex. Les couleurs, Le passé simple…"
+          style={inputStyle}
+        />
       </div>
 
       {/* Récap public */}
