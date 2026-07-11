@@ -18,11 +18,13 @@
 - [x] `quiz_attempts` reste enregistrée en base (pas de suppression de données, juste plus affichée à l'élève — impact minimal, aucune raison de toucher au schéma)
 - [x] Build + lint verts (27 routes, une de moins — `[attemptId]` supprimée — 0 nouvelle erreur)
 - [x] Push sur `claude/takalamu-session-30-zwsp29`
-- [ ] **En attente du test manuel du propriétaire** avant merge vers `main`/prod
+- [x] Test manuel du propriétaire sur la preview → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel depuis la branche de session, aucun conflit
 
-### Review (provisoire, en attente de validation)
+### Review
 - L'élève ne voit plus aucun historique de ses tentatives passées (ni vocabulaire ni grammaire) — seul reste le lanceur de quiz et le feedback immédiat du quiz qu'il vient de terminer.
 - Rien supprimé côté données (`quiz_attempts` continue d'être alimentée normalement par les RPC existantes) — uniquement l'affichage côté élève qui change.
+- **Déployé en production** (main + branche Vercel synchronisées, fast-forward propre).
 
 ---
 
