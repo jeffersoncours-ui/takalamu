@@ -55,11 +55,14 @@ export function SessionForm({
 }) {
   const [state, formAction, pending] = useActionState(submitSession, {});
 
-  const initialStudent = defaultStudentId
-    ? (students.find((s) => s.id === defaultStudentId) ?? students[0])
-    : students[0];
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    defaultStudentId && students.some((s) => s.id === defaultStudentId)
+      ? [defaultStudentId]
+      : []
+  );
+  const toggleStudent = (id: string) =>
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const [studentId, setStudentId] = useState(initialStudent?.id ?? "");
   const [dateLocal, setDateLocal] = useState(nowLocalValue());
   const [presence, setPresence] = useState(ATTENDANCE_STATUSES[0].value);
 
@@ -79,29 +82,49 @@ export function SessionForm({
     return Number.isNaN(t) ? "" : new Date(t).toISOString();
   }, [dateLocal]);
 
-  function onStudentChange(id: string) {
-    setStudentId(id);
-  }
-
   return (
     <form action={formAction} className="space-y-5 pb-28">
-      {/* Élève */}
+      {/* Élève(s) — sélection multiple : la même fiche s'applique à chacun */}
       <div className="space-y-1.5">
-        <label htmlFor="student_id" style={sectionLabel}>Élève</label>
-        <select
-          id="student_id"
-          name="student_id"
-          value={studentId}
-          onChange={(e) => onStudentChange(e.target.value)}
-          style={inputStyle}
-        >
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-              {s.status !== "active" ? " (suspendu)" : ""}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center justify-between">
+          <span style={sectionLabel}>Élève(s)</span>
+          {selectedIds.length > 0 && (
+            <span style={{ color: "#8B857A", fontSize: 12, fontWeight: 600 }}>
+              {selectedIds.length} sélectionné{selectedIds.length > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          {students.map((s) => {
+            const checked = selectedIds.includes(s.id);
+            return (
+              <label
+                key={s.id}
+                className="flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 transition-colors"
+                style={{
+                  border: `1.5px solid ${checked ? "#9FE3C8" : "#E9E3D8"}`,
+                  background: checked ? "#ECFAF4" : "#fff",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  name="student_ids"
+                  value={s.id}
+                  checked={checked}
+                  onChange={() => toggleStudent(s.id)}
+                  style={{ width: 18, height: 18, accentColor: "#0F9D6E" }}
+                />
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#1C1A17" }}>
+                  {s.name}
+                  {s.status !== "active" ? " (suspendu)" : ""}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        <p style={{ color: "#A8A29E", fontSize: 11 }}>
+          Coche plusieurs élèves pour créer la même séance (vocabulaire, grammaire, devoir, récap, supports) pour chacun en une seule saisie.
+        </p>
       </div>
 
       {/* Présence : grille 2×2 colorée */}
@@ -288,7 +311,7 @@ export function SessionForm({
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || selectedIds.length === 0}
             className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] font-bold text-white disabled:opacity-60"
             style={{ background: "#0F9D6E", fontSize: 15, boxShadow: "0 10px 22px rgba(15,157,110,.30)" }}
           >
@@ -296,7 +319,11 @@ export function SessionForm({
               <path d="M22 2 11 13" />
               <path d="M22 2 15 22l-4-9-9-4 20-7Z" />
             </svg>
-            {pending ? "Enregistrement…" : "Enregistrer la séance"}
+            {pending
+              ? "Enregistrement…"
+              : selectedIds.length > 1
+              ? `Enregistrer pour ${selectedIds.length} élèves`
+              : "Enregistrer la séance"}
           </button>
           <Link
             href="/teacher"

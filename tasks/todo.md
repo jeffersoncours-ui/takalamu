@@ -2,6 +2,32 @@
 
 ---
 
+## Session 30 (suite 3) — Compte Bilel + fiche de fin de cours multi-élèves
+
+> **Demande propriétaire** : Bilel (mba.benhamouda@gmail.com), ancien élève plus avancé
+> qu'Anthony souhaitant utiliser le site en révision, doit démarrer avec le même
+> acquis qu'Anthony (2 cours, vocabulaire, grammaire) pour ne pas tout reprendre à zéro.
+> Puis, pour l'usage futur (les deux élèves suivant le même programme), pouvoir remplir
+> la fiche de fin de cours une seule fois pour plusieurs élèves à la fois.
+
+### Plan
+- [x] Compte Bilel créé en base (SQL direct, méthode identique à la création du compte Anthony session 23) : `mba.benhamouda@gmail.com`, mot de passe temporaire généré, rattaché à Jefferson (même prof qu'Anthony), `role=student`, `gender=m`, `status=active`
+- [x] Contenu dupliqué à l'identique depuis l'état réel actuel d'Anthony (relu en base avant copie, pas depuis une version périmée de la conversation) : Cours 1 (24 vocab + 1 grammaire) et Cours 2 (26 vocab), mêmes dates/récaps. Devoirs et notes privées volontairement exclus (demande explicite propriétaire)
+- [x] Vérification RLS : impersonation Bilel → 0 ligne d'un autre élève visible ✔
+- [x] Photos du Cours 1 d'Anthony (2 images) : **non dupliquées par moi** — hors de portée du MCP Supabase (accès SQL uniquement, pas au Storage backend) ; propriétaire les a réuploadées lui-même manuellement via la page Modifier
+- [x] Fiche de fin de cours (`/teacher/session/new`) : sélection élève passée de `<select>` unique à une liste de cases à cocher (`student_ids[]`) — la même fiche (présence, vocabulaire, grammaire, devoir, récap, supports, note privée) est désormais appliquée à chaque élève coché, en une seule saisie
+- [x] `submitSession` (actions.ts) : boucle sur `formData.getAll("student_ids")`, appelle `submit_session_record` une fois par élève avec le même contenu (vocab/grammar/support files re-uploadés dans le dossier Storage de chacun) ; notification `homework_due` envoyée à chaque élève concerné si devoir assigné
+- [x] Build + lint verts (28 routes, 0 nouvelle erreur — seule l'erreur pré-existante `drawer-nav.tsx` subsiste)
+- [x] Vérification MCP : RPC `submit_session_record` appelée deux fois (Anthony + Bilel) avec le même contenu dans une transaction `BEGIN...ROLLBACK` → 2 séances créées, 1 mot de vocabulaire chacune ✔, aucune donnée réelle persistée
+- [ ] **En attente du test manuel du propriétaire** avant merge vers `main`/prod
+
+### Review (provisoire, en attente de validation)
+- Bilel peut désormais se connecter avec `mba.benhamouda@gmail.com` (mot de passe temporaire communiqué séparément) et retrouve le même acquis pédagogique qu'Anthony (2 cours, vocabulaire, grammaire).
+- La fiche de fin de cours permet de cocher plusieurs élèves suivant le même programme (ex. Anthony + Bilel) : une seule saisie crée une séance identique pour chacun, sans distinction de présence entre eux (choix assumé, demande explicite).
+- Limite documentée : la duplication de fichiers (photos/documents) entre comptes élèves n'est pas possible via les outils MCP actuels (accès SQL uniquement, pas au Storage) — reste une action manuelle du propriétaire si besoin à l'avenir.
+
+---
+
 ## Session 30 (suite 2) — Retrait de la revue des anciennes tentatives de quiz
 
 > **Demande propriétaire**, après test du correctif modifier/supprimer un cours :
