@@ -34,7 +34,7 @@ export default function QuizRunner({
     setLoading(true);
     try {
       const lessonRecordId = scope === "all" ? undefined : scope;
-      const questions = await generateQuiz(lessonRecordId, 10);
+      const questions = await generateQuiz(lessonRecordId);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: [] });
       }
@@ -91,6 +91,10 @@ export default function QuizRunner({
       );
     }
 
+    const selectedCount =
+      scope === "all" ? vocabCount : courses.find((c) => c.id === scope)?.count ?? vocabCount;
+    const questionCount = Math.max(1, Math.round(selectedCount / 2));
+
     return (
       <div
         className="rounded-[18px] p-5 flex flex-col gap-4"
@@ -101,8 +105,7 @@ export default function QuizRunner({
             Quiz vocabulaire
           </p>
           <p className="text-sm mt-0.5" style={{ color: "#8B857A" }}>
-            {vocabCount} mot{vocabCount > 1 ? "s" : ""} dans ton glossaire •{" "}
-            jusqu&apos;à 10 questions
+            {vocabCount} mot{vocabCount > 1 ? "s" : ""} dans ton glossaire
           </p>
         </div>
         <p className="text-sm leading-relaxed" style={{ color: "#4A463F" }}>
@@ -132,6 +135,11 @@ export default function QuizRunner({
             </select>
           </div>
         )}
+
+        <p className="text-xs" style={{ color: "#8B857A" }}>
+          {questionCount} question{questionCount > 1 ? "s" : ""} pour ce quiz (la moitié du
+          vocabulaire du périmètre choisi).
+        </p>
 
         <button
           onClick={start}

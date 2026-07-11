@@ -32,8 +32,7 @@ export type QuizResult = {
 };
 
 export async function generateQuiz(
-  lessonRecordId?: string,
-  size = 10
+  lessonRecordId?: string
 ): Promise<QuizQuestion[]> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
@@ -41,7 +40,6 @@ export async function generateQuiz(
   const { data, error } = await supabase.rpc("generate_individual_quiz", {
     p_student_id: studentId,
     ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
-    p_size: size,
   });
 
   if (error) throw new Error(error.message);
