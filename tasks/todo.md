@@ -2,6 +2,30 @@
 
 ---
 
+## Session 30 (suite 2) — Retrait de la revue des anciennes tentatives de quiz
+
+> **Demande propriétaire**, après test du correctif modifier/supprimer un cours :
+> l'élève pouvait revoir ses anciennes tentatives de quiz (vocabulaire cliquable
+> vers une page de revue détaillée, grammaire en liste score+date). Décision :
+> retirer complètement cette visibilité — l'objectif est la répétition, pas le
+> suivi historique par l'élève lui-même (« on s'en fout, le but c'est qu'il en
+> fasse un max »).
+
+### Plan
+- [x] `/dashboard/evaluations/page.tsx` : retrait de la requête `quiz_attempts` et des deux listes d'historique (vocabulaire cliquable vers la revue, grammaire score+date) — ne reste que les lanceurs de quiz (`QuizRunner`/`GrammarQuizRunner`)
+- [x] Suppression de la route désormais morte `/dashboard/evaluations/[attemptId]` (page de revue détaillée d'une tentative, plus aucun lien n'y mène)
+- [x] Le score immédiat en fin de quiz (écran "Done" de `QuizRunner`/`GrammarQuizRunner`, juste après avoir terminé) est conservé — feedback pédagogique du quiz qu'on vient de faire, différent du fait de revenir consulter un ancien test plus tard
+- [x] `quiz_attempts` reste enregistrée en base (pas de suppression de données, juste plus affichée à l'élève — impact minimal, aucune raison de toucher au schéma)
+- [x] Build + lint verts (27 routes, une de moins — `[attemptId]` supprimée — 0 nouvelle erreur)
+- [x] Push sur `claude/takalamu-session-30-zwsp29`
+- [ ] **En attente du test manuel du propriétaire** avant merge vers `main`/prod
+
+### Review (provisoire, en attente de validation)
+- L'élève ne voit plus aucun historique de ses tentatives passées (ni vocabulaire ni grammaire) — seul reste le lanceur de quiz et le feedback immédiat du quiz qu'il vient de terminer.
+- Rien supprimé côté données (`quiz_attempts` continue d'être alimentée normalement par les RPC existantes) — uniquement l'affichage côté élève qui change.
+
+---
+
 ## Session 30 (suite) — Modifier / supprimer un cours depuis la fiche prof
 
 > **Contexte** : le propriétaire a testé le Cours 2 d'Anthony en direct sur le site
