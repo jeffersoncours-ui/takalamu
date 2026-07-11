@@ -232,6 +232,51 @@ export type Database = {
           },
         ]
       }
+      formulations: {
+        Row: {
+          arabic_text: string
+          created_at: string
+          french_text: string
+          id: string
+          lesson_record_id: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          arabic_text: string
+          created_at?: string
+          french_text: string
+          id?: string
+          lesson_record_id?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          arabic_text?: string
+          created_at?: string
+          french_text?: string
+          id?: string
+          lesson_record_id?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formulations_lesson_record_id_fkey"
+            columns: ["lesson_record_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formulations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grammar_rules: {
         Row: {
           content: string
@@ -1053,6 +1098,14 @@ export type Database = {
         Args: { p_record_id: string }
         Returns: undefined
       }
+      generate_formulation_quiz: {
+        Args: {
+          p_lesson_record_id?: string
+          p_size?: number
+          p_student_id: string
+        }
+        Returns: Json
+      }
       generate_individual_quiz: {
         Args: {
           p_lesson_record_id?: string
@@ -1075,6 +1128,10 @@ export type Database = {
         Args: { p_payload: Json; p_type: string; p_user_id: string }
         Returns: undefined
       }
+      submit_formulation_quiz: {
+        Args: { p_answers: Json; p_student_id: string }
+        Returns: Json
+      }
       submit_grammar_quiz: {
         Args: { p_answers: Json; p_quiz_id: string; p_student_id: string }
         Returns: Json
@@ -1091,6 +1148,7 @@ export type Database = {
         Args: {
           p_advance_progress?: boolean
           p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_formulations?: Json
           p_grammar?: Json
           p_homework_instructions?: string
           p_lesson_id?: string
@@ -1116,6 +1174,7 @@ export type Database = {
       update_session_record: {
         Args: {
           p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_formulations?: Json
           p_grammar?: Json
           p_homework_instructions?: string
           p_private_note?: string
@@ -1151,7 +1210,7 @@ export type Database = {
       payment_product: "individual_sub" | "book" | "individual_hour"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual" | "group"
-      quiz_source: "glossary" | "book" | "grammar"
+      quiz_source: "glossary" | "book" | "grammar" | "formulation"
       student_status: "active" | "suspended_payment" | "suspended_absences"
       trial_status:
         | "pending"
@@ -1311,7 +1370,7 @@ export const Constants = {
       payment_product: ["individual_sub", "book", "individual_hour"],
       payment_status: ["pending", "paid", "failed", "cancelled"],
       quiz_scope: ["individual", "group"],
-      quiz_source: ["glossary", "book", "grammar"],
+      quiz_source: ["glossary", "book", "grammar", "formulation"],
       student_status: ["active", "suspended_payment", "suspended_absences"],
       trial_status: [
         "pending",

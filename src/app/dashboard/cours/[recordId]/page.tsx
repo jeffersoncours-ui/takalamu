@@ -29,7 +29,7 @@ export default async function StudentSessionPage({
 
   if (!record) notFound();
 
-  const [orderRes, vocabRes, grammarRes, hwRes] = await Promise.all([
+  const [orderRes, vocabRes, grammarRes, formRes, hwRes] = await Promise.all([
     supabase
       .from("lesson_records")
       .select("id")
@@ -46,6 +46,11 @@ export default async function StudentSessionPage({
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
+      .from("formulations")
+      .select("id, arabic_text, french_text")
+      .eq("lesson_record_id", recordId)
+      .order("created_at", { ascending: true }),
+    supabase
       .from("homework")
       .select("id, instructions")
       .eq("lesson_record_id", recordId)
@@ -56,6 +61,7 @@ export default async function StudentSessionPage({
     (orderRes.data ?? []).findIndex((r) => r.id === recordId) + 1;
   const vocab = vocabRes.data ?? [];
   const grammar = grammarRes.data ?? [];
+  const formulations = formRes.data ?? [];
   const homework = hwRes.data;
   const badge = attendanceBadge(record.attendance);
 
@@ -174,6 +180,23 @@ export default async function StudentSessionPage({
             <div key={g.id}>
               <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
               <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#4A463F", fontSize: 13 }}>{g.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Formulations du cours */}
+      {formulations.length > 0 && (
+        <div className="rounded-[16px] p-4 space-y-2.5" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
+          <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+            Formulations ({formulations.length})
+          </p>
+          {formulations.map((f) => (
+            <div key={f.id} className="space-y-1">
+              <p dir="rtl" lang="ar" className="font-arabic" style={{ fontSize: 18, fontWeight: 700, color: "#0A553F", lineHeight: 1.5 }}>
+                {f.arabic_text}
+              </p>
+              <p style={{ color: "#4A463F", fontSize: 14 }}>{f.french_text}</p>
             </div>
           ))}
         </div>

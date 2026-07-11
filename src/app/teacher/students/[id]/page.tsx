@@ -32,7 +32,7 @@ export default async function StudentCardPage({
 
   if (!student) notFound();
 
-  const [recordsRes, noteRes, hwRes, vocabRes, grammarRes] =
+  const [recordsRes, noteRes, hwRes, vocabRes, grammarRes, formRes] =
     await Promise.all([
       supabase
         .from("lesson_records")
@@ -61,6 +61,11 @@ export default async function StudentCardPage({
         .select("id, title, content, lesson_record_id, lesson_records(session_date)", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: true }),
+      supabase
+        .from("formulations")
+        .select("id, arabic_text, french_text, lesson_record_id, lesson_records(session_date)", { count: "exact" })
+        .eq("student_id", id)
+        .order("created_at", { ascending: true }),
     ]);
 
   const profile = Array.isArray(student.profiles)
@@ -72,6 +77,7 @@ export default async function StudentCardPage({
   const pendingHw = hwRes.data ?? [];
   const vocabCount = vocabRes.count ?? (vocabRes.data?.length ?? 0);
   const grammarCount = grammarRes.count ?? (grammarRes.data?.length ?? 0);
+  const formCount = formRes.count ?? (formRes.data?.length ?? 0);
 
   // Numérotation « Cours N » : le plus ancien = Cours 1 (records triés desc).
   const courseNumber = new Map<string, number>();
@@ -88,6 +94,12 @@ export default async function StudentCardPage({
     (grammarRes.data ?? []).map((g) => {
       const rec = Array.isArray(g.lesson_records) ? g.lesson_records[0] : g.lesson_records;
       return { id: g.id, title: g.title, content: g.content, lessonRecordId: g.lesson_record_id, sessionDate: rec?.session_date ?? null };
+    }),
+  );
+  const formGroups = groupByLesson(
+    (formRes.data ?? []).map((f) => {
+      const rec = Array.isArray(f.lesson_records) ? f.lesson_records[0] : f.lesson_records;
+      return { id: f.id, arabic_text: f.arabic_text, french_text: f.french_text, lessonRecordId: f.lesson_record_id, sessionDate: rec?.session_date ?? null };
     }),
   );
 
@@ -324,6 +336,41 @@ export default async function StudentCardPage({
               >
                 <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
                 <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#8B857A" }}>{g.content}</p>
+              </div>
+            ))}
+          </AccordionGroup>
+        ))}
+      </div>
+
+      {/* Formulations par cours */}
+      <div id="formulations" className="space-y-2 scroll-mt-20">
+        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
+          Formulations ({formCount})
+        </p>
+        {formGroups.length === 0 && (
+          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune formulation enregistrée.</p>
+        )}
+        {formGroups.map((group) => (
+          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
+            {group.key !== "none" && (
+              <Link
+                href={`/teacher/students/${id}/sessions/${group.key}`}
+                className="inline-flex items-center gap-1 font-semibold"
+                style={{ color: "#0F9D6E", fontSize: 12 }}
+              >
+                Voir le cours →
+              </Link>
+            )}
+            {group.items.map((f) => (
+              <div
+                key={f.id}
+                className="rounded-[12px] px-3 py-2.5 space-y-1"
+                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+              >
+                <p dir="rtl" lang="ar" className="font-arabic" style={{ fontSize: 16, fontWeight: 700, color: "#0A553F" }}>
+                  {f.arabic_text}
+                </p>
+                <p className="text-sm" style={{ color: "#4A463F" }}>{f.french_text}</p>
               </div>
             ))}
           </AccordionGroup>

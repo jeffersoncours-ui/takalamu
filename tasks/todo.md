@@ -2,6 +2,36 @@
 
 ---
 
+## Session 30 (suite 4) — Formulations (expressions) + quiz auto-généré
+
+> **Demande propriétaire** : ajouter, à côté du vocabulaire et de la grammaire, une
+> 3ᵉ catégorie « Formulation » — des expressions/phrases complètes (paire arabe ↔
+> français, ex. من أين أنت؟ / « d'où viens-tu ? »). Saisies en fin de cours comme le
+> vocabulaire, et donnant lieu à un quiz auto-généré (comment dit-on…, propositions
+> tirées des autres formulations de l'élève). Jumeau exact du système vocabulaire.
+
+### Plan
+- [x] Migration 44 : table `formulations` (arabic_text/french_text/student_id/lesson_record_id, mirror `vocabulary`) + RLS deny-by-default (élève lit les siennes, prof gère celles de ses élèves) + trigger updated_at + enum `quiz_source += 'formulation'` (appliqué en 2 étapes : valeur d'enum seule puis le reste, pour éviter la contrainte Postgres « unsafe use of new enum value ») + RPC `generate_formulation_quiz` (moitié du pool, distracteurs des autres formulations, anti-triche) + `submit_formulation_quiz` + extension `submit_session_record`/`update_session_record`/`delete_session_record` (DROP+CREATE pour ajouter `p_formulations`, re-GRANT)
+- [x] `database.types.ts` : édités ciblés (table formulations, 2 RPC, `p_formulations` sur submit/update, enum)
+- [x] `session-form-zip.ts` : `zipFormulation`
+- [x] Fiche de fin de cours (`session-form.tsx` + `actions.ts`) : section Formulation (paires ar/fr) appliquée à tous les élèves sélectionnés
+- [x] Édition de séance (`edit-session-form.tsx` + `edit/page.tsx` + `edit/actions.ts`) : formulations préremplies + remplacées
+- [x] Évaluations élève : `QuizPlayer` générique extrait (partagé vocab+formulation via `item_id`, actions renvoient/acceptent un id générique masquant vocab_id/form_id), lanceurs `QuizRunner` (vocab) + `FormulationQuizRunner`, 2ᵉ section sur la page
+- [x] Nouvelle page `/dashboard/formulations` (recherche + accordéons par cours, mirror vocabulaire) + carte violette sur `/dashboard/revision`
+- [x] Fiche prof élève : accordéon Formulations (stats laissées à 4 tuiles pour ne pas surcharger le mobile)
+- [x] Détail de séance (élève `cours/[recordId]` + prof `sessions/[recordId]` + edit) : bloc formulations
+- [x] Build (29 routes, 0 erreur TS) + lint (0 nouvelle erreur, seule `drawer-nav.tsx` pré-existante) verts
+- [x] Vérif MCP (impersonation, transactions rollback, aucune donnée réelle persistée) : submit avec 4 formulations → quiz de 2 questions (moitié) ✔, 4 choix/question ✔, score recalculé serveur ✔, isolation RLS (Bilel voit 0 formulation d'Anthony) ✔, update remplace complètement (2→1) ✔, delete supprime tout ✔ ; advisor sécurité : mêmes WARN acceptés, 0 nouveau type, table `formulations` couverte par RLS
+- [ ] **En attente du test manuel du propriétaire** sur la preview avant merge `main`/prod
+
+### Review (provisoire, en attente de validation)
+- Nouvelle catégorie « Formulation » = expressions/phrases complètes en paire arabe ↔ français, saisies en fin de cours à côté du vocabulaire et de la grammaire (jumeau exact du système vocabulaire).
+- Quiz formulation auto-généré (comment dit-on…, distracteurs tirés des autres formulations de l'élève, moitié du périmètre, anti-triche côté serveur) sur la page Évaluations.
+- Consultation élève sur `/dashboard/formulations` (recherche + accordéons par cours) et intégration dans tous les détails de séance (élève + prof) et la fiche prof.
+- Refactor : le moteur de quiz vocabulaire a été extrait en `QuizPlayer` générique, réutilisé tel quel pour les formulations (2ᵉ usage → extraction justifiée). Pas encore mergé sur `main`/prod.
+
+---
+
 ## Session 30 (suite 3) — Compte Bilel + fiche de fin de cours multi-élèves
 
 > **Demande propriétaire** : Bilel (mba.benhamouda@gmail.com), ancien élève plus avancé

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isAttendanceStatus } from "@/lib/attendance";
-import { zipVocab, zipGrammar } from "@/lib/session-form-zip";
+import { zipVocab, zipGrammar, zipFormulation } from "@/lib/session-form-zip";
 
 type ActionState = { error?: string };
 
@@ -33,6 +33,7 @@ export async function submitSession(
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
   const vocab = zipVocab(formData);
   const grammar = zipGrammar(formData);
+  const formulations = zipFormulation(formData);
 
   const supabase = await createClient();
   const rawFiles = formData
@@ -64,6 +65,7 @@ export async function submitSession(
       p_homework_instructions: homework ?? undefined,
       p_vocab: vocab,
       p_grammar: grammar,
+      p_formulations: formulations,
       p_support_files: supportFiles,
     });
 

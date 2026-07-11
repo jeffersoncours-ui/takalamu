@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { isAttendanceStatus } from "@/lib/attendance";
-import { zipVocab, zipGrammar } from "@/lib/session-form-zip";
+import { zipVocab, zipGrammar, zipFormulation } from "@/lib/session-form-zip";
 
 type ActionState = { error?: string };
 type SupportFile = { path: string; name: string };
@@ -76,6 +76,7 @@ export async function updateSession(
     p_homework_instructions: homework ?? undefined,
     p_vocab: zipVocab(formData),
     p_grammar: zipGrammar(formData),
+    p_formulations: zipFormulation(formData),
     p_support_files: supportFiles,
   });
 

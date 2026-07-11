@@ -9,6 +9,7 @@ import { updateSession } from "./actions";
 type SupportFile = { path: string; name: string };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
 type GrammarRow = { id: string; title: string; content: string };
+type FormulationRow = { id: string; arabic_text: string; french_text: string };
 
 const PRESENCE_COLOR: Record<string, { border: string; bg: string; text: string; dot: string }> = {
   present: { border: "#9FE3C8", bg: "#ECFAF4", text: "#0A6B4E", dot: "#0F9D6E" },
@@ -55,6 +56,7 @@ export function EditSessionForm({
   homeworkTouched,
   vocab,
   grammar,
+  formulations,
   supportFiles,
 }: {
   studentId: string;
@@ -68,6 +70,7 @@ export function EditSessionForm({
   homeworkTouched: boolean;
   vocab: VocabRow[];
   grammar: GrammarRow[];
+  formulations: FormulationRow[];
   supportFiles: SupportFile[];
 }) {
   const boundAction = updateSession.bind(null, studentId, recordId);
@@ -81,6 +84,9 @@ export function EditSessionForm({
   );
   const [grammarRows, setGrammarRows] = useState(
     grammar.map((g) => ({ id: g.id, title: g.title, content: g.content }))
+  );
+  const [formRows, setFormRows] = useState(
+    formulations.map((f) => ({ id: f.id, arabic_text: f.arabic_text, french_text: f.french_text }))
   );
   const [nextId, setNextId] = useState(-1);
   const [keptFiles, setKeptFiles] = useState<Set<string>>(new Set(supportFiles.map((f) => f.path)));
@@ -252,6 +258,47 @@ export function EditSessionForm({
           style={{ color: "#0F9D6E", fontSize: 13 }}
         >
           + Règle
+        </button>
+      </div>
+
+      {/* Formulation (expressions ar ↔ fr) */}
+      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
+        <span style={sectionLabel}>Formulation (expressions)</span>
+        {formRows.map((row) => (
+          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+            <input
+              name="form_arabic"
+              placeholder="expression (ar)"
+              dir="rtl"
+              className="font-arabic"
+              defaultValue={row.arabic_text}
+              style={inputStyle}
+            />
+            <input
+              name="form_french"
+              placeholder="traduction (fr)"
+              defaultValue={row.french_text}
+              style={inputStyle}
+            />
+            <button
+              type="button"
+              onClick={() => setFormRows((rows) => rows.filter((r) => r.id !== row.id))}
+              style={{ color: "#A8A29E", fontSize: 12 }}
+            >
+              Retirer
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            setFormRows((rows) => [...rows, { id: String(nextId), arabic_text: "", french_text: "" }]);
+            setNextId((n) => n - 1);
+          }}
+          className="font-bold"
+          style={{ color: "#0F9D6E", fontSize: 13 }}
+        >
+          + Formulation
         </button>
       </div>
 

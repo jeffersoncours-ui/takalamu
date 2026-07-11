@@ -1,5 +1,17 @@
 # Lessons
 
+## Session 30 (suite 4, 2026-07-11) — Formulations (expressions) + quiz auto-généré
+
+### Décisions
+- **Une 3ᵉ catégorie « jumelle » se construit en dupliquant le pattern existant, pas en généralisant les tables.** Formulations = table dédiée `formulations` (comme `grammar_rules` est le jumeau de `vocabulary`), pas une extension polymorphe de `vocabulary`. Une phrase n'est pas un mot ; forcer les deux dans une table à double sens aurait été une fausse économie. Le coût réel d'une nouvelle catégorie de ce type = 1 migration + ~10 surfaces Uo à toucher (fiche saisie, édition, quiz, page consult, fiche prof, 2 détails de séance), toutes mécaniques et déjà éprouvées.
+- **Le moteur de quiz vocabulaire méritait enfin son extraction (2ᵉ usage réel).** Jusqu'ici `quiz-runner.tsx` était spécifique au vocabulaire et `grammar-quiz-runner` un composant séparé (mécanique différente : questions saisies par le prof). Formulation partage EXACTEMENT la mécanique du quiz vocabulaire (direction aléatoire ar↔fr, distracteurs du même pool, moitié du périmètre) → extraction d'un `QuizPlayer` générique, conforme au principe « extraire à la 2ᵉ occurrence identique ». Clé de généricité : les RPC gardent leurs noms de colonnes réels (`vocab_id`/`form_id`) mais les server actions les mappent vers un `item_id` neutre, de sorte que le composant ignore la source. Contrat DB propre + composant générique, sans compromis.
+- **`ALTER TYPE ... ADD VALUE` appliqué dans une migration séparée de son utilisation.** Postgres interdit d'utiliser une nouvelle valeur d'enum dans la même transaction qui l'ajoute (« unsafe use of new value »). Bien que `submit_formulation_quiz` ne référence `'formulation'` qu'au runtime (corps plpgsql, non évalué à la création), j'ai scindé par prudence en 2 `apply_migration` : la valeur d'enum seule, puis le reste. Réflexe à garder pour tout `ADD VALUE` suivi de code qui pourrait le consommer.
+- **Ajouter un paramètre à une RPC existante = DROP + CREATE, pas CREATE OR REPLACE.** `submit_session_record` et `update_session_record` passent de N à N+1 paramètres (`p_formulations`). `CREATE OR REPLACE` aurait créé une SURCHARGE (signatures différentes coexistant), pas un remplacement — source de confusion PostgREST. Il faut `DROP FUNCTION` avec la signature exacte de l'ancienne version puis `CREATE` la nouvelle, et re-`GRANT EXECUTE`. (Rappel déjà noté session 27 pour le renommage de paramètre ; ici c'est l'ajout qui l'impose.)
+- **Éditer `database.types.ts` de façon ciblée plutôt que réécrire tout le fichier.** Réécrire le fichier entier (>1300 lignes) est risqué — une session précédente y avait introduit une faute de frappe dans un type utilitaire. Édits chirurgicaux (bloc table, 2 fonctions, 1 param sur 2 RPC, 1 valeur d'enum × 2) = zéro risque de casser le reste, et le build TS valide la cohérence.
+
+### Pièges
+- **Stats de la fiche prof laissées à 4 tuiles.** Ajouter une 5ᵉ stat « formulations » aurait fait un `grid-cols-5` trop serré sur mobile. La section Formulations existe (accordéon), mais sans tuile de stat cliquable — compromis mobile-first assumé plutôt que d'entasser 5 chiffres sur une ligne.
+
 ## Session 30 (suite 2, 2026-07-11) — Retrait de la revue des anciennes tentatives de quiz
 
 ### Décisions

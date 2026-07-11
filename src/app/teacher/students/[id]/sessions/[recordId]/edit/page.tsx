@@ -25,7 +25,7 @@ export default async function EditSessionPage({
 
   if (!record) notFound();
 
-  const [noteRes, vocabRes, grammarRes, hwRes] = await Promise.all([
+  const [noteRes, vocabRes, grammarRes, formRes, hwRes] = await Promise.all([
     supabase
       .from("session_private_notes")
       .select("content")
@@ -39,6 +39,11 @@ export default async function EditSessionPage({
     supabase
       .from("grammar_rules")
       .select("id, title, content")
+      .eq("lesson_record_id", recordId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("formulations")
+      .select("id, arabic_text, french_text")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
@@ -88,6 +93,7 @@ export default async function EditSessionPage({
         homeworkTouched={!!hwRes.data && hwRes.data.status !== "a_rendre"}
         vocab={vocabRes.data ?? []}
         grammar={grammarRes.data ?? []}
+        formulations={formRes.data ?? []}
         supportFiles={(record.support_files as SupportFile[] | null) ?? []}
       />
     </div>

@@ -29,7 +29,7 @@ export default async function SessionDetailPage({
 
   if (!record) notFound();
 
-  const [noteRes, vocabRes, grammarRes, hwRes] = await Promise.all([
+  const [noteRes, vocabRes, grammarRes, formRes, hwRes] = await Promise.all([
     supabase
       .from("session_private_notes")
       .select("content")
@@ -43,6 +43,11 @@ export default async function SessionDetailPage({
     supabase
       .from("grammar_rules")
       .select("id, title, content")
+      .eq("lesson_record_id", recordId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("formulations")
+      .select("id, arabic_text, french_text")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
@@ -61,6 +66,7 @@ export default async function SessionDetailPage({
   const badge = attendanceBadge(record.attendance);
   const vocab = vocabRes.data ?? [];
   const grammar = grammarRes.data ?? [];
+  const formulations = formRes.data ?? [];
   const homework = hwRes.data;
   const privateNote = noteRes.data?.content ?? "";
   const supportFiles = (record.support_files as SupportFile[] | null) ?? [];
@@ -151,6 +157,21 @@ export default async function SessionDetailPage({
             <div key={g.id}>
               <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
               <p className="leading-relaxed" style={{ color: "#4A463F", fontSize: 13 }}>{g.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Formulations du jour */}
+      {formulations.length > 0 && (
+        <div className="rounded-[16px] p-4 space-y-2.5" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
+          <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+            Formulations ({formulations.length})
+          </p>
+          {formulations.map((f) => (
+            <div key={f.id} className="space-y-1">
+              <p dir="rtl" lang="ar" className="font-medium" style={{ fontSize: 16, color: "#1C1A17" }}>{f.arabic_text}</p>
+              <p style={{ color: "#4A463F", fontSize: 13 }}>{f.french_text}</p>
             </div>
           ))}
         </div>

@@ -25,3 +25,16 @@ export function zipGrammar(formData: FormData) {
   }
   return rows;
 }
+
+export function zipFormulation(formData: FormData) {
+  const arabic = formData.getAll("form_arabic").map((v) => String(v).trim());
+  const french = formData.getAll("form_french").map((v) => String(v).trim());
+
+  const rows: { arabic_text: string; french_text: string }[] = [];
+  for (let i = 0; i < arabic.length; i++) {
+    if (arabic[i] && french[i]) {
+      rows.push({ arabic_text: arabic[i], french_text: french[i] });
+    }
+  }
+  return rows;
+}

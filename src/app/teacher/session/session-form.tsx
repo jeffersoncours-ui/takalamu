@@ -69,6 +69,7 @@ export function SessionForm({
   // Lignes dynamiques (compteurs d'identité React, valeurs lues côté serveur).
   const [vocabRows, setVocabRows] = useState<number[]>([]);
   const [grammarRows, setGrammarRows] = useState<number[]>([]);
+  const [formRows, setFormRows] = useState<number[]>([]);
   const [nextId, setNextId] = useState(1);
   const addRow = (set: React.Dispatch<React.SetStateAction<number[]>>) => {
     set((rows) => [...rows, nextId]);
@@ -243,6 +244,35 @@ export function SessionForm({
           style={{ color: "#0F9D6E", fontSize: 13 }}
         >
           + Règle
+        </button>
+      </div>
+
+      {/* Formulation (expressions ar ↔ fr) */}
+      <div
+        className="space-y-2.5 rounded-[16px] p-4"
+        style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+      >
+        <span style={sectionLabel}>Formulation (expressions)</span>
+        {formRows.map((id) => (
+          <div key={id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+            <input name="form_arabic" placeholder="expression (ar)" dir="rtl" className="font-arabic" style={inputStyle} />
+            <input name="form_french" placeholder="traduction (fr)" style={inputStyle} />
+            <button
+              type="button"
+              onClick={() => removeRow(setFormRows, id)}
+              style={{ color: "#A8A29E", fontSize: 12 }}
+            >
+              Retirer
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => addRow(setFormRows)}
+          className="font-bold"
+          style={{ color: "#0F9D6E", fontSize: 13 }}
+        >
+          + Formulation
         </button>
       </div>
 

@@ -3,21 +3,24 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireStudent } from "@/lib/auth";
 
+// ── Quiz individuel auto-généré (vocabulaire OU formulation) ─────────────────
+// Contrat client générique : `item_id` masque la clé réelle (vocab_id / form_id)
+// des RPC, ce qui permet à un seul composant QuizPlayer de servir les deux.
+
 export type QuizQuestion = {
-  vocab_id: string;
+  item_id: string;
   direction: "fr_to_ar" | "ar_to_fr";
   prompt: string;
   choices: string[];
 };
 
 export type QuizAnswer = {
-  vocab_id: string;
+  item_id: string;
   direction: "fr_to_ar" | "ar_to_fr";
   chosen: string;
 };
 
 export type AnswerDetail = {
-  vocab_id: string;
   direction: string;
   chosen: string;
   correct: string;
@@ -31,9 +34,10 @@ export type QuizResult = {
   answers: AnswerDetail[];
 };
 
-export async function generateQuiz(
-  lessonRecordId?: string
-): Promise<QuizQuestion[]> {
+type RawVocabQuestion = { vocab_id: string; direction: "fr_to_ar" | "ar_to_fr"; prompt: string; choices: string[] };
+type RawFormQuestion = { form_id: string; direction: "fr_to_ar" | "ar_to_fr"; prompt: string; choices: string[] };
+
+export async function generateVocabQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
@@ -43,16 +47,52 @@ export async function generateQuiz(
   });
 
   if (error) throw new Error(error.message);
-  return (data as QuizQuestion[]) ?? [];
+  return ((data as RawVocabQuestion[]) ?? []).map((q) => ({
+    item_id: q.vocab_id,
+    direction: q.direction,
+    prompt: q.prompt,
+    choices: q.choices,
+  }));
 }
 
-export async function submitQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
+export async function submitVocabQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("submit_individual_quiz", {
     p_student_id: studentId,
-    p_answers: answers,
+    p_answers: answers.map((a) => ({ vocab_id: a.item_id, direction: a.direction, chosen: a.chosen })),
+  });
+
+  if (error) throw new Error(error.message);
+  return data as QuizResult;
+}
+
+export async function generateFormulationQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("generate_formulation_quiz", {
+    p_student_id: studentId,
+    ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
+  });
+
+  if (error) throw new Error(error.message);
+  return ((data as RawFormQuestion[]) ?? []).map((q) => ({
+    item_id: q.form_id,
+    direction: q.direction,
+    prompt: q.prompt,
+    choices: q.choices,
+  }));
+}
+
+export async function submitFormulationQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("submit_formulation_quiz", {
+    p_student_id: studentId,
+    p_answers: answers.map((a) => ({ form_id: a.item_id, direction: a.direction, chosen: a.chosen })),
   });
 
   if (error) throw new Error(error.message);
