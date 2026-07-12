@@ -44,53 +44,62 @@ export async function updateSession(
   );
   const keptPaths = new Set(formData.getAll("keep_file").map((v) => String(v)));
   const removedFiles = existingFiles.filter((f) => !keptPaths.has(f.path));
-  const supportFiles: SupportFile[] = existingFiles.filter((f) => keptPaths.has(f.path));
+  const keptExistingFiles: SupportFile[] = existingFiles.filter((f) => keptPaths.has(f.path));
 
-  const rawFiles = formData.getAll("support_files");
-  for (const raw of rawFiles) {
-    if (!(raw instanceof File) || raw.size === 0) continue;
-    const ext = raw.name.split(".").pop() ?? "";
-    const storagePath = `${studentId}/${Date.now()}_${raw.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const { error: uploadError } = await supabase.storage
-      .from("session-files")
-      .upload(storagePath, raw, { contentType: raw.type || `application/${ext}` });
-    if (!uploadError) {
-      supportFiles.push({ path: storagePath, name: raw.name });
-    }
-  }
+  const rawFiles = formData.getAll("support_files").filter(
+    (f): f is File => f instanceof File && f.size > 0
+  );
+
+  // Requêtes/uploads indépendants lancés en parallèle plutôt qu'un par un.
+  const [uploadResults, oldFormsRes, formulations, existingHomeworkRes] = await Promise.all([
+    Promise.all(
+      rawFiles.map(async (raw) => {
+        const ext = raw.name.split(".").pop() ?? "";
+        const storagePath = `${studentId}/${Date.now()}_${raw.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error: uploadError } = await supabase.storage
+          .from("session-files")
+          .upload(storagePath, raw, { contentType: raw.type || `application/${ext}` });
+        return uploadError ? null : { path: storagePath, name: raw.name };
+      })
+    ),
+    // Formulations : audios existants conservés, nouveaux uploadés, retirés nettoyés
+    supabase.from("formulations").select("audio_path").eq("lesson_record_id", recordId),
+    Promise.all(
+      zipFormulation(formData).map(async (row) => {
+        let audioPath: string | undefined;
+        if (row.newAudio) {
+          const ext = row.newAudio.name.split(".").pop() || "webm";
+          const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const { error: audioError } = await supabase.storage
+            .from("formulation-audio")
+            .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
+          if (!audioError) audioPath = path;
+        } else if (row.existingAudioPath) {
+          audioPath = row.existingAudioPath;
+        }
+        return {
+          arabic_text: row.arabic_text,
+          french_text: row.french_text,
+          ...(audioPath ? { audio_path: audioPath } : {}),
+        };
+      })
+    ),
+    // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)
+    supabase.from("homework").select("id").eq("lesson_record_id", recordId).maybeSingle(),
+  ]);
+
+  const newSupportFiles = uploadResults.filter(
+    (f): f is { path: string; name: string } => f !== null
+  );
+  const supportFiles: SupportFile[] = [...keptExistingFiles, ...newSupportFiles];
 
   if (removedFiles.length > 0) {
     await supabase.storage.from("session-files").remove(removedFiles.map((f) => f.path));
   }
 
-  // Formulations : audios existants conservés, nouveaux uploadés, retirés nettoyés
-  const { data: oldForms } = await supabase
-    .from("formulations")
-    .select("audio_path")
-    .eq("lesson_record_id", recordId);
-  const oldAudioPaths = (oldForms ?? [])
+  const oldAudioPaths = (oldFormsRes.data ?? [])
     .map((f) => f.audio_path)
     .filter((p): p is string => !!p);
-
-  const formulations: { arabic_text: string; french_text: string; audio_path?: string }[] = [];
-  for (const row of zipFormulation(formData)) {
-    let audioPath: string | undefined;
-    if (row.newAudio) {
-      const ext = row.newAudio.name.split(".").pop() || "webm";
-      const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: audioError } = await supabase.storage
-        .from("formulation-audio")
-        .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
-      if (!audioError) audioPath = path;
-    } else if (row.existingAudioPath) {
-      audioPath = row.existingAudioPath;
-    }
-    formulations.push({
-      arabic_text: row.arabic_text,
-      french_text: row.french_text,
-      ...(audioPath ? { audio_path: audioPath } : {}),
-    });
-  }
 
   // Nettoyage best-effort des audios qui ne sont plus référencés (remplacés,
   // retirés, ou dont la ligne a été supprimée).
@@ -100,12 +109,7 @@ export async function updateSession(
     await supabase.storage.from("formulation-audio").remove(orphanedAudio);
   }
 
-  // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)
-  const { data: existingHomework } = await supabase
-    .from("homework")
-    .select("id")
-    .eq("lesson_record_id", recordId)
-    .maybeSingle();
+  const existingHomework = existingHomeworkRes.data;
 
   const { error } = await supabase.rpc("update_session_record", {
     p_record_id: recordId,

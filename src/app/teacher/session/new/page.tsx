@@ -13,9 +13,10 @@ export default async function NewSessionPage({
   const supabase = await createClient();
 
   // Élèves de l'enseignant (RLS).
-  const { data: studentRows } = await supabase
+  const { data: studentRows, error: studentsError } = await supabase
     .from("students")
     .select("id, status, profiles(full_name)");
+  if (studentsError) console.error("session/new students query failed:", studentsError.message);
 
   const students = (studentRows ?? []).map((s) => ({
     id: s.id,

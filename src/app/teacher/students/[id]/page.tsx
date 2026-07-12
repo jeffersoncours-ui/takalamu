@@ -26,7 +26,7 @@ export default async function StudentCardPage({
 
   const { data: student } = await supabase
     .from("students")
-    .select("id, status, unjustified_absences_count, gender, profiles(full_name, email)")
+    .select("id, status, unjustified_absences_count, profiles(full_name, email)")
     .eq("id", id)
     .maybeSingle();
 

@@ -18,12 +18,13 @@ export default async function LibraryCoursePage({
   await requireTeacher();
   const supabase = await createClient();
 
-  const { data: record } = await supabase
+  const { data: record, error: recordError } = await supabase
     .from("lesson_records")
     .select("id, custom_title, session_date, support_files, student_id, course_group_id, students(profiles(full_name))")
     .eq("id", recordId)
     .maybeSingle();
 
+  if (recordError) console.error("library/[recordId] record query failed:", recordError.message);
   if (!record) notFound();
 
   const [vocabRes, grammarRes, formRes, studentsRes, groupRes] = await Promise.all([

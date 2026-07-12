@@ -43,10 +43,11 @@ export async function duplicateSession(
 
   // Ignore les élèves qui possèdent déjà ce cours (même groupe) — évite un
   // doublon si la sélection est forgée malgré la désactivation côté UI.
-  const { data: groupMembers } = await supabase
+  const { data: groupMembers, error: groupError } = await supabase
     .from("lesson_records")
     .select("student_id")
     .eq("course_group_id", record.course_group_id);
+  if (groupError) console.error("duplicateSession groupMembers query failed:", groupError.message);
   const already = new Set((groupMembers ?? []).map((r) => r.student_id));
   const targetIds = rawTargets.filter((id) => !already.has(id));
 
@@ -70,33 +71,41 @@ export async function duplicateSession(
   const sourceSupports = (record.support_files as SupportFile[] | null) ?? [];
 
   for (const targetId of targetIds) {
-    // Supports : recopiés dans le dossier de la cible
-    const supportFiles: SupportFile[] = [];
-    for (const f of sourceSupports) {
-      const base = f.path.split("/").pop() ?? "fichier";
-      const dest = `${targetId}/${randSuffix()}_${base}`;
-      const { error: copyErr } = await supabase.storage.from("session-files").copy(f.path, dest);
-      if (!copyErr) supportFiles.push({ path: dest, name: f.name });
-      else console.error("copy support", copyErr.message);
-    }
-
-    // Formulations : audio recopié dans le dossier de la cible
-    const formulations: { arabic_text: string; french_text: string; audio_path?: string }[] = [];
-    for (const f of sourceForms) {
-      let audioPath: string | undefined;
-      if (f.audio_path) {
-        const ext = f.audio_path.split(".").pop() || "webm";
-        const dest = `${targetId}/${randSuffix()}.${ext}`;
-        const { error: copyErr } = await supabase.storage.from("formulation-audio").copy(f.audio_path, dest);
-        if (!copyErr) audioPath = dest;
-        else console.error("copy audio", copyErr.message);
-      }
-      formulations.push({
-        arabic_text: f.arabic_text,
-        french_text: f.french_text,
-        ...(audioPath ? { audio_path: audioPath } : {}),
-      });
-    }
+    // Copies Storage indépendantes (chemins distincts) : lancées en parallèle.
+    const [supportResults, formulations] = await Promise.all([
+      // Supports : recopiés dans le dossier de la cible
+      Promise.all(
+        sourceSupports.map(async (f) => {
+          const base = f.path.split("/").pop() ?? "fichier";
+          const dest = `${targetId}/${randSuffix()}_${base}`;
+          const { error: copyErr } = await supabase.storage.from("session-files").copy(f.path, dest);
+          if (copyErr) {
+            console.error("copy support", copyErr.message);
+            return null;
+          }
+          return { path: dest, name: f.name };
+        })
+      ),
+      // Formulations : audio recopié dans le dossier de la cible
+      Promise.all(
+        sourceForms.map(async (f) => {
+          let audioPath: string | undefined;
+          if (f.audio_path) {
+            const ext = f.audio_path.split(".").pop() || "webm";
+            const dest = `${targetId}/${randSuffix()}.${ext}`;
+            const { error: copyErr } = await supabase.storage.from("formulation-audio").copy(f.audio_path, dest);
+            if (!copyErr) audioPath = dest;
+            else console.error("copy audio", copyErr.message);
+          }
+          return {
+            arabic_text: f.arabic_text,
+            french_text: f.french_text,
+            ...(audioPath ? { audio_path: audioPath } : {}),
+          };
+        })
+      ),
+    ]);
+    const supportFiles = supportResults.filter((f): f is SupportFile => f !== null);
 
     const { error } = await supabase.rpc("submit_session_record", {
       p_student_id: targetId,

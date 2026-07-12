@@ -2,6 +2,77 @@
 
 ---
 
+## Session 31 (suite 4) — Audit code mort + lag
+
+> **Demande propriétaire** : "vérifie tout le code pour retirer le code mort et le lag,
+> ne corrige que ce qui est utile, ne casse rien, vérifie toutes les connexions avant de
+> supprimer quoi que ce soit." 2 sous-agents en parallèle (code mort / performance),
+> chaque finding re-vérifié personnellement (grep + MCP) avant toute action.
+
+### Code mort retiré (vérifié : 0 référence code + 0 dépendance DB avant suppression)
+- [x] `isPaypalConfigured()` (`src/lib/paypal.ts`) : export jamais appelé, retiré
+- [x] `students.gender` retiré des `.select()` de `teacher/students/page.tsx` et `[id]/page.tsx`
+      (sélectionné mais jamais lu dans le mapping — sur-fetch, pas une suppression DB)
+- [x] `profile` déstructuré non utilisé dans `dashboard/layout.tsx` (déjà signalé par ESLint)
+- [x] Migration 50 : `DROP FUNCTION get_public_teachers()` (résidu de la vitrine publique/tunnel
+      d'essai, supprimés en bloc session 31 — la RPC avait survécu) ; `DROP COLUMN`
+      `students.trial_credit_cents`, `students.onboarding_completed`,
+      `payments.trial_credit_cents`, `payments.period` (résidus tunnel d'essai/cron de
+      relances abandonnés). Vérifié avant coup : 0 référence code (grep), 0 valeur
+      non-défaut sur TOUTES les lignes réelles, 0 policy/index/fonction dépendante (MCP).
+- [x] `database.types.ts` : édits ciblés (colonnes + fonction retirées)
+
+### Signalé, PAS touché (incertain — décision propriétaire requise)
+- Valeurs d'enum `notification_type` orphelines (`trial_request`, `session_reminder`) —
+  retrait d'enum invasif (rename→create→alter→drop), laissé tel quel.
+- `homework.seen_at` + statut `'vu'` : jamais positionné par le code — feature prévue
+  jamais câblée (comme `homework_due` avant son fix session 29), ou vestige ? À trancher.
+- `payment_status = 'failed'` : jamais positionné, probablement gardé pour un futur webhook.
+- **`homework.correction_file` non affiché côté élève** (`dashboard/homework/page.tsx` ne le
+  sélectionne pas) : bug fonctionnel réel (pas du code mort), le prof peut uploader une
+  correction que l'élève ne voit jamais. Hors périmètre de cette session (fix de contenu,
+  pas nettoyage) — signalé au propriétaire pour une prochaine session.
+
+### Performance : correctifs appliqués (comportement inchangé, gain de vitesse uniquement)
+- [x] `teacher/session/actions.ts` (fiche de fin de cours, écran <30s) : uploads supports +
+      audios de formulation parallélisés (`Promise.all`) par élève au lieu de séquentiels
+- [x] `teacher/library/[recordId]/actions.ts` (duplication) : copies Storage (supports +
+      audios) parallélisées par élève cible
+- [x] `sessions/[recordId]/edit/actions.ts` : mêmes uploads parallélisés + requêtes
+      indépendantes (`oldForms`, `existingHomework`) regroupées en un seul `Promise.all`
+- [x] Checks d'erreur manquants ajoutés (`console.error`) sur 3 requêtes à jointure
+      embarquée sans check : `teacher/session/new/page.tsx` (`studentRows`, oubli antérieur
+      à cette session), `library/[recordId]/page.tsx` (`record`), `library/[recordId]/actions.ts`
+      (`groupMembers`)
+
+### Signalé, PAS appliqué (changerait un comportement, décision produit)
+- Paralléliser la boucle EXTERNE sur les élèves (fiche multi-élèves + duplication) irait
+  plus loin en vitesse, mais changerait la sémantique d'erreur : aujourd'hui un échec sur
+  l'élève 2 arrête l'élève 3 (fail-fast) ; en parallèle, tous seraient tentés et les erreurs
+  agrégées après coup. Probablement préférable (un échec isolé ne devrait pas priver les
+  autres élèves), mais c'est un choix produit, pas un pur gain "sûr" — non appliqué sans
+  validation propriétaire.
+
+### Vérification
+- [x] Build (30 routes, 0 erreur TS) + lint (14 problèmes au lieu de 15 — le fix `profile`
+      inutilisé en a résorbé un ; seule l'erreur pré-existante `drawer-nav.tsx` subsiste)
+- [x] MCP : advisor sécurité après migration 50 — `get_public_teachers` absent de la liste,
+      0 nouveau WARN, mêmes acceptés qu'avant ; 4 élèves réels (Anthony/Bilel/Hamza/Rayan)
+      intacts, statuts et compteurs d'absences inchangés
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+
+### Review
+- Nettoyage ciblé : 1 RPC morte + 4 colonnes orphelines (résidus tunnel d'essai/cron déjà
+  déclarés abandonnés en session 31) retirées de la base, 3 petits exports/champs de code
+  mort retirés côté app. Aucune table/fonctionnalité active touchée.
+- Gain de vitesse concret sur les 3 écrans qui uploadent des fichiers (fiche de fin de
+  cours, duplication, édition) : uploads/copies indépendants désormais parallèles au lieu
+  de séquentiels, sans changement de comportement visible.
+- 4 points restent signalés sans action (2 ambigus, 1 bug fonctionnel hors périmètre, 1
+  optimisation supplémentaire qui changerait un comportement) — décisions propriétaire.
+
+---
+
 ## Session 31 (suite 3) — Anti-doublon bibliothèque (course_group_id)
 
 > **Retour propriétaire après test** : la bibliothèque affichait chaque cours en

@@ -12,7 +12,7 @@ export default async function StudentsPage() {
   const [studentsRes, teachersRes] = await Promise.all([
     supabase
       .from("students")
-      .select("id, status, unjustified_absences_count, gender, profiles(full_name, email)")
+      .select("id, status, unjustified_absences_count, profiles(full_name, email)")
       .order("created_at", { ascending: true }),
     supabase.from("teachers").select("id, display_name"),
   ]);

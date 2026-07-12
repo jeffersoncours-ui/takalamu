@@ -1,5 +1,47 @@
 # Lessons
 
+## Session 31 (suite 4) — Audit code mort + lag (2 sous-agents)
+
+- **2 sous-agents parallèles (code mort / performance), chaque finding re-vérifié
+  personnellement avant action** — reprend le pattern rentable de session 30 suite 7.
+  Consigne clé donnée aux agents (comme la fois précédente) : lire `lessons.md` d'abord
+  pour ne pas re-signaler les décisions déjà actées. Sur 2 findings DB (RPC + 4 colonnes),
+  la vérification perso via MCP (`pg_proc.prosrc`, policies, index, ET comptage des
+  valeurs non-défaut sur les lignes réelles) a confirmé les deux agents à 100% — aucun
+  faux positif cette fois, mais la vérification reste non-négociable : un agent peut
+  grep le code applicatif mais pas interroger la base réelle en direct.
+- **"Sûr à paralléliser" ≠ "sûr à paralléliser sans discussion" quand ça touche la
+  boucle EXTÉRIEURE sur plusieurs élèves.** L'audit performance a distingué deux niveaux
+  dans les 3 fichiers d'upload (fiche de fin de cours, duplication, édition) : les
+  uploads/copies internes À un même élève sont strictement indépendants (chemins
+  distincts) → parallélisation sans aucun changement de comportement, appliquée
+  directement. La boucle externe sur les élèves change la sémantique d'erreur
+  (fail-fast séquentiel vs tout-tenter-puis-agréger en parallèle) → jugé comme un choix
+  produit, pas un pur gain technique, donc seulement signalé, pas appliqué. Distinction
+  utile à généraliser : paralléliser une boucle ne change le comportement QUE si les
+  itérations sont indépendantes ET que l'ordre d'échec/arrêt n'a pas de sens métier.
+- **Colonnes orphelines confirmées par un double signal, pas un seul.** Pour retirer
+  `students.trial_credit_cents`/`onboarding_completed` et `payments.trial_credit_cents`/
+  `period`, deux preuves indépendantes ont été exigées avant le DROP : (a) 0 référence
+  dans `src/` (grep) ET (b) 0 valeur non-défaut sur TOUTES les lignes réelles (SQL). Le
+  premier prouve que le code ne les lit/écrit plus ; le second prouve qu'aucune donnée
+  significative n'existe déjà dedans (au cas où une donnée aurait été écrite par un
+  ancien code depuis supprimé). Un seul des deux signaux aurait laissé un doute.
+- **RPC "orpheline" ≠ juste 0 appel côté client — vérifier aussi `pg_proc.prosrc` de
+  toutes les autres fonctions.** `get_public_teachers()` avait 0 appel `.rpc(...)` dans
+  `src/`, mais il fallait aussi confirmer qu'aucune AUTRE fonction Postgres ne l'invoque
+  en interne (ex. un trigger ou une fonction wrapper) avant de la dropper — sinon le
+  DROP casserait une dépendance invisible côté code applicatif.
+- **Findings "incertains" du rapport de l'agent : ne pas les forcer en "confirmés"
+  soi-même sous prétexte de finir le ménage.** Le rapport a lui-même classé 4 points en
+  "à trancher avec le propriétaire" (enum orphelines, `homework.seen_at`/statut `'vu'`,
+  `payment_status='failed'`, `correction_file` jamais affiché côté élève). Respecté cette
+  classification telle quelle — signalés dans le todo, aucune action, même si certains
+  auraient été triviaux à "nettoyer". Un vrai bug fonctionnel découvert en chemin
+  (`correction_file`) n'a pas été corrigé non plus : la demande portait sur le nettoyage,
+  pas sur l'audit fonctionnel complet — élargir le périmètre sans le demander aurait été
+  une dérive, même bien intentionnée.
+
 ## Session 31 (suite 3) — Anti-doublon bibliothèque (course_group_id)
 
 - **`NOT NULL DEFAULT gen_random_uuid()` = groupe automatique sans branche.** Chaque

@@ -364,13 +364,11 @@ export type Database = {
           created_at: string
           id: string
           label: string | null
-          period: string | null
           plan: Database["public"]["Enums"]["payment_plan"] | null
           product: Database["public"]["Enums"]["payment_product"]
           revolut_reference: string | null
           status: Database["public"]["Enums"]["payment_status"]
           student_id: string
-          trial_credit_cents: number
           updated_at: string
         }
         Insert: {
@@ -378,13 +376,11 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
-          period?: string | null
           plan?: Database["public"]["Enums"]["payment_plan"] | null
           product: Database["public"]["Enums"]["payment_product"]
           revolut_reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_id: string
-          trial_credit_cents?: number
           updated_at?: string
         }
         Update: {
@@ -392,13 +388,11 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
-          period?: string | null
           plan?: Database["public"]["Enums"]["payment_plan"] | null
           product?: Database["public"]["Enums"]["payment_product"]
           revolut_reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           student_id?: string
-          trial_credit_cents?: number
           updated_at?: string
         }
         Relationships: [
@@ -659,12 +653,10 @@ export type Database = {
           created_at: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
-          onboarding_completed: boolean
           profile_id: string
           school_background: string | null
           status: Database["public"]["Enums"]["student_status"]
           teacher_id: string | null
-          trial_credit_cents: number
           unjustified_absences_count: number
           updated_at: string
         }
@@ -674,12 +666,10 @@ export type Database = {
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
-          onboarding_completed?: boolean
           profile_id: string
           school_background?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
-          trial_credit_cents?: number
           unjustified_absences_count?: number
           updated_at?: string
         }
@@ -689,12 +679,10 @@ export type Database = {
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
-          onboarding_completed?: boolean
           profile_id?: string
           school_background?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           teacher_id?: string | null
-          trial_credit_cents?: number
           unjustified_absences_count?: number
           updated_at?: string
         }
@@ -826,15 +814,6 @@ export type Database = {
         Returns: Json
       }
       get_grammar_quiz_questions: { Args: { p_quiz_id: string }; Returns: Json }
-      get_public_teachers: {
-        Args: never
-        Returns: {
-          bio: string
-          display_name: string
-          gender: Database["public"]["Enums"]["gender_type"]
-          id: string
-        }[]
-      }
       insert_notification: {
         Args: { p_payload: Json; p_type: string; p_user_id: string }
         Returns: undefined

@@ -51,37 +51,43 @@ export async function submitSession(
   const courseGroupId = crypto.randomUUID();
 
   for (const studentId of studentIds) {
-    const supportFiles: { path: string; name: string }[] = [];
-    for (const raw of rawFiles) {
-      const ext = raw.name.split(".").pop() ?? "";
-      const storagePath = `${studentId}/${Date.now()}_${raw.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const { error: uploadError } = await supabase.storage
-        .from("session-files")
-        .upload(storagePath, raw, { contentType: raw.type || `application/${ext}` });
-      if (!uploadError) {
-        supportFiles.push({ path: storagePath, name: raw.name });
-      }
-    }
-
-    // Audio de formulation : uploadé dans le dossier de chaque élève (le même
-    // enregistrement sert à tous les élèves cochés, comme les supports).
-    const formulations: { arabic_text: string; french_text: string; audio_path?: string }[] = [];
-    for (const row of formulationRows) {
-      let audioPath: string | undefined;
-      if (row.newAudio) {
-        const ext = row.newAudio.name.split(".").pop() || "webm";
-        const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: audioError } = await supabase.storage
-          .from("formulation-audio")
-          .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
-        if (!audioError) audioPath = path;
-      }
-      formulations.push({
-        arabic_text: row.arabic_text,
-        french_text: row.french_text,
-        ...(audioPath ? { audio_path: audioPath } : {}),
-      });
-    }
+    // Uploads indépendants (chemins distincts) : lancés en parallèle plutôt
+    // qu'un par un — gain direct sur l'écran le plus critique du produit (<30s).
+    const [supportResults, formulations] = await Promise.all([
+      Promise.all(
+        rawFiles.map(async (raw) => {
+          const ext = raw.name.split(".").pop() ?? "";
+          const storagePath = `${studentId}/${Date.now()}_${raw.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+          const { error: uploadError } = await supabase.storage
+            .from("session-files")
+            .upload(storagePath, raw, { contentType: raw.type || `application/${ext}` });
+          return uploadError ? null : { path: storagePath, name: raw.name };
+        })
+      ),
+      // Audio de formulation : uploadé dans le dossier de chaque élève (le même
+      // enregistrement sert à tous les élèves cochés, comme les supports).
+      Promise.all(
+        formulationRows.map(async (row) => {
+          let audioPath: string | undefined;
+          if (row.newAudio) {
+            const ext = row.newAudio.name.split(".").pop() || "webm";
+            const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const { error: audioError } = await supabase.storage
+              .from("formulation-audio")
+              .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
+            if (!audioError) audioPath = path;
+          }
+          return {
+            arabic_text: row.arabic_text,
+            french_text: row.french_text,
+            ...(audioPath ? { audio_path: audioPath } : {}),
+          };
+        })
+      ),
+    ]);
+    const supportFiles = supportResults.filter(
+      (f): f is { path: string; name: string } => f !== null
+    );
 
     const { data: recordId, error } = await supabase.rpc("submit_session_record", {
       p_student_id: studentId,

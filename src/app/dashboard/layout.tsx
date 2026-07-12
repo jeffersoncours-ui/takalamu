@@ -8,7 +8,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { profile, userId } = await requireStudent();
+  const { userId } = await requireStudent();
   const supabase = await createClient();
   const { data: notifs } = await supabase
     .from("notifications")

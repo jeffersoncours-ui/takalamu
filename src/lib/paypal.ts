@@ -3,10 +3,6 @@
 // l'enseignant confirme manuellement dans l'app quand l'argent est reçu.
 // TODO: définir PAYPAL_ME_USERNAME dans Vercel (ex. "jefferson" pour paypal.me/jefferson).
 
-export function isPaypalConfigured(): boolean {
-  return Boolean(process.env.PAYPAL_ME_USERNAME);
-}
-
 /** Lien PayPal.Me à montant exact (EUR), ou null si non configuré. */
 export function paypalMeUrl(amountCents: number): string | null {
   const username = process.env.PAYPAL_ME_USERNAME;
