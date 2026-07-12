@@ -25,6 +25,24 @@
   réservations), qui elle a un historique de suppression documenté. Signalé
   au propriétaire plutôt que supposé abandonné, car CLAUDE.md la documente
   toujours comme dans le périmètre.
+- **Signaler avant de dropper a payé** : le point Produit B, remonté sans
+  action, a permis au propriétaire de trancher explicitement (« je passerai
+  par Telegram ») plutôt que de découvrir après coup une suppression de
+  schéma non demandée. Une fois la confirmation obtenue, exécuté dans la
+  foulée (même session, pas de nouvel aller-retour) : `DROP TABLE`
+  `book_enrollments`/`book_sessions`/`books` (les 3 vides), colonne
+  `quizzes.book_id` retirée, + nettoyage des 3 valeurs d'enum devenues
+  inutilisées (`quiz_scope.group`, `quiz_source.book`, `payment_product.book`)
+  avec le pattern déjà établi (rename→create→alter USING→drop old type,
+  répété 3 fois dans la même migration) — vérifié au préalable via
+  `pg_proc.prosrc` qu'aucune fonction ne référençait ces valeurs avant de les
+  retirer.
+- **Confirmer un état "supprimé" par la structure du code, pas par la mémoire
+  des sessions précédentes.** Pour répondre "la vitrine est-elle supprimée ?",
+  vérifié directement `src/app/page.tsx` (redirect direct `/login`, aucune
+  route `(public)`) plutôt que de se fier au résumé de session 25 — utile
+  car une suppression peut elle-même dériver (résidu oublié) entre le moment
+  où elle est décrite et l'état réel du repo des sessions plus tard.
 
 ## Session 30 (suite 7) — Audit 3 sous-agents + nettoyage « Programme »
 

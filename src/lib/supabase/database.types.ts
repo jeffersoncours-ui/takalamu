@@ -14,150 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      book_enrollments: {
-        Row: {
-          book_id: string
-          created_at: string
-          enrolled_at: string
-          id: string
-          payment_id: string | null
-          student_id: string
-          updated_at: string
-        }
-        Insert: {
-          book_id: string
-          created_at?: string
-          enrolled_at?: string
-          id?: string
-          payment_id?: string | null
-          student_id: string
-          updated_at?: string
-        }
-        Update: {
-          book_id?: string
-          created_at?: string
-          enrolled_at?: string
-          id?: string
-          payment_id?: string | null
-          student_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "be_payment_fk"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "book_enrollments_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "book_enrollments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      book_sessions: {
-        Row: {
-          book_id: string
-          created_at: string
-          id: string
-          scheduled_at: string
-          session_number: number
-          updated_at: string
-          zoom_link: string | null
-        }
-        Insert: {
-          book_id: string
-          created_at?: string
-          id?: string
-          scheduled_at: string
-          session_number: number
-          updated_at?: string
-          zoom_link?: string | null
-        }
-        Update: {
-          book_id?: string
-          created_at?: string
-          id?: string
-          scheduled_at?: string
-          session_number?: number
-          updated_at?: string
-          zoom_link?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "book_sessions_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      books: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          price: number | null
-          quiz_id: string | null
-          shared_notes: string | null
-          teacher_id: string | null
-          title: string
-          total_sessions: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          price?: number | null
-          quiz_id?: string | null
-          shared_notes?: string | null
-          teacher_id?: string | null
-          title: string
-          total_sessions?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          price?: number | null
-          quiz_id?: string | null
-          shared_notes?: string | null
-          teacher_id?: string | null
-          title?: string
-          total_sessions?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "books_quiz_id_fkey"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "books_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       conversations: {
         Row: {
           created_at: string
@@ -670,7 +526,6 @@ export type Database = {
       }
       quizzes: {
         Row: {
-          book_id: string | null
           created_at: string
           id: string
           scope: Database["public"]["Enums"]["quiz_scope"]
@@ -680,7 +535,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          book_id?: string | null
           created_at?: string
           id?: string
           scope: Database["public"]["Enums"]["quiz_scope"]
@@ -690,7 +544,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          book_id?: string | null
           created_at?: string
           id?: string
           scope?: Database["public"]["Enums"]["quiz_scope"]
@@ -700,13 +553,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "quizzes_book_fk"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "quizzes_teacher_id_fkey"
             columns: ["teacher_id"]
@@ -1065,10 +911,10 @@ export type Database = {
         | "trial_request"
         | "session_reminder"
       payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly" | "hourly"
-      payment_product: "individual_sub" | "book" | "individual_hour"
+      payment_product: "individual_sub" | "individual_hour"
       payment_status: "pending" | "paid" | "failed" | "cancelled"
-      quiz_scope: "individual" | "group"
-      quiz_source: "glossary" | "book" | "grammar" | "formulation"
+      quiz_scope: "individual"
+      quiz_source: "glossary" | "grammar" | "formulation"
       student_status: "active" | "suspended_payment" | "suspended_absences"
       trial_status:
         | "pending"
@@ -1224,10 +1070,10 @@ export const Constants = {
         "session_reminder",
       ],
       payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly", "hourly"],
-      payment_product: ["individual_sub", "book", "individual_hour"],
+      payment_product: ["individual_sub", "individual_hour"],
       payment_status: ["pending", "paid", "failed", "cancelled"],
-      quiz_scope: ["individual", "group"],
-      quiz_source: ["glossary", "book", "grammar", "formulation"],
+      quiz_scope: ["individual"],
+      quiz_source: ["glossary", "grammar", "formulation"],
       student_status: ["active", "suspended_payment", "suspended_absences"],
       trial_status: [
         "pending",

@@ -24,10 +24,20 @@
 - [x] `.env.example` : bloc Bunny Stream retiré, commentaire Visio réécrit (route `/teacher/bookings` n'existe plus)
 - [x] `todo.md` : seul point « reste à faire » encore ouvert désormais = domaine OVH → Resend → `EMAIL_FROM` (voir sessions 16/19/20/21/29, toujours en attente). Les anciennes occurrences historiques (PayPal.Me/CRON_SECRET/Revolut/Bunny/Zoom) sont laissées telles quelles dans leurs sections de session d'origine (journal chronologique, pas réécrit) mais ne constituent plus un todo actif — ce point de clôture fait foi.
 
+### Suite de session — vitrine (question propriétaire) + Produit B (décision : drop)
+> Propriétaire confirme : les cours de groupe se géreront **via Telegram**, hors app — donc Produit B (books/book_sessions/book_enrollments) est lui aussi abandonné, pas juste "jamais démarré". Demande aussi confirmation : la vitrine publique est-elle complètement supprimée ?
+
+- [x] **Vitrine publique** : confirmé **entièrement supprimée** (pas dormante). `src/app/page.tsx` redirige directement vers `/login` (aucune page marketing). Aucun groupe de routes `(public)`, aucun composant `vitrine-*`, aucune page `/essai`/`/offres`/`/inscription` (tout supprimé en bloc session 25). Seul résidu trouvé : un commentaire dans `teacher/admin/teachers/actions.ts` (« Créer la fiche enseignant (vitrine) ») qui documente juste l'origine du champ `teachers` — pas du code de vitrine, laissé tel quel.
+- [x] Migration 47 (`drop_group_book_product`) : `DROP TABLE book_enrollments, book_sessions, books` (les 3 vides, vérifié avant coup) ; suppression de la ligne de seed orpheline `quizzes` (scope=group, jamais consommée par l'app) ; colonne `quizzes.book_id` retirée (portait la FK vers `books`) ; nettoyage des valeurs d'enum devenues inutilisées : `quiz_scope` (`group` retiré, ne reste que `individual`), `quiz_source` (`book` retiré), `payment_product` (`book` retiré) — vérifié au préalable qu'aucune ligne ni aucune fonction/RPC ne les utilisait (`prosrc` grep sur toutes les fonctions `public.*` = 0 résultat).
+- [x] `database.types.ts` régénéré via MCP (`generate_typescript_types`) — reflète exactement le schéma post-migration.
+- [x] Vérification MCP : `list_tables` confirme les 3 tables absentes, `quizzes` passé de 6 à 5 lignes (seed orpheline retirée), advisor sécurité inchangé (mêmes WARN pré-existants acceptés, 0 nouvelle catégorie).
+- [x] Build + lint verts (29 routes, 0 nouvelle erreur — seule l'erreur pré-existante `drawer-nav.tsx` subsiste).
+
 ### Review
 - Seul reste ouvert : domaine OVH → Resend → `EMAIL_FROM` (remis à plus tard, propriétaire).
 - Aucun code mort actif trouvé pour Revolut/Bunny/Zoom-enforcement — les pivots précédents (sessions 21, 22, 25, 29) avaient déjà fait le ménage ; seul `.env.example` avait deux résidus documentaires, corrigés.
-- Point Produit B signalé au propriétaire pour trancher (garder le schéma en attente ou le dropper) — pas d'action unilatérale, portée CLAUDE.md non modifiée.
+- **Vitrine publique confirmée entièrement supprimée** (pas dormante) — la racine `/` redirige directement vers `/login`, aucune page/composant marketing ne subsiste.
+- **Produit B (cours de groupe/livre) supprimé** sur confirmation propriétaire (gestion via Telegram, hors app) : tables `books`/`book_sessions`/`book_enrollments` droppées, colonne `quizzes.book_id` retirée, valeurs d'enum `group`/`book` nettoyées (`quiz_scope`, `quiz_source`, `payment_product`). Migration 47 appliquée + prouvée par MCP, types régénérés, build/lint verts.
 
 ---
 
