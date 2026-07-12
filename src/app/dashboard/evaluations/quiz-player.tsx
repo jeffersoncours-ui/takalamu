@@ -80,12 +80,17 @@ export default function QuizPlayer({
   generate,
   submit,
   labels,
+  onActiveChange,
 }: {
   count: number;
   courses: Course[];
   generate: (lessonRecordId?: string) => Promise<QuizQuestion[]>;
   submit: (answers: QuizAnswer[]) => Promise<QuizResult>;
   labels: QuizLabels;
+  /** Prévient le parent qu'un quiz est en cours (dès le clic, avant même la
+   *  réponse serveur) — permet de masquer le reste de la page et d'empêcher
+   *  le lancement simultané d'un autre quiz. */
+  onActiveChange?: (active: boolean) => void;
 }) {
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [loading, setLoading] = useState(false);
@@ -93,14 +98,18 @@ export default function QuizPlayer({
 
   const start = async () => {
     setLoading(true);
+    onActiveChange?.(true);
     try {
       const lessonRecordId = scope === "all" ? undefined : scope;
       const questions = await generate(lessonRecordId);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: [] });
+      } else {
+        onActiveChange?.(false);
       }
     } catch {
       // silent — edge case, user can retry
+      onActiveChange?.(false);
     } finally {
       setLoading(false);
     }
@@ -131,7 +140,10 @@ export default function QuizPlayer({
     }
   };
 
-  const restart = () => setPhase({ name: "idle" });
+  const restart = () => {
+    setPhase({ name: "idle" });
+    onActiveChange?.(false);
+  };
 
   // ── Idle ──────────────────────────────────────────────────────────────────
   if (phase.name === "idle") {

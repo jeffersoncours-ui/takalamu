@@ -19,8 +19,10 @@ const RED   = "#B4292E";
 
 export function GrammarQuizRunner({
   quizzes,
+  onActiveChange,
 }: {
   quizzes: { id: string; title: string | null }[];
+  onActiveChange?: (active: boolean) => void;
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [phase, setPhase]       = useState<Phase>({ name: "idle" });
@@ -31,15 +33,18 @@ export function GrammarQuizRunner({
   const start = async (quizId: string) => {
     setActiveId(quizId);
     setLoading(true);
+    onActiveChange?.(true);
     try {
       const questions = await fetchGrammarQuizQuestions(quizId);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: [] });
       } else {
         setActiveId(null);
+        onActiveChange?.(false);
       }
     } catch {
       setActiveId(null);
+      onActiveChange?.(false);
     } finally {
       setLoading(false);
     }
@@ -73,6 +78,7 @@ export function GrammarQuizRunner({
   const reset = () => {
     setPhase({ name: "idle" });
     setActiveId(null);
+    onActiveChange?.(false);
   };
 
   // ── Quiz list (idle, no active quiz) ──────────────────────────────────────

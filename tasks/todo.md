@@ -2,6 +2,40 @@
 
 ---
 
+## Session 31 (suite 5) — Un seul quiz visible à la fois
+
+> **Bug remonté par le propriétaire** (capture d'écran) : sur `/dashboard/evaluations`,
+> les 3 quiz (vocabulaire, formulation, grammaire) restent tous visibles pendant qu'on
+> en fait un — au point de pouvoir lancer deux quiz simultanément (les deux fonctionnent
+> en parallèle). Demande : dès qu'un quiz démarre, le reste de la page ne doit plus rien
+> afficher que ce quiz.
+
+### Plan
+- [x] `QuizPlayer` (`quiz-player.tsx`, partagé vocab+formulation) : prop
+      `onActiveChange?(active: boolean)`, déclenchée **dès le clic** sur « Commencer »
+      (avant même la réponse serveur — empêche tout lancement concurrent, pas seulement
+      un masquage visuel après coup) et à `false` sur retour à l'état idle (`restart`)
+- [x] `GrammarQuizRunner` : même prop `onActiveChange`, mêmes points de déclenchement
+      (`start`/`reset`)
+- [x] `QuizRunner`/`FormulationQuizRunner` : relaient simplement la prop à `QuizPlayer`
+- [x] Nouveau `evaluations-client.tsx` (composant client) : état partagé
+      `active: "vocab" | "formulation" | "grammar" | null`, masque le titre "Évaluations"
+      et les 2 autres sections dès qu'un quiz est actif, les réaffiche au retour à idle
+- [x] `page.tsx` simplifié : ne fait plus que le fetch serveur, délègue l'affichage à
+      `EvaluationsClient`
+- [x] Build (30 routes, 0 erreur) + lint verts (aucune régression, seule l'erreur
+      pré-existante `drawer-nav.tsx` subsiste)
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+
+### Review
+- Dès qu'un quiz démarre (n'importe lequel des 3), la page ne montre plus que lui — plus
+  de contenu résiduel, plus de lancement simultané possible (le clic sur « Commencer »
+  masque immédiatement les autres boutons de lancement, avant même la réponse serveur).
+- Aucune migration, aucun changement de RPC — purement un état client remonté d'un
+  niveau, les 3 lanceurs existants sont inchangés dans leur logique interne.
+
+---
+
 ## Session 31 (suite 4) — Audit code mort + lag
 
 > **Demande propriétaire** : "vérifie tout le code pour retirer le code mort et le lag,

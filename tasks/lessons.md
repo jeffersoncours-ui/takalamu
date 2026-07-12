@@ -1,5 +1,26 @@
 # Lessons
 
+## Session 31 (suite 5) — Un seul quiz visible à la fois
+
+- **Masquer visuellement APRÈS coup ne suffit pas contre un lancement concurrent — il
+  faut déclencher le callback AU CLIC, pas après la réponse serveur.** Si `onActiveChange(true)`
+  n'était appelé qu'après `await generate(...)`, une fenêtre de course subsistait : cliquer
+  vite sur les deux quiz avant que le premier `generate()` ait répondu les lancerait quand
+  même tous les deux. Appeler `onActiveChange(true)` en tout début de `start()` (avant le
+  `await`) ferme la fenêtre : le clic sur un quiz masque instantanément les boutons des
+  autres, donc un second clic est physiquement impossible.
+- **État "actif" à remonter d'un niveau, pas de refonte des 3 lanceurs.** Les 3 composants
+  (`QuizPlayer` partagé vocab/formulation, `GrammarQuizRunner` séparé pour la grammaire)
+  géraient chacun leur propre `phase` en state local, invisible du parent. Plutôt que de
+  fusionner leur logique interne (risqué, elle diffère : grammaire a un `activeId` distinct
+  en plus de la phase), une simple prop `onActiveChange` callback suffit à faire remonter
+  le seul signal binaire dont le parent a besoin ("un quiz tourne ou pas"), sans toucher à
+  la mécanique propre de chaque lanceur.
+- **`page.tsx` (Server Component) ne peut pas porter cet état lui-même** (pas de `useState`
+  côté serveur) — extraction d'un wrapper client dédié (`evaluations-client.tsx`) qui reçoit
+  les données déjà fetchées en props et gère uniquement l'orchestration d'affichage. Le
+  fetch reste server-side, seul l'état d'affichage devient client.
+
 ## Session 31 (suite 4) — Audit code mort + lag (2 sous-agents)
 
 - **2 sous-agents parallèles (code mort / performance), chaque finding re-vérifié

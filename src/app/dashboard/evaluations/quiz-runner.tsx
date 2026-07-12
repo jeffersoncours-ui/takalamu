@@ -8,9 +8,11 @@ type Course = { id: string; label: string; count: number };
 export default function QuizRunner({
   vocabCount,
   courses,
+  onActiveChange,
 }: {
   vocabCount: number;
   courses: Course[];
+  onActiveChange?: (active: boolean) => void;
 }) {
   return (
     <QuizPlayer
@@ -18,6 +20,7 @@ export default function QuizRunner({
       courses={courses}
       generate={generateVocabQuiz}
       submit={submitVocabQuiz}
+      onActiveChange={onActiveChange}
       labels={{
         title: "Quiz vocabulaire",
         unit: "mot",

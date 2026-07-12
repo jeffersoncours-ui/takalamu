@@ -1,9 +1,7 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { groupByLesson } from "@/lib/group-by-lesson";
-import QuizRunner from "./quiz-runner";
-import FormulationQuizRunner from "./formulation-quiz-runner";
-import { GrammarQuizRunner } from "./grammar-quiz-runner";
+import { EvaluationsClient } from "./evaluations-client";
 
 export default async function EvaluationsPage() {
   const { studentId } = await requireStudent();
@@ -73,39 +71,12 @@ export default async function EvaluationsPage() {
   const formCourseOptions = toCourseOptions(forms ?? []);
 
   return (
-    <div className="space-y-8">
-      <h1
-        className="px-0.5 leading-tight"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
-      >
-        Évaluations
-      </h1>
-
-      {/* ── Vocabulaire ────────────────────────────────────────────────────── */}
-      <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wide px-0.5" style={{ color: "#8B857A" }}>
-          Quiz vocabulaire
-        </p>
-        <QuizRunner vocabCount={vocabCount} courses={courseOptions} />
-      </section>
-
-      {/* ── Formulations ──────────────────────────────────────────────────── */}
-      <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wide px-0.5" style={{ color: "#8B857A" }}>
-          Quiz formulation
-        </p>
-        <FormulationQuizRunner formCount={formCount} courses={formCourseOptions} />
-      </section>
-
-      {/* ── Grammaire ──────────────────────────────────────────────────────── */}
-      {(grammarQuizzes ?? []).length > 0 && (
-        <section className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide px-0.5" style={{ color: "#8B857A" }}>
-            Exercices de grammaire
-          </p>
-          <GrammarQuizRunner quizzes={grammarQuizzes ?? []} />
-        </section>
-      )}
-    </div>
+    <EvaluationsClient
+      vocabCount={vocabCount}
+      courseOptions={courseOptions}
+      formCount={formCount}
+      formCourseOptions={formCourseOptions}
+      grammarQuizzes={grammarQuizzes ?? []}
+    />
   );
 }

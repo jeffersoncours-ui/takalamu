@@ -8,9 +8,11 @@ type Course = { id: string; label: string; count: number };
 export default function FormulationQuizRunner({
   formCount,
   courses,
+  onActiveChange,
 }: {
   formCount: number;
   courses: Course[];
+  onActiveChange?: (active: boolean) => void;
 }) {
   return (
     <QuizPlayer
@@ -18,6 +20,7 @@ export default function FormulationQuizRunner({
       courses={courses}
       generate={generateFormulationQuiz}
       submit={submitFormulationQuiz}
+      onActiveChange={onActiveChange}
       labels={{
         title: "Quiz formulation",
         unit: "expression",
