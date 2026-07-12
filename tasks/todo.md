@@ -20,6 +20,17 @@ le nom du cours d'origine en petit lien "Voir le cours" en dessous).
       rattachées à des cours nommés "بَائِعُ الأَصْنَامِ") que le rendu
       correspond au besoin
 - [x] `npm run build` + `npm run lint` verts
+- [x] Test manuel du propriétaire sur la preview → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel depuis la branche de session
+
+### Review
+- Chaque règle de grammaire s'affiche désormais par son propre nom (élève et
+  enseignant), avec un simple lien vers le cours d'origine — plus de nom de
+  cours utilisé comme étiquette d'accordéon pour la grammaire.
+- Vocabulaire et Formulations restent groupés par cours (choix assumé, pas un
+  oubli).
+- **Déployé en production** avec la suite 5 (nom de cours) et la suite 4
+  (Formulations), après validation manuelle du propriétaire sur la preview.
 
 ## Session 30 (suite 4) — Formulations (expressions) + quiz auto-généré
 
@@ -41,13 +52,16 @@ le nom du cours d'origine en petit lien "Voir le cours" en dessous).
 - [x] Détail de séance (élève `cours/[recordId]` + prof `sessions/[recordId]` + edit) : bloc formulations
 - [x] Build (29 routes, 0 erreur TS) + lint (0 nouvelle erreur, seule `drawer-nav.tsx` pré-existante) verts
 - [x] Vérif MCP (impersonation, transactions rollback, aucune donnée réelle persistée) : submit avec 4 formulations → quiz de 2 questions (moitié) ✔, 4 choix/question ✔, score recalculé serveur ✔, isolation RLS (Bilel voit 0 formulation d'Anthony) ✔, update remplace complètement (2→1) ✔, delete supprime tout ✔ ; advisor sécurité : mêmes WARN acceptés, 0 nouveau type, table `formulations` couverte par RLS
-- [ ] **En attente du test manuel du propriétaire** sur la preview avant merge `main`/prod
+- [x] Test manuel du propriétaire sur la preview → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel depuis la branche de session
 
-### Review (provisoire, en attente de validation)
+### Review
 - Nouvelle catégorie « Formulation » = expressions/phrases complètes en paire arabe ↔ français, saisies en fin de cours à côté du vocabulaire et de la grammaire (jumeau exact du système vocabulaire).
 - Quiz formulation auto-généré (comment dit-on…, distracteurs tirés des autres formulations de l'élève, moitié du périmètre, anti-triche côté serveur) sur la page Évaluations.
 - Consultation élève sur `/dashboard/formulations` (recherche + accordéons par cours) et intégration dans tous les détails de séance (élève + prof) et la fiche prof.
-- Refactor : le moteur de quiz vocabulaire a été extrait en `QuizPlayer` générique, réutilisé tel quel pour les formulations (2ᵉ usage → extraction justifiée). Pas encore mergé sur `main`/prod.
+- Refactor : le moteur de quiz vocabulaire a été extrait en `QuizPlayer` générique, réutilisé tel quel pour les formulations (2ᵉ usage → extraction justifiée).
+- **Déployé en production** avec la suite 5 (nom de cours) et la suite 6
+  (correctif grammaire), après validation manuelle du propriétaire sur la preview.
 
 ---
 
@@ -68,12 +82,14 @@ le nom du cours d'origine en petit lien "Voir le cours" en dessous).
 - [x] `submitSession` (actions.ts) : boucle sur `formData.getAll("student_ids")`, appelle `submit_session_record` une fois par élève avec le même contenu (vocab/grammar/support files re-uploadés dans le dossier Storage de chacun) ; notification `homework_due` envoyée à chaque élève concerné si devoir assigné
 - [x] Build + lint verts (28 routes, 0 nouvelle erreur — seule l'erreur pré-existante `drawer-nav.tsx` subsiste)
 - [x] Vérification MCP : RPC `submit_session_record` appelée deux fois (Anthony + Bilel) avec le même contenu dans une transaction `BEGIN...ROLLBACK` → 2 séances créées, 1 mot de vocabulaire chacune ✔, aucune donnée réelle persistée
-- [ ] **En attente du test manuel du propriétaire** avant merge vers `main`/prod
+- [x] Test manuel du propriétaire sur la preview → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel depuis la branche de session
 
-### Review (provisoire, en attente de validation)
+### Review
 - Bilel peut désormais se connecter avec `mba.benhamouda@gmail.com` (mot de passe temporaire communiqué séparément) et retrouve le même acquis pédagogique qu'Anthony (2 cours, vocabulaire, grammaire).
 - La fiche de fin de cours permet de cocher plusieurs élèves suivant le même programme (ex. Anthony + Bilel) : une seule saisie crée une séance identique pour chacun, sans distinction de présence entre eux (choix assumé, demande explicite).
 - Limite documentée : la duplication de fichiers (photos/documents) entre comptes élèves n'est pas possible via les outils MCP actuels (accès SQL uniquement, pas au Storage) — reste une action manuelle du propriétaire si besoin à l'avenir.
+- **Déployé en production** avec les suites 4, 5 et 6, après validation manuelle du propriétaire sur la preview.
 
 ---
 
@@ -1362,4 +1378,13 @@ s'il le souhaite.
       fonctionnel
 - [x] `npm run build` + `npm run lint` : verts (seule erreur = `drawer-nav.tsx`,
       pré-existante, déjà documentée)
-- [ ] Validation propriétaire sur la preview, puis merge `main` / prod
+- [x] Test manuel du propriétaire sur la preview → validé
+- [x] Déployé : fast-forward `main` + branche de prod Vercel depuis la branche de session
+
+### Review
+- L'enseignant tape désormais un nom de cours obligatoire à chaque fiche de fin
+  de cours (création ET édition), affiché à la place de "Cours N" partout où ça
+  apparaissait. Les anciennes séances gardent leur numérotation automatique
+  (pas de backfill, renommage manuel possible via "Modifier").
+- **Déployé en production** avec la suite 6 (correctif grammaire) et la suite 4
+  (Formulations), après validation manuelle du propriétaire sur la preview.
