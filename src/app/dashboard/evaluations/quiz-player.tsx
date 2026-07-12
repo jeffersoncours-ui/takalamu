@@ -249,7 +249,10 @@ export default function QuizPlayer({
           </p>
           {q.audio_url ? (
             <div className="py-1">
-              <AudioPrompt url={q.audio_url} />
+              {/* key=current force un remontage complet à chaque question :
+                  sans lui, React réutilise l'instance précédente et son état
+                  "en lecture" reste bloqué sur l'ancienne question. */}
+              <AudioPrompt key={current} url={q.audio_url} />
             </div>
           ) : (
             <p
