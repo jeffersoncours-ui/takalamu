@@ -34,7 +34,17 @@
 - [x] MCP : migration appliquée, `submit_session_record` (nouvelle signature) testée par impersonation + ROLLBACK (création ✔, vocab lié ✔, titre vide toujours rejeté ✔), 3 tables + colonne + bucket confirmés absents, données réelles intactes (7 séances, 177 mots), advisors = mêmes WARN acceptés, 0 nouveau
 - [x] Grep final : 0 référence restante aux éléments supprimés
 - [x] Push branche de session (preview) — PAS de merge prod sans validation propriétaire
-- [ ] Test manuel propriétaire sur la preview → merge `main`/prod
+- [x] Validation propriétaire → déployé : fast-forward `main` + branche de prod Vercel
+
+### Review
+- Audit complet par 3 sous-agents (code mort / perf / bugs d'affichage), rapport
+  validé par le propriétaire, corrections appliquées en un lot : cache des gardes
+  d'auth (gain perf sur toute navigation), retrait définitif des vestiges
+  « Programme » (code + base), checks `error` généralisés sur 11 pages.
+- Incident évité de justesse documenté : la base étant partagée preview/prod,
+  la migration 46 a cassé l'affichage prod (3 écrans vides) entre son
+  application et le merge — résolu en déployant immédiatement après validation.
+- **Déployé en production.**
 
 ## Session 30 (suite 6) — Grammaire : nom de la règle indépendant du cours
 

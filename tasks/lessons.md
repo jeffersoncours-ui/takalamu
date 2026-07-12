@@ -30,6 +30,13 @@
   sans lui, une jointure PostgREST qui casse (FK ambiguë, RLS) rend `data: null`
   et la page affiche silencieusement « Aucun … » — indiscernable d'un vrai
   vide (leçon session 26 enfin appliquée partout, pas seulement au dashboard).
+- **RÈGLE IMPORTANTE — base partagée preview/prod** : une migration destructive
+  (DROP de table/colonne encore référencée par le code en prod) casse la prod
+  **dès son application**, même si le code corrigé n'est que sur la preview.
+  Ici : 3 écrans prod vides entre la migration 46 et le merge (~ le temps de la
+  validation propriétaire). Pour les prochaines suppressions de schéma : soit
+  déployer le retrait des références code en prod AVANT d'appliquer le DROP,
+  soit obtenir l'accord de merge immédiat avant de lancer la migration.
 
 ## Session 30 (suite 6) — Grammaire : nom de règle vs nom de cours
 
