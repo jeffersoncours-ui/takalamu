@@ -29,17 +29,30 @@ export async function duplicateSession(
   await requireTeacher();
   const supabase = await createClient();
 
-  const targetIds = formData.getAll("target_ids").map((v) => String(v)).filter(Boolean);
-  if (targetIds.length === 0) return { error: "Sélectionne au moins un élève." };
+  const rawTargets = formData.getAll("target_ids").map((v) => String(v)).filter(Boolean);
+  if (rawTargets.length === 0) return { error: "Sélectionne au moins un élève." };
 
   // Source (RLS garantit que c'est un cours de l'enseignant courant)
   const { data: record, error: recordError } = await supabase
     .from("lesson_records")
-    .select("id, custom_title, session_date, public_recap, support_files")
+    .select("id, custom_title, session_date, public_recap, support_files, course_group_id")
     .eq("id", recordId)
     .maybeSingle();
 
   if (recordError || !record) return { error: "Cours introuvable." };
+
+  // Ignore les élèves qui possèdent déjà ce cours (même groupe) — évite un
+  // doublon si la sélection est forgée malgré la désactivation côté UI.
+  const { data: groupMembers } = await supabase
+    .from("lesson_records")
+    .select("student_id")
+    .eq("course_group_id", record.course_group_id);
+  const already = new Set((groupMembers ?? []).map((r) => r.student_id));
+  const targetIds = rawTargets.filter((id) => !already.has(id));
+
+  if (targetIds.length === 0) {
+    return { error: "Les élèves sélectionnés ont déjà ce cours." };
+  }
 
   const [vocabRes, grammarRes, formRes] = await Promise.all([
     supabase.from("vocabulary").select("arabic_word, french_definition, root").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
@@ -95,6 +108,9 @@ export async function duplicateSession(
       p_grammar: grammar,
       p_formulations: formulations,
       p_support_files: supportFiles,
+      // Les cibles rejoignent le groupe du cours source → une seule carte en
+      // bibliothèque, « donné à » s'enrichit des nouveaux élèves.
+      p_course_group_id: record.course_group_id,
     });
 
     if (error) {

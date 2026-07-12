@@ -1,5 +1,31 @@
 # Lessons
 
+## Session 31 (suite 3) — Anti-doublon bibliothèque (course_group_id)
+
+- **`NOT NULL DEFAULT gen_random_uuid()` = groupe automatique sans branche.** Chaque
+  `lesson_record` obtient un `course_group_id` frais à l'insert sans que le code ait à
+  y penser (fiche mono-élève = groupe de 1). Seuls les 2 cas « partagés » (fiche
+  multi-élèves, duplication) passent un id explicite. La RPC fait
+  `COALESCE(p_course_group_id, gen_random_uuid())` — le NULL passé par un appel
+  mono-élève ne viole pas le NOT NULL car il est remplacé. Pattern propre : colonne
+  auto-remplie + override optionnel, plutôt qu'une logique conditionnelle côté app.
+- **Regrouper par identité explicite, pas par titre.** Le propriétaire a choisi un
+  `course_group_id` plutôt qu'un dédoublonnage par titre : deux cours différents au même
+  titre ne se confondront jamais. Coût : le regroupement ne capture que les fiches créées
+  *ensemble* (multi-select ou duplication) — deux saisies séparées du même titre restent
+  distinctes. Acceptable car le workflow réel pour « même cours à plusieurs » est
+  justement le multi-select ou la duplication, qui posent le groupe partagé.
+- **Rattrapage par titre = one-shot de migration, pas comportement permanent.** Les 6
+  fiches historiques ont été regroupées par `(teacher_id, custom_title)` dans la migration
+  (fragile en général, mais correct pour ces données où titre = cours). Le comportement
+  ongoing n'utilise jamais le titre pour grouper — uniquement l'id explicite. Distinguer
+  clairement « backfill pragmatique de données existantes » de « règle de gation continue ».
+- **Représentant de groupe = la fiche la plus récemment modifiée.** Dans un groupe dont
+  le contenu a divergé (ex. Bilel a des audios, Rayan non — état transitoire d'avant la
+  duplication), la carte bibliothèque et l'action « Dupliquer » s'appuient sur le membre
+  au `updated_at` le plus récent (souvent la version la plus complète). La divergence est
+  transitoire : avec la duplication, les membres d'un groupe convergent.
+
 ## Session 31 (suite 2) — Dupliquer un cours (bibliothèque enseignant)
 
 - **« Dupliquer un cours réel » ≠ le vieux Programme abandonné.** Distinction

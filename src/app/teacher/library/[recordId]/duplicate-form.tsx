@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 
 import { duplicateSession } from "./actions";
 
-type Student = { id: string; name: string; status: string; isSource: boolean };
+type Student = { id: string; name: string; status: string; alreadyHas: boolean };
 
 export function DuplicateForm({
   recordId,
@@ -36,13 +36,16 @@ export function DuplicateForm({
         <div className="flex flex-col gap-2">
           {students.map((s) => {
             const checked = selectedIds.includes(s.id);
+            const disabled = s.alreadyHas;
             return (
               <label
                 key={s.id}
                 className="flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 transition-colors"
                 style={{
                   border: `1.5px solid ${checked ? "#9FE3C8" : "#E9E3D8"}`,
-                  background: checked ? "#ECFAF4" : "#fff",
+                  background: disabled ? "#F7F4EE" : checked ? "#ECFAF4" : "#fff",
+                  opacity: disabled ? 0.6 : 1,
+                  cursor: disabled ? "not-allowed" : "pointer",
                 }}
               >
                 <input
@@ -50,6 +53,7 @@ export function DuplicateForm({
                   name="target_ids"
                   value={s.id}
                   checked={checked}
+                  disabled={disabled}
                   onChange={() => toggle(s.id)}
                   style={{ width: 18, height: 18, accentColor: "#0F9D6E" }}
                 />
@@ -57,12 +61,12 @@ export function DuplicateForm({
                   {s.name}
                   {s.status !== "active" ? " (suspendu)" : ""}
                 </span>
-                {s.isSource && (
+                {s.alreadyHas && (
                   <span
                     className="ml-auto rounded-full"
                     style={{ background: "#F4F1EB", color: "#8B857A", fontSize: 10, fontWeight: 700, padding: "2px 8px" }}
                   >
-                    cours d&apos;origine
+                    a déjà ce cours
                   </span>
                 )}
               </label>

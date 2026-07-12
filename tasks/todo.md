@@ -2,6 +2,47 @@
 
 ---
 
+## Session 31 (suite 3) — Anti-doublon bibliothèque (course_group_id)
+
+> **Retour propriétaire après test** : la bibliothèque affichait chaque cours en
+> double (une fiche par élève). Décision validée (AskUserQuestion) : **regrouper par
+> identifiant de cours partagé** — un cours = une carte, même donné à plusieurs
+> élèves. Options écartées : bibliothèque de modèles séparée (trop lourd),
+> dédoublonnage par titre seul (fragile si 2 cours même titre).
+
+### Plan
+- [x] Migration 49 : `lesson_records.course_group_id uuid NOT NULL DEFAULT gen_random_uuid()`
+      (chaque INSERT obtient un groupe frais automatiquement) + rattrapage des cours
+      existants (même `(teacher_id, custom_title)` → même groupe : 6 fiches → 3 groupes) +
+      `submit_session_record` gagne `p_course_group_id` (DROP+CREATE, nouveau param à la fin,
+      `COALESCE(p_course_group_id, gen_random_uuid())` à l'insert)
+- [x] `database.types.ts` : `course_group_id` sur lesson_records (Row/Insert/Update) +
+      `p_course_group_id?` sur submit_session_record
+- [x] Fiche multi-élèves (`session/actions.ts`) : `crypto.randomUUID()` unique partagé par
+      tous les élèves cochés d'une même saisie
+- [x] Duplication (`library/[recordId]/actions.ts`) : les cibles rejoignent le
+      `course_group_id` du cours source ; ignore (serveur + UI) les élèves déjà dans le groupe
+- [x] Bibliothèque (`library/page.tsx`) : regroupe par `course_group_id`, représentant = la
+      fiche la plus récemment modifiée, carte « Donné à X, Y » au lieu d'une par élève
+- [x] Page duplication : élèves ayant déjà le cours marqués « a déjà ce cours » (désactivés)
+- [x] Build (31 routes) + lint verts (mêmes pré-existants) ; MCP (impersonation, rollback) :
+      fiche multi + duplication → 1 groupe de 3 élèves ✔ ; fiche solo → groupe distinct de 1 ✔ ;
+      rattrapage confirmé (3 titres = 3 groupes) ✔ ; advisor 0 nouveau
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+- [ ] Test manuel du propriétaire sur la preview (bibliothèque = 3 cartes, pas 6)
+- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+
+### Review
+- La bibliothèque affiche désormais **un cours = une carte** (« Donné à Bilel, Rayan »),
+  fini les doublons par élève. Repose sur un `course_group_id` partagé, posé
+  automatiquement à la saisie multi-élèves et à la duplication ; les fiches existantes
+  ont été regroupées par (enseignant, titre).
+- Une fiche mono-élève reste un cours à part entière (groupe de 1). Deux saisies séparées
+  du même titre restent deux cours distincts (choix assumé : le regroupement suit la
+  saisie/duplication réelle, pas le titre — cohérent avec l'option choisie).
+
+---
+
 ## Session 31 (suite 2) — Dupliquer un cours (bibliothèque enseignant)
 
 > **Demande propriétaire (validée après reformulation)** : pouvoir dupliquer un cours

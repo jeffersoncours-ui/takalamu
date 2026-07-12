@@ -22,39 +22,65 @@ export default async function LibraryPage({
   const { data: rows, error } = await supabase
     .from("lesson_records")
     .select(
-      "id, custom_title, session_date, support_files, student_id, students(profiles(full_name)), vocabulary(count), grammar_rules(count), formulations(audio_path)"
+      "id, custom_title, session_date, updated_at, support_files, course_group_id, student_id, students(profiles(full_name)), vocabulary(count), grammar_rules(count), formulations(audio_path)"
     )
-    .order("session_date", { ascending: false });
+    .order("updated_at", { ascending: false });
 
   if (error) {
     console.error("library lesson_records", error.message);
   }
 
-  const courses = (rows ?? []).map((r) => {
+  // Regroupe les fiches par cours (course_group_id) : un même cours donné à
+  // plusieurs élèves = une seule carte. Le représentant du groupe est la fiche
+  // la plus récemment modifiée (rows déjà triées par updated_at décroissant).
+  const byGroup = new Map<
+    string,
+    {
+      id: string;
+      title: string;
+      date: string;
+      students: string[];
+      vocabCount: number;
+      grammarCount: number;
+      formCount: number;
+      audioCount: number;
+      supportCount: number;
+    }
+  >();
+
+  for (const r of rows ?? []) {
     const student = Array.isArray(r.students) ? r.students[0] : r.students;
     const profile = student
       ? Array.isArray(student.profiles)
         ? student.profiles[0]
         : student.profiles
       : null;
+    const name = profile?.full_name ?? "—";
+    const existing = byGroup.get(r.course_group_id);
+
+    if (existing) {
+      // Membre non-représentant : n'ajoute que le nom de l'élève.
+      if (!existing.students.includes(name)) existing.students.push(name);
+      continue;
+    }
+
     const vocabCount = Array.isArray(r.vocabulary) ? (r.vocabulary[0]?.count ?? 0) : 0;
     const grammarCount = Array.isArray(r.grammar_rules) ? (r.grammar_rules[0]?.count ?? 0) : 0;
     const forms = Array.isArray(r.formulations) ? r.formulations : [];
-    const formCount = forms.length;
-    const audioCount = forms.filter((f) => !!f.audio_path).length;
-    const supportCount = ((r.support_files as SupportFile[] | null) ?? []).length;
-    return {
+    byGroup.set(r.course_group_id, {
       id: r.id,
       title: r.custom_title || format(new Date(r.session_date), "d MMMM yyyy", { locale: fr }),
       date: format(new Date(r.session_date), "d MMM yyyy", { locale: fr }),
-      studentName: profile?.full_name ?? "—",
+      students: [name],
       vocabCount,
       grammarCount,
-      formCount,
-      audioCount,
-      supportCount,
-    };
-  });
+      formCount: forms.length,
+      audioCount: forms.filter((f) => !!f.audio_path).length,
+      supportCount: ((r.support_files as SupportFile[] | null) ?? []).length,
+    });
+  }
+
+  const courses = [...byGroup.values()];
 
   return (
     <div className="space-y-5">
@@ -102,7 +128,10 @@ export default async function LibraryPage({
                     {c.title}
                   </p>
                   <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
-                    {c.studentName} · {c.date}
+                    {c.students.length > 1
+                      ? `Donné à ${c.students.join(", ")}`
+                      : c.students[0]}{" "}
+                    · {c.date}
                   </p>
                 </div>
                 <span

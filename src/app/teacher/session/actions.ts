@@ -46,6 +46,10 @@ export async function submitSession(
   // La même fiche (vocabulaire, grammaire, devoir, récap, supports) est appliquée
   // à chaque élève sélectionné — utile pour les anciens élèves qui suivent le même
   // programme qu'un élève plus avancé (voir CLAUDE.md session courante).
+  // Tous les élèves d'une même saisie partagent un `course_group_id` → la
+  // bibliothèque n'affiche qu'une carte pour ce cours, pas une par élève.
+  const courseGroupId = crypto.randomUUID();
+
   for (const studentId of studentIds) {
     const supportFiles: { path: string; name: string }[] = [];
     for (const raw of rawFiles) {
@@ -91,6 +95,7 @@ export async function submitSession(
       p_grammar: grammar,
       p_formulations: formulations,
       p_support_files: supportFiles,
+      p_course_group_id: courseGroupId,
     });
 
     if (error || !recordId) {

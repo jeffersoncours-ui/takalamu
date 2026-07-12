@@ -20,18 +20,23 @@ export default async function LibraryCoursePage({
 
   const { data: record } = await supabase
     .from("lesson_records")
-    .select("id, custom_title, session_date, support_files, student_id, students(profiles(full_name))")
+    .select("id, custom_title, session_date, support_files, student_id, course_group_id, students(profiles(full_name))")
     .eq("id", recordId)
     .maybeSingle();
 
   if (!record) notFound();
 
-  const [vocabRes, grammarRes, formRes, studentsRes] = await Promise.all([
+  const [vocabRes, grammarRes, formRes, studentsRes, groupRes] = await Promise.all([
     supabase.from("vocabulary").select("id, arabic_word, french_definition").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("grammar_rules").select("id, title").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("formulations").select("id, arabic_text, french_text, audio_path").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("students").select("id, status, profiles(full_name)"),
+    supabase.from("lesson_records").select("student_id").eq("course_group_id", record.course_group_id),
   ]);
+
+  // Élèves qui possèdent déjà ce cours (même groupe) → on les marque pour éviter
+  // de créer un doublon en re-dupliquant vers eux.
+  const alreadyHas = new Set((groupRes.data ?? []).map((r) => r.student_id));
 
   const sourceStudent = Array.isArray(record.students) ? record.students[0] : record.students;
   const sourceProfile = sourceStudent
@@ -53,7 +58,7 @@ export default async function LibraryCoursePage({
     id: s.id,
     name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) ?? "Élève",
     status: s.status,
-    isSource: s.id === record.student_id,
+    alreadyHas: alreadyHas.has(s.id),
   }));
 
   return (
