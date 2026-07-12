@@ -1,5 +1,31 @@
 # Lessons
 
+## Session 31 — Clôture des intégrations abandonnées
+
+- **Un « todo » scattered dans un journal chronologique par session peut être
+  mal lu comme une liste d'actions actives.** Le propriétaire voyait
+  probablement l'ensemble des `- [ ]` non cochés (checklist markdown, tous
+  affichés indépendamment de leur section/session d'origine) comme "le todo",
+  alors qu'il s'agissait pour beaucoup de résidus d'anciennes sections déjà
+  périmées par des pivots ultérieurs (PayPal→Revolut→PayPal.Me, vitrine
+  supprimée, réservations supprimées). Réflexe : avant de nettoyer un "todo"
+  signalé par le propriétaire, vérifier d'abord dans le code réel (pas
+  seulement dans le fichier) si l'item est encore vivant, périmé par un pivot
+  documenté, ou jamais commencé — les trois se traitent différemment.
+- **Ne pas réécrire l'historique d'un journal append-only.** Plutôt que
+  d'éditer chirurgicalement chaque doublon de "reste à faire" dispersé dans
+  ~6 sections de sessions passées (16, 19, 20, 21), une nouvelle entrée de
+  clôture en tête de fichier documente l'état actuel et fait foi — cohérent
+  avec la convention déjà en place dans ce fichier (chaque session ajoute,
+  aucune ne réécrit une session précédente).
+- **Une table en base sans aucun consommateur applicatif n'est pas forcément
+  un abandon.** `books`/`book_sessions`/`book_enrollments` (Produit B) existent
+  depuis le tout premier lot mais n'ont jamais eu de code applicatif — à
+  distinguer d'une fonctionnalité pivotée puis retirée (Revolut, vidéos,
+  réservations), qui elle a un historique de suppression documenté. Signalé
+  au propriétaire plutôt que supposé abandonné, car CLAUDE.md la documente
+  toujours comme dans le périmètre.
+
 ## Session 30 (suite 7) — Audit 3 sous-agents + nettoyage « Programme »
 
 - **`cache()` de React sur les gardes d'auth = gain systémique.** Chaque

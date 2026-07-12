@@ -2,6 +2,35 @@
 
 ---
 
+## Session 31 — Clôture des intégrations abandonnées + nettoyage `.env.example`
+
+> **Demande propriétaire** : ne garder dans le todo qu'un seul point en attente
+> (domaine OVH → Resend, remis à plus tard) ; tout le reste des anciens
+> « reste à faire » (PayPal.Me/cron de relance, Revolut Merchant, Bunny Stream,
+> enforcement serveur Zoom/visio) est **abandonné**. Vérifier qu'aucun code
+> mort ne traîne encore en lien avec ces sujets avant de les rayer.
+
+### Vérification code (avant clôture)
+- [x] `revolut.ts` / webhook `/api/webhooks/revolut` / `CRON_SECRET` : 0 fichier, 0 référence — déjà supprimés en session 21 (suite) et 22. `revolut_reference`/`revolut_order_id` restent en base **intentionnellement** comme nom de colonne générique de référence de paiement (décision déjà actée session 21, pas un résidu à corriger).
+- [x] Bunny Stream : 0 référence dans `src/` (tables `videos`/`milestone_video_assignments`/`video_views` déjà droppées migration 41, session 29). Seul résidu trouvé : `.env.example` listait encore `BUNNY_STREAM_LIBRARY_ID`/`_API_KEY`/`_CDN_HOSTNAME` → **retiré**.
+- [x] Zoom/visio enforcement serveur : 0 référence (`join-window.ts`, `NextCourseHero`, `/teacher/bookings`, tout le système de réservation ont été supprimés en bloc session 25 avec `bookings`/`teacher_availability`). Résidu trouvé : commentaire `.env.example` pointant vers `/teacher/bookings` (route inexistante) → réécrit pour refléter la réalité actuelle (lien Meet partagé à la main via la messagerie, aucun champ dédié).
+- [x] PayPal.Me : toujours **actif** (pas abandonné) — `paypal.ts`, `/teacher/payments`, `/dashboard/payments` l'utilisent en production. Seule la ligne « renseigner `PAYPAL_ME_USERNAME` dans Vercel » était obsolète (fonctionnalité déjà en usage réel depuis plusieurs sessions, forcément déjà configurée) → retirée du todo.
+- [x] Quota heures à la carte / report `moved` sur absence justifiée (§8 CLAUDE.md, différés session 16) : dépendaient tous deux du système de réservation (`bookings`), supprimé en bloc session 25 — désormais sans objet.
+
+### Point signalé, non tranché (pas d'action prise)
+- **Produit B (cours de groupe/livre)** : les tables `books`/`book_sessions`/`book_enrollments` (+ colonne `book_sessions.zoom_link`, valeurs d'enum `payment_product='book'`/`quiz_source='book'`) existent toujours en base depuis le tout premier lot (session 1, `05_group_product`) mais **aucun code applicatif** (page, server action, RPC dédiée) n'a jamais été construit dessus en 30 sessions — ce n'est pas un pivot/abandon documenté comme les autres, juste une partie du périmètre jamais démarrée. Toujours dans le périmètre CLAUDE.md (§1, §5, §7.4). **Non touché** : décision produit (garder en attente vs. dropper) qui appartient au propriétaire, pas déduite ici.
+
+### Nettoyage
+- [x] `.env.example` : bloc Bunny Stream retiré, commentaire Visio réécrit (route `/teacher/bookings` n'existe plus)
+- [x] `todo.md` : seul point « reste à faire » encore ouvert désormais = domaine OVH → Resend → `EMAIL_FROM` (voir sessions 16/19/20/21/29, toujours en attente). Les anciennes occurrences historiques (PayPal.Me/CRON_SECRET/Revolut/Bunny/Zoom) sont laissées telles quelles dans leurs sections de session d'origine (journal chronologique, pas réécrit) mais ne constituent plus un todo actif — ce point de clôture fait foi.
+
+### Review
+- Seul reste ouvert : domaine OVH → Resend → `EMAIL_FROM` (remis à plus tard, propriétaire).
+- Aucun code mort actif trouvé pour Revolut/Bunny/Zoom-enforcement — les pivots précédents (sessions 21, 22, 25, 29) avaient déjà fait le ménage ; seul `.env.example` avait deux résidus documentaires, corrigés.
+- Point Produit B signalé au propriétaire pour trancher (garder le schéma en attente ou le dropper) — pas d'action unilatérale, portée CLAUDE.md non modifiée.
+
+---
+
 ## Session 30 (suite 7) — Audit complet (3 sous-agents) + nettoyage validé
 
 > Audit lancé à la demande du propriétaire (code mort / perf / bugs d'affichage),
