@@ -1,0 +1,149 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+import { requireTeacher } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { DuplicateForm } from "./duplicate-form";
+
+type SupportFile = { path: string; name: string };
+
+export default async function LibraryCoursePage({
+  params,
+}: {
+  params: Promise<{ recordId: string }>;
+}) {
+  const { recordId } = await params;
+  await requireTeacher();
+  const supabase = await createClient();
+
+  const { data: record } = await supabase
+    .from("lesson_records")
+    .select("id, custom_title, session_date, support_files, student_id, students(profiles(full_name))")
+    .eq("id", recordId)
+    .maybeSingle();
+
+  if (!record) notFound();
+
+  const [vocabRes, grammarRes, formRes, studentsRes] = await Promise.all([
+    supabase.from("vocabulary").select("id, arabic_word, french_definition").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
+    supabase.from("grammar_rules").select("id, title").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
+    supabase.from("formulations").select("id, arabic_text, french_text, audio_path").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
+    supabase.from("students").select("id, status, profiles(full_name)"),
+  ]);
+
+  const sourceStudent = Array.isArray(record.students) ? record.students[0] : record.students;
+  const sourceProfile = sourceStudent
+    ? Array.isArray(sourceStudent.profiles)
+      ? sourceStudent.profiles[0]
+      : sourceStudent.profiles
+    : null;
+  const sourceName = sourceProfile?.full_name ?? "—";
+
+  const vocab = vocabRes.data ?? [];
+  const grammar = grammarRes.data ?? [];
+  const formulations = formRes.data ?? [];
+  const audioCount = formulations.filter((f) => !!f.audio_path).length;
+  const supportCount = ((record.support_files as SupportFile[] | null) ?? []).length;
+  const title =
+    record.custom_title || format(new Date(record.session_date), "d MMMM yyyy", { locale: fr });
+
+  const students = (studentsRes.data ?? []).map((s) => ({
+    id: s.id,
+    name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) ?? "Élève",
+    status: s.status,
+    isSource: s.id === record.student_id,
+  }));
+
+  return (
+    <div className="space-y-5">
+      <Link
+        href="/teacher/library"
+        className="inline-flex items-center gap-1 font-semibold"
+        style={{ color: "#8B857A", fontSize: 13 }}
+      >
+        ← Bibliothèque
+      </Link>
+
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+        >
+          {title}
+        </h1>
+        <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+          Cours de {sourceName} · {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+        </p>
+      </div>
+
+      {/* Aperçu du contenu qui sera dupliqué */}
+      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
+        <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+          Contenu dupliqué
+        </p>
+
+        {vocab.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
+              Vocabulaire ({vocab.length})
+            </p>
+            {vocab.map((v) => (
+              <div key={v.id} className="flex items-center justify-between gap-3" style={{ fontSize: 13 }}>
+                <span dir="rtl" lang="ar" style={{ color: "#1C1A17" }}>{v.arabic_word}</span>
+                <span style={{ color: "#8B857A" }}>{v.french_definition}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {grammar.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
+              Règles de grammaire ({grammar.length})
+            </p>
+            {grammar.map((g) => (
+              <p key={g.id} style={{ color: "#4A463F", fontSize: 13 }}>{g.title}</p>
+            ))}
+          </div>
+        )}
+
+        {formulations.length > 0 && (
+          <div>
+            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
+              Formulations ({formulations.length}
+              {audioCount > 0 ? ` · ${audioCount} audio${audioCount > 1 ? "s" : ""}` : ""})
+            </p>
+            {formulations.map((f) => (
+              <div key={f.id} className="flex items-center justify-between gap-3" style={{ fontSize: 13 }}>
+                <span dir="rtl" lang="ar" style={{ color: "#1C1A17" }}>{f.arabic_text}</span>
+                <span className="flex items-center gap-1.5" style={{ color: "#8B857A" }}>
+                  {f.audio_path && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    </svg>
+                  )}
+                  {f.french_text}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {supportCount > 0 && (
+          <p style={{ color: "#8B857A", fontSize: 12.5 }}>
+            {supportCount} support{supportCount > 1 ? "s" : ""} (fichiers) seront aussi copiés.
+          </p>
+        )}
+
+        <p style={{ color: "#A8A29E", fontSize: 11.5 }}>
+          Le devoir et la note privée du cours d&apos;origine ne sont pas copiés.
+        </p>
+      </div>
+
+      <DuplicateForm recordId={recordId} students={students} />
+    </div>
+  );
+}

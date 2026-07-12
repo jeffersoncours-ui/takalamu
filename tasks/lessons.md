@@ -1,5 +1,39 @@
 # Lessons
 
+## Session 31 (suite 2) — Dupliquer un cours (bibliothèque enseignant)
+
+- **« Dupliquer un cours réel » ≠ le vieux Programme abandonné.** Distinction
+  clé rappelée au propriétaire avant de coder : le Programme (tué session 30)
+  était une bibliothèque de leçons rédigées à l'avance, déconnectées de tout
+  élève réel. Ici on part d'un `lesson_record` réellement donné à un élève et on
+  le recopie — exactement le geste manuel Anthony→Bilel (session 30 suite 3),
+  transformé en bouton. Ne pas confondre « contenu réutilisable dérivé du réel »
+  et « curriculum abstrait pré-écrit ».
+- **La copie de fichiers Storage entre élèves marche en prod, pas dans le
+  sandbox.** Le blocage rencontré pour copier les audios Bilel↔autre élève
+  venait de l'environnement (SQL uniquement via MCP, pas d'API Storage). Une
+  vraie fonctionnalité codée dans l'app utilise `supabase.storage.from(b).copy(src,dst)`
+  côté serveur : le teacher a déjà les droits RLS sur les dossiers de tous ses
+  élèves (USING sur la source, WITH CHECK sur la destination), donc le copy passe.
+  Leçon : ne pas conclure « impossible » d'une limite du sandbox — distinguer ce
+  qui est bloqué par l'environnement de ce qui l'est par le produit.
+- **Réutiliser `submit_session_record` plutôt qu'une RPC de duplication.** Le RPC
+  d'enregistrement accepte déjà tout le contenu (vocab/grammaire/formulations+audio/
+  supports) en un appel. La duplication = relire le contenu source + recopier les
+  fichiers dans le dossier de la cible + re-soumettre. Zéro migration, zéro
+  nouvelle surface DB à sécuriser — la duplication hérite gratuitement des gardes
+  (owns_student, titre obligatoire, règle d'absence) déjà éprouvées.
+- **Copier les audios AVANT l'appel RPC, avec des chemins réécrits vers la
+  cible.** Le point subtil : un audio doit finir sous `formulation-audio/{cible}/…`
+  (sinon la RLS interdit à l'élève cible de le lire). On copie donc chaque fichier
+  vers un nouveau chemin dans le dossier de la cible, puis on passe ces nouveaux
+  chemins dans le payload `p_formulations`. Copier le chemin source tel quel aurait
+  produit un audio « fantôme » illisible côté élève (fuite silencieuse déjà
+  anticipée quand on a refusé la copie SQL des chemins à la main).
+- **Attendance=present pour un cours dupliqué** : neutre, ne déclenche pas le
+  compteur d'absences (§8). Un cours dupliqué est du contenu à étudier, pas une
+  séance ratée — vérifié empiriquement (compteur d'absences inchangé après dup).
+
 ## Session 31 (suite) — Audio de formulation (compréhension orale)
 
 ### Décisions

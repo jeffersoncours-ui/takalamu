@@ -2,6 +2,63 @@
 
 ---
 
+## Session 31 (suite 2) — Dupliquer un cours (bibliothèque enseignant)
+
+> **Demande propriétaire (validée après reformulation)** : pouvoir dupliquer un cours
+> déjà donné à un élève vers un ou plusieurs autres élèves, pour éviter de tout
+> réécrire/réenregistrer. Copie **indépendante** (le cours dupliqué vit sa vie, aucun
+> lien avec l'original). Nouvel onglet enseignant listant TOUS les cours donnés, d'où
+> on peut les « dispatcher ». Cette fois les **audios sont copiés aussi** (l'action
+> tourne en prod, accès Storage réel via `.copy()` — la limite du sandbox ne s'applique pas).
+>
+> **Noté pour PLUS TARD (pas dans ce périmètre)** : organiser les cours par livre —
+> le propriétaire s'appuie sur 2 livres (étude de texte / expression orale), tous les
+> élèves ne suivent pas les deux (Anthony = 1 livre, Rayan = l'autre, Bilel = les deux).
+> Étiqueter/filtrer les cours par livre pour aider à la répartition. À faire dans une
+> session future, pas maintenant.
+
+### Plan
+- [x] Nouvel onglet `Bibliothèque` dans `drawer-nav.tsx` (après « Fin de cours »)
+- [x] `/teacher/library/page.tsx` : catalogue de tous les `lesson_records` de l'enseignant
+      (RLS), carte par cours = titre + élève d'origine + date + compteurs (mots / règles /
+      formulations dont N audios / supports), lien « Dupliquer » + bandeau de confirmation
+- [x] `/teacher/library/[recordId]/page.tsx` : aperçu lecture seule du contenu +
+      `DuplicateForm` (cases à cocher élèves cibles, badge « cours d'origine »)
+- [x] `/teacher/library/[recordId]/actions.ts` : `duplicateSession` — pour chaque cible,
+      copie Storage `.copy()` des audios de formulation (→ dossier de la cible) et des
+      supports (→ dossier de la cible), puis réutilise `submit_session_record`
+      (attendance=present, mêmes titre/récap/date/vocab/grammaire/formulations+nouveaux
+      audios/supports ; PAS de devoir ni note privée — spécifiques à l'élève d'origine)
+- [x] Build (31 routes, 0 erreur TS) + lint verts (0 nouvelle erreur/warning sur les
+      fichiers library — seuls les pré-existants subsistent)
+- [x] Vérification MCP (impersonation Jefferson, transaction ROLLBACK, aucune donnée réelle
+      modifiée) : duplication du cours audio de Bilel (14 formulations/14 audios) vers
+      Anthony → 14 formulations créées, 14 audios, tous les audio_path dans le dossier
+      d'Anthony ✔ ; source Bilel intacte (14 forms, audios dans SON dossier) ✔ ; nouveau
+      cours sans devoir ni note privée ✔ ; attendance=present ne compte pas d'absence ✔.
+      Limite assumée : le `.copy()` Storage lui-même n'est testable qu'au runtime (API
+      Storage, pas SQL) — sa RLS sous-jacente (teacher scopé à ses élèves des deux côtés du
+      copy) a été prouvée session précédente.
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+- [ ] Test manuel du propriétaire sur la preview (dupliquer un vrai cours + vérifier que
+      l'audio est lisible chez la cible)
+- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+
+### Review
+- Nouvel onglet **Bibliothèque** listant tous les cours donnés (tous élèves confondus),
+  d'où on duplique un cours vers un ou plusieurs autres élèves en une fois.
+- Copie **indépendante** : nouveau `lesson_record` chez la cible avec vocabulaire,
+  grammaire, formulations **et leurs audios** (fichiers réellement recopiés dans le
+  dossier Storage de la cible via `.copy()`, pour que la RLS lui en donne l'accès), plus
+  les fichiers supports. Devoir et note privée volontairement exclus.
+- Réutilise `submit_session_record` (aucune nouvelle RPC/migration) — le contenu source
+  est relu puis re-soumis, les fichiers recopiés avant l'appel.
+- **Déféré / noté pour plus tard** (demande explicite du propriétaire) : organisation des
+  cours par livre (2 livres : étude de texte / expression orale ; répartition variable
+  selon l'élève). Pas construit cette session.
+
+---
+
 ## Session 31 (suite) — Audio de formulation (compréhension orale au quiz)
 
 > **Demande propriétaire (validée après reformulation)** : pouvoir enregistrer sa voix
