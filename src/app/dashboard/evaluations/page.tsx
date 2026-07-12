@@ -16,7 +16,7 @@ export default async function EvaluationsPage() {
     .eq("id", studentId)
     .maybeSingle();
 
-  const [{ data: vocab }, { data: forms }, { data: grammarQuizzes }] = await Promise.all([
+  const [vocabRes, formsRes, grammarQuizzesRes] = await Promise.all([
     supabase
       .from("vocabulary")
       .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
@@ -34,8 +34,14 @@ export default async function EvaluationsPage() {
           .eq("source_type", "grammar")
           .eq("teacher_id", student.teacher_id)
           .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
   ]);
+  if (vocabRes.error) console.error("evaluations vocab query failed:", vocabRes.error.message);
+  if (formsRes.error) console.error("evaluations formulations query failed:", formsRes.error.message);
+  if (grammarQuizzesRes.error) console.error("evaluations quizzes query failed:", grammarQuizzesRes.error.message);
+  const { data: vocab } = vocabRes;
+  const { data: forms } = formsRes;
+  const { data: grammarQuizzes } = grammarQuizzesRes;
 
   const vocabCount = vocab?.length ?? 0;
   const formCount = forms?.length ?? 0;

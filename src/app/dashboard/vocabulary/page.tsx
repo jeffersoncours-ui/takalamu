@@ -7,10 +7,12 @@ export default async function VocabulairePage() {
   await requireStudent();
   const supabase = await createClient();
 
-  const { data: vocab } = await supabase
+  const { data: vocab, error: vocabError } = await supabase
     .from("vocabulary")
     .select("id, arabic_word, french_definition, root, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
+
+  if (vocabError) console.error("dashboard/vocabulary query failed:", vocabError.message);
 
   const items = (vocab ?? []).map((v) => {
     const record = Array.isArray(v.lesson_records) ? v.lesson_records[0] : v.lesson_records;

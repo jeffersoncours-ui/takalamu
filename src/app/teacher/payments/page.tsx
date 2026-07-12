@@ -29,24 +29,29 @@ export default async function TeacherPaymentsPage() {
   await requireTeacher();
   const supabase = await createClient();
 
-  const { data: studentRows } = await supabase
-    .from("students")
-    .select("id, profiles(full_name)")
-    .eq("status", "active");
+  const [studentsRes, paymentsRes] = await Promise.all([
+    supabase
+      .from("students")
+      .select("id, profiles(full_name)")
+      .eq("status", "active"),
+    // Pot commun : tous les paiements, pending en premier
+    supabase
+      .from("payments")
+      .select(
+        "id, product, plan, label, status, created_at, revolut_reference, student_id, students(profiles(full_name))",
+      )
+      .order("status", { ascending: true }) // pending < paid alphabetically… use created_at fallback
+      .order("created_at", { ascending: false }),
+  ]);
+  if (studentsRes.error) console.error("teacher/payments students query failed:", studentsRes.error.message);
+  if (paymentsRes.error) console.error("teacher/payments payments query failed:", paymentsRes.error.message);
+  const { data: studentRows } = studentsRes;
+  const { data: payments } = paymentsRes;
 
   const students = (studentRows ?? []).map((s) => {
     const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
     return { id: s.id, name: profile?.full_name ?? "Élève" };
   });
-
-  // Pot commun : tous les paiements, pending en premier
-  const { data: payments } = await supabase
-    .from("payments")
-    .select(
-      "id, product, plan, label, status, created_at, revolut_reference, student_id, students(profiles(full_name))",
-    )
-    .order("status", { ascending: true }) // pending < paid alphabetically… use created_at fallback
-    .order("created_at", { ascending: false });
 
   // Séparer pending et le reste
   const pending = payments?.filter((p) => p.status === "pending") ?? [];

@@ -42,6 +42,8 @@ export function NotifBell({
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // Client unique pour la durée de vie du composant (même pattern que chat-box)
+  const supabaseRef = useRef(createClient());
 
   const unread = notifs.filter((n) => !n.read).length;
 
@@ -58,7 +60,7 @@ export function NotifBell({
 
   // Realtime — nouvelles notifications
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = supabaseRef.current;
     const channel = supabase
       .channel(`notifs:${userId}`)
       .on(

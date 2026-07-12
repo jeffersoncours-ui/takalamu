@@ -18,13 +18,15 @@ export default async function TeacherMessagesListPage() {
   if (!teacher) return <p style={{ color: "#8B857A" }}>Profil enseignant introuvable.</p>;
 
   // Toutes les conversations de ce teacher, avec le nom de l'élève et le dernier message
-  const { data: conversations } = await supabase
+  const { data: conversations, error: convError } = await supabase
     .from("conversations")
     .select(
       "id, student_id, students(id, profiles(full_name)), messages(id, body, sent_at, sender_id, read_at)",
     )
     .eq("teacher_id", teacher.id)
     .order("sent_at", { referencedTable: "messages", ascending: false });
+
+  if (convError) console.error("teacher/messages query failed:", convError.message);
 
   const items = (conversations ?? []).map((conv) => {
     const student = Array.isArray(conv.students) ? conv.students[0] : conv.students;

@@ -7,10 +7,12 @@ export default async function FormulationsPage() {
   await requireStudent();
   const supabase = await createClient();
 
-  const { data: forms } = await supabase
+  const { data: forms, error: formsError } = await supabase
     .from("formulations")
     .select("id, arabic_text, french_text, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
+
+  if (formsError) console.error("dashboard/formulations query failed:", formsError.message);
 
   const items = (forms ?? []).map((f) => {
     const record = Array.isArray(f.lesson_records) ? f.lesson_records[0] : f.lesson_records;

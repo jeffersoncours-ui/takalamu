@@ -7,10 +7,12 @@ export default async function GrammairePage() {
   await requireStudent();
   const supabase = await createClient();
 
-  const { data: rules } = await supabase
+  const { data: rules, error: rulesError } = await supabase
     .from("grammar_rules")
     .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
     .order("created_at", { ascending: true });
+
+  if (rulesError) console.error("dashboard/grammar query failed:", rulesError.message);
 
   const items = (rules ?? []).map((r) => {
     const record = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;

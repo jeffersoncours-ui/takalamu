@@ -10,14 +10,15 @@ export default async function HomeworkQueuePage() {
   await requireTeacher();
   const supabase = await createClient();
 
-  const { data: homework } = await supabase
+  const { data: homework, error: homeworkError } = await supabase
     .from("homework")
     .select(
-      "id, instructions, assigned_at, submission_file, students(id, profiles(full_name)), lesson_records(session_date, lessons(title))",
+      "id, instructions, assigned_at, submission_file, students(id, profiles(full_name)), lesson_records(session_date, custom_title)",
     )
     .eq("status", "rendu")
     .order("assigned_at", { ascending: true });
 
+  if (homeworkError) console.error("teacher/homework query failed:", homeworkError.message);
   const items = homework ?? [];
 
   // URLs signées (1 h) pour les copies déposées par les élèves
@@ -67,11 +68,6 @@ export default async function HomeworkQueuePage() {
           const record = Array.isArray(hw.lesson_records)
             ? hw.lesson_records[0]
             : hw.lesson_records;
-          const lesson = record
-            ? Array.isArray(record.lessons)
-              ? record.lessons[0]
-              : record.lessons
-            : null;
           const name = profile?.full_name ?? "—";
 
           return (
@@ -90,7 +86,7 @@ export default async function HomeworkQueuePage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{name}</p>
                   <p className="font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
-                    {lesson?.title ?? "Sans leçon"} · {format(new Date(hw.assigned_at), "d MMM", { locale: fr })}
+                    {record?.custom_title ? `${record.custom_title} · ` : ""}{format(new Date(hw.assigned_at), "d MMM", { locale: fr })}
                   </p>
                 </div>
                 <StatusBadge hue="blue" label="Rendu" />

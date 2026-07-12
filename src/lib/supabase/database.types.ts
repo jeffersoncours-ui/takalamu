@@ -14,41 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      audio_assets: {
-        Row: {
-          created_at: string
-          id: string
-          lesson_id: string | null
-          storage_path: string
-          title: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          lesson_id?: string | null
-          storage_path: string
-          title?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          lesson_id?: string | null
-          storage_path?: string
-          title?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audio_assets_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       book_enrollments: {
         Row: {
           book_id: string
@@ -397,7 +362,6 @@ export type Database = {
           created_at: string
           custom_title: string | null
           id: string
-          lesson_id: string | null
           public_recap: string | null
           session_date: string
           student_id: string
@@ -410,7 +374,6 @@ export type Database = {
           created_at?: string
           custom_title?: string | null
           id?: string
-          lesson_id?: string | null
           public_recap?: string | null
           session_date: string
           student_id: string
@@ -423,7 +386,6 @@ export type Database = {
           created_at?: string
           custom_title?: string | null
           id?: string
-          lesson_id?: string | null
           public_recap?: string | null
           session_date?: string
           student_id?: string
@@ -432,13 +394,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "lesson_records_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "lesson_records_student_id_fkey"
             columns: ["student_id"]
@@ -451,66 +406,6 @@ export type Database = {
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lessons: {
-        Row: {
-          audio_asset_id: string | null
-          created_at: string
-          grammar_point: string | null
-          homework_template: string | null
-          id: string
-          objective: string | null
-          order_index: number
-          phase: Database["public"]["Enums"]["lesson_phase"]
-          quiz_id: string | null
-          reading_support: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          audio_asset_id?: string | null
-          created_at?: string
-          grammar_point?: string | null
-          homework_template?: string | null
-          id?: string
-          objective?: string | null
-          order_index?: number
-          phase: Database["public"]["Enums"]["lesson_phase"]
-          quiz_id?: string | null
-          reading_support?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          audio_asset_id?: string | null
-          created_at?: string
-          grammar_point?: string | null
-          homework_template?: string | null
-          id?: string
-          objective?: string | null
-          order_index?: number
-          phase?: Database["public"]["Enums"]["lesson_phase"]
-          quiz_id?: string | null
-          reading_support?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lessons_audio_asset_fk"
-            columns: ["audio_asset_id"]
-            isOneToOne: false
-            referencedRelation: "audio_assets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lessons_quiz_fk"
-            columns: ["quiz_id"]
-            isOneToOne: false
-            referencedRelation: "quizzes"
             referencedColumns: ["id"]
           },
         ]
@@ -905,45 +800,6 @@ export type Database = {
           },
         ]
       }
-      student_progress: {
-        Row: {
-          created_at: string
-          current_lesson_id: string | null
-          id: string
-          student_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          current_lesson_id?: string | null
-          id?: string
-          student_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          current_lesson_id?: string | null
-          id?: string
-          student_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_progress_current_lesson_id_fkey"
-            columns: ["current_lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_progress_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: true
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       students: {
         Row: {
           address: string | null
@@ -1149,13 +1005,11 @@ export type Database = {
       }
       submit_session_record: {
         Args: {
-          p_advance_progress?: boolean
           p_attendance: Database["public"]["Enums"]["attendance_status"]
           p_custom_title?: string
           p_formulations?: Json
           p_grammar?: Json
           p_homework_instructions?: string
-          p_lesson_id?: string
           p_private_note?: string
           p_public_recap?: string
           p_session_date: string
@@ -1200,7 +1054,6 @@ export type Database = {
         | "late"
       gender_type: "m" | "f"
       homework_status: "a_rendre" | "rendu" | "corrige" | "vu"
-      lesson_phase: "dechiffrage" | "lecture_oral" | "grammaire"
       notification_type:
         | "new_message"
         | "homework_due"
@@ -1359,7 +1212,6 @@ export const Constants = {
       ],
       gender_type: ["m", "f"],
       homework_status: ["a_rendre", "rendu", "corrige", "vu"],
-      lesson_phase: ["dechiffrage", "lecture_oral", "grammaire"],
       notification_type: [
         "new_message",
         "homework_due",

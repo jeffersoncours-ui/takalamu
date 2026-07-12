@@ -12,7 +12,7 @@ export default async function CoursPage() {
 
   const { data: recordsData, error: recordsError } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, custom_title, lessons(title, audio_asset_id, audio_assets!lessons_audio_asset_fk(storage_path, title))")
+    .select("id, session_date, attendance, public_recap, custom_title")
     .order("session_date", { ascending: false });
 
   if (recordsError) {
@@ -21,27 +21,6 @@ export default async function CoursPage() {
 
   const records = recordsData ?? [];
   const firstName = (profile.full_name ?? "").trim().split(" ")[0] || "—";
-
-  // Batch-generate signed URLs for lesson audio (1 h TTL)
-  const audioPaths = records
-    .map((r) => {
-      const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
-      const asset = lesson?.audio_assets
-        ? (Array.isArray(lesson.audio_assets) ? lesson.audio_assets[0] : lesson.audio_assets)
-        : null;
-      return (asset as { storage_path?: string } | null)?.storage_path ?? null;
-    })
-    .filter((p): p is string => p !== null);
-
-  const audioUrlMap = new Map<string, string>();
-  if (audioPaths.length > 0) {
-    const { data: signedList } = await supabase.storage
-      .from("lesson-audio")
-      .createSignedUrls(audioPaths, 3600);
-    signedList?.forEach((item) => {
-      if (item.signedUrl && item.path) audioUrlMap.set(item.path, item.signedUrl);
-    });
-  }
 
   // Stats parcours
   const totalSessions = records.length;
@@ -116,13 +95,7 @@ export default async function CoursPage() {
       ) : (
         <div className="flex flex-col gap-[10px]">
           {records.map((r) => {
-            const lesson = Array.isArray(r.lessons) ? r.lessons[0] : r.lessons;
             const badge = attendanceBadge(r.attendance);
-            const rawAsset = lesson?.audio_assets
-              ? (Array.isArray(lesson.audio_assets) ? lesson.audio_assets[0] : lesson.audio_assets)
-              : null;
-            const audioAsset = rawAsset as { storage_path: string; title: string | null } | null;
-            const audioUrl = audioAsset ? audioUrlMap.get(audioAsset.storage_path) ?? null : null;
             return (
               <div
                 key={r.id}
@@ -132,7 +105,7 @@ export default async function CoursPage() {
                 <Link href={`/dashboard/cours/${r.id}`} className="block transition-opacity hover:opacity-80">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-1.5 font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>
-                      {r.custom_title || lesson?.title || `Cours ${courseNumber.get(r.id)}`}
+                      {r.custom_title || `Cours ${courseNumber.get(r.id)}`}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6" />
                       </svg>
@@ -144,21 +117,6 @@ export default async function CoursPage() {
                     {r.public_recap ? ` · ${r.public_recap}` : ""}
                   </div>
                 </Link>
-                {audioUrl && (
-                  <div className="mt-2.5">
-                    {audioAsset?.title && (
-                      <p className="mb-1 text-xs font-medium" style={{ color: "#8B857A" }}>
-                        {audioAsset.title}
-                      </p>
-                    )}
-                    <audio
-                      src={audioUrl}
-                      controls
-                      className="w-full rounded-lg"
-                      style={{ height: 36 }}
-                    />
-                  </div>
-                )}
               </div>
             );
           })}

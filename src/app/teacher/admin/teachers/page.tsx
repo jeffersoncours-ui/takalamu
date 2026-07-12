@@ -7,10 +7,12 @@ export default async function AdminTeachersPage() {
   const supabase = await createClient();
 
   // L'admin lit tous les profils enseignants (policy profiles_admin_all).
-  const { data: teachers } = await supabase
+  const { data: teachers, error: teachersError } = await supabase
     .from("teachers")
     .select("id, display_name, profiles(full_name, email, gender, role)")
     .order("created_at", { ascending: true });
+
+  if (teachersError) console.error("admin/teachers query failed:", teachersError.message);
 
   const items = (teachers ?? []).map((t) => {
     const profile = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles;

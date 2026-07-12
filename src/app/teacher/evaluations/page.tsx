@@ -13,15 +13,16 @@ export default async function TeacherEvaluationsPage() {
     .eq("profile_id", userId)
     .maybeSingle();
 
-  const { data: quizzes } = teacher
+  const { data: quizzes, error: quizzesError } = teacher
     ? await supabase
         .from("quizzes")
         .select("id, title, created_at, quiz_questions(id)")
         .eq("source_type", "grammar")
         .eq("teacher_id", teacher.id)
         .order("created_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
 
+  if (quizzesError) console.error("teacher/evaluations query failed:", quizzesError.message);
   const items = quizzes ?? [];
 
   return (

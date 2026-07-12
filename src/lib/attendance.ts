@@ -16,12 +16,6 @@ export const ATTENDANCE_STATUSES: {
   { value: "absent_unjustified", label: "Absent injustifié", counts: true },
 ];
 
-export function attendanceLabel(value: AttendanceStatus): string {
-  return (
-    ATTENDANCE_STATUSES.find((a) => a.value === value)?.label ?? value
-  );
-}
-
 export function isAttendanceStatus(value: unknown): value is AttendanceStatus {
   return ATTENDANCE_STATUSES.some((a) => a.value === value);
 }

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -8,11 +9,15 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 /**
  * Renvoie l'utilisateur courant + son profil (soumis aux RLS), ou null si
  * non connecté. À utiliser dans les Composants Serveur / Server Actions.
+ *
+ * Mémoïsé par requête via `cache()` : layout + page + composants appellent
+ * tous les gardes (`requireStudent`/`requireTeacher`) sur un même rendu, sans
+ * ça chaque appel refaisait un aller-retour Auth + une requête `profiles`.
  */
-export async function getProfile(): Promise<{
+export const getProfile = cache(async (): Promise<{
   userId: string;
   profile: Profile | null;
-} | null> {
+} | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,7 +31,18 @@ export async function getProfile(): Promise<{
     .maybeSingle();
 
   return { userId: user.id, profile };
-}
+});
+
+/** Lookup `students.id` d'un profil, mémoïsé par requête (même raison). */
+const getStudentId = cache(async (profileId: string): Promise<string | null> => {
+  const supabase = await createClient();
+  const { data: student } = await supabase
+    .from("students")
+    .select("id")
+    .eq("profile_id", profileId)
+    .maybeSingle();
+  return student?.id ?? null;
+});
 
 /**
  * Garde-fou : exige un rôle teacher ou admin. Redirige sinon
@@ -59,16 +75,10 @@ export async function requireStudent(): Promise<{
   if (role === "teacher" || role === "admin") redirect("/teacher");
   if (!result.profile) redirect("/login");
 
-  const supabase = await createClient();
-  const { data: student } = await supabase
-    .from("students")
-    .select("id")
-    .eq("profile_id", result.userId)
-    .maybeSingle();
+  const studentId = await getStudentId(result.userId);
+  if (!studentId) redirect("/login");
 
-  if (!student) redirect("/login");
-
-  return { userId: result.userId, profile: result.profile, studentId: student.id };
+  return { userId: result.userId, profile: result.profile, studentId };
 }
 
 /**

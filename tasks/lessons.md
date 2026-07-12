@@ -1,5 +1,36 @@
 # Lessons
 
+## Session 30 (suite 7) — Audit 3 sous-agents + nettoyage « Programme »
+
+- **`cache()` de React sur les gardes d'auth = gain systémique.** Chaque
+  navigation déclenchait jusqu'à 3 `auth.getUser()` (réseau) + 2-3 requêtes DB
+  séquentielles parce que layout + page appellent chacun `requireStudent`/
+  `requireTeacher` sans mémoïsation par requête. Un seul `cache()` autour de
+  `getProfile` (+ le lookup `students`) déduplique tout. À retenir : tout
+  helper serveur appelé à la fois par un layout et ses pages doit être
+  enveloppé dans `cache()`.
+- **Un audit en sous-agents parallèles (code mort / perf / affichage) est
+  rentable** : contexte principal préservé, 3 rapports en ~4 min, findings
+  recoupés. Consigne clé donnée aux agents : lire `lessons.md` d'abord pour ne
+  pas re-signaler les décisions déjà actées (vestiges assumés, lint accepté).
+- **Le chat n'avait rien à corriger** : les 4 lenteurs de la session 9 avaient
+  déjà été corrigées en session 10 — l'audit a évité un « re-fix » inutile en
+  vérifiant le code réel au lieu de faire confiance au vieux rapport.
+- **Vestige « Programme » définitivement retiré** (décision propriétaire
+  explicite) : tables `lessons`/`audio_assets`/`student_progress`, colonne
+  `lesson_records.lesson_id`, enum `lesson_phase`, bucket `lesson-audio`,
+  et les jointures mortes dans 3 pages. Avant le drop : vérification que
+  `records_with_lesson_id = 0` et bucket vide — les 2 lignes de `lessons`
+  étaient du seed jamais référencé.
+- **Piège re-confirmé** : `DELETE FROM storage.buckets` échoue sur le trigger
+  `storage.protect_delete()` — il faut `SELECT set_config('storage.allow_delete_query',
+  'true', false);` juste avant (déjà documenté session 25, re-rencontré ici
+  dans une migration cette fois).
+- **Généralisation du check `error`** sur les 11 pages à jointures embarquées :
+  sans lui, une jointure PostgREST qui casse (FK ambiguë, RLS) rend `data: null`
+  et la page affiche silencieusement « Aucun … » — indiscernable d'un vrai
+  vide (leçon session 26 enfin appliquée partout, pas seulement au dashboard).
+
 ## Session 30 (suite 6) — Grammaire : nom de règle vs nom de cours
 
 - **Un utilitaire partagé (`groupByLesson`) peut bien servir à des besoins

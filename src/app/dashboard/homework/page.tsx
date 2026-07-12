@@ -10,11 +10,12 @@ export default async function DevoirsPage() {
   await requireStudent();
   const supabase = await createClient();
 
-  const { data: homeworks } = await supabase
+  const { data: homeworks, error: homeworksError } = await supabase
     .from("homework")
-    .select("id, instructions, status, feedback, grade, assigned_at, submission_file, lesson_records(lessons(title))")
+    .select("id, instructions, status, feedback, grade, assigned_at, submission_file, lesson_records(custom_title)")
     .order("assigned_at", { ascending: false });
 
+  if (homeworksError) console.error("dashboard/homework query failed:", homeworksError.message);
   const list = homeworks ?? [];
 
   return (
@@ -34,11 +35,6 @@ export default async function DevoirsPage() {
         {list.map((hw) => {
           const badge = homeworkBadge(hw.status);
           const record = Array.isArray(hw.lesson_records) ? hw.lesson_records[0] : hw.lesson_records;
-          const lesson = record
-            ? Array.isArray(record.lessons)
-              ? record.lessons[0]
-              : record.lessons
-            : null;
           return (
             <div
               key={hw.id}
@@ -52,9 +48,9 @@ export default async function DevoirsPage() {
                       ? hw.instructions.split("\n")[0].slice(0, 60)
                       : "Devoir"}
                   </div>
-                  {lesson?.title && (
+                  {record?.custom_title && (
                     <div className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 12 }}>
-                      {lesson.title}
+                      {record.custom_title}
                     </div>
                   )}
                 </div>

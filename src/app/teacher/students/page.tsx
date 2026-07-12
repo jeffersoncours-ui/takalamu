@@ -9,13 +9,17 @@ export default async function StudentsPage() {
 
   const isAdmin = profile?.role === "admin";
 
-  const [{ data: students }, { data: teacherRows }] = await Promise.all([
+  const [studentsRes, teachersRes] = await Promise.all([
     supabase
       .from("students")
       .select("id, status, unjustified_absences_count, gender, profiles(full_name, email)")
       .order("created_at", { ascending: true }),
     supabase.from("teachers").select("id, display_name"),
   ]);
+  if (studentsRes.error) console.error("teacher/students query failed:", studentsRes.error.message);
+  if (teachersRes.error) console.error("teacher/students teachers query failed:", teachersRes.error.message);
+  const { data: students } = studentsRes;
+  const { data: teacherRows } = teachersRes;
 
   const teachers = (teacherRows ?? []).map((t) => ({ id: t.id, name: t.display_name ?? "Enseignant" }));
 

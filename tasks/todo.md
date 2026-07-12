@@ -2,6 +2,40 @@
 
 ---
 
+## Session 30 (suite 7) — Audit complet (3 sous-agents) + nettoyage validé
+
+> Audit lancé à la demande du propriétaire (code mort / perf / bugs d'affichage),
+> rapport validé, **« Programme » confirmé définitivement abandonné**. Consigne :
+> ne rien casser — vérifier toutes les références avant suppression, tester
+> empiriquement après.
+
+### Pré-vérifications (faites avant toute suppression)
+- [x] Grep exhaustif : `student_progress` = 0 référence code ; `lessons(`/`audio_assets` = 3 fichiers seulement (dashboard, 2× homework) ; `p_lesson_id`/`p_advance_progress` = jamais passés par aucun appelant ; `lessons.ts`/`attendanceLabel`/`shaders-react`/`date-fns-tz` = 0 import
+- [x] Données en base : `lessons` = 2 lignes de seed (juin, jamais référencées — `records_with_lesson_id` = 0), `audio_assets` = 0, `student_progress` = 1 (curseur mort), bucket `lesson-audio` = 0 fichier
+
+### Perf
+- [x] `src/lib/auth.ts` : `cache()` React sur `getProfile` + lookup `students` (déduplique layout+page à chaque navigation — le plus gros gain)
+- [x] `teacher/payments/page.tsx` : 2 requêtes indépendantes → `Promise.all`
+- [x] `notif-bell.tsx` : client Supabase mémoïsé (aligné sur le pattern chat-box)
+
+### Retrait « Programme » (validé propriétaire : plus jamais de programme)
+- [x] `dashboard/page.tsx` : retrait jointure `lessons`/`audio_assets` + bloc URLs signées `lesson-audio` + lecteur audio (plus jamais alimentés)
+- [x] `dashboard/homework/page.tsx` + `teacher/homework/page.tsx` : jointure `lessons(title)` morte remplacée par `custom_title` de la séance (sous-titre plus utile, fini le "Sans leçon")
+- [x] Suppression `src/lib/lessons.ts` (orphelin) + `attendanceLabel` (export jamais importé)
+- [x] `package.json` : retrait `@paper-design/shaders-react` + `date-fns-tz` (0 import) + lockfile régénéré
+- [x] Migration 46 appliquée : DROP `student_progress`, `lessons`, `audio_assets`, colonne `lesson_records.lesson_id`, enum `lesson_phase`, policies+bucket `lesson-audio` ; `submit_session_record` simplifiée (sans `p_lesson_id`/`p_advance_progress`)
+- [x] `database.types.ts` : édition ciblée reflétant la migration
+
+### Robustesse
+- [x] Vérification `error` (console.error) ajoutée sur les 11 pages à jointures embarquées (même angle mort que le bug session 26) : teacher/homework, teacher/payments, teacher/students, teacher/messages, teacher/evaluations, admin/teachers, dashboard/homework, vocabulary, grammar, formulations, evaluations
+
+### Validation empirique
+- [x] Build (29 routes) + lint verts (seule erreur pré-existante drawer-nav.tsx)
+- [x] MCP : migration appliquée, `submit_session_record` (nouvelle signature) testée par impersonation + ROLLBACK (création ✔, vocab lié ✔, titre vide toujours rejeté ✔), 3 tables + colonne + bucket confirmés absents, données réelles intactes (7 séances, 177 mots), advisors = mêmes WARN acceptés, 0 nouveau
+- [x] Grep final : 0 référence restante aux éléments supprimés
+- [x] Push branche de session (preview) — PAS de merge prod sans validation propriétaire
+- [ ] Test manuel propriétaire sur la preview → merge `main`/prod
+
 ## Session 30 (suite 6) — Grammaire : nom de la règle indépendant du cours
 
 Effet de bord de la suite 5 : `groupByLesson` affichait le `custom_title` du
