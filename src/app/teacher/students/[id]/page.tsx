@@ -309,7 +309,7 @@ export default async function StudentCardPage({
         ))}
       </div>
 
-      {/* Grammaire par cours */}
+      {/* Grammaire — chaque règle porte son propre nom, indépendant du cours */}
       <div id="grammaire" className="space-y-2 scroll-mt-20">
         <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
           Règles de grammaire ({grammarCount})
@@ -317,29 +317,27 @@ export default async function StudentCardPage({
         {grammarGroups.length === 0 && (
           <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée.</p>
         )}
-        {grammarGroups.map((group) => (
-          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
-            {group.key !== "none" && (
-              <Link
-                href={`/teacher/students/${id}/sessions/${group.key}`}
-                className="inline-flex items-center gap-1 font-semibold"
-                style={{ color: "#0F9D6E", fontSize: 12 }}
-              >
-                Voir le cours →
-              </Link>
-            )}
-            {group.items.map((g) => (
-              <div
-                key={g.id}
-                className="rounded-[12px] px-3 py-2.5"
-                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
-              >
-                <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
-                <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#8B857A" }}>{g.content}</p>
-              </div>
-            ))}
-          </AccordionGroup>
-        ))}
+        {grammarGroups.flatMap((group) =>
+          group.items.map((g) => (
+            <div
+              key={g.id}
+              className="rounded-[14px] px-3.5 py-3 space-y-1"
+              style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+            >
+              <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
+              <p className="text-xs line-clamp-2" style={{ color: "#8B857A" }}>{g.content}</p>
+              {group.key !== "none" && (
+                <Link
+                  href={`/teacher/students/${id}/sessions/${group.key}`}
+                  className="inline-flex items-center gap-1 font-semibold"
+                  style={{ color: "#0F9D6E", fontSize: 12 }}
+                >
+                  {group.label} →
+                </Link>
+              )}
+            </div>
+          )),
+        )}
       </div>
 
       {/* Formulations par cours */}

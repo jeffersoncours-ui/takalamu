@@ -2,6 +2,25 @@
 
 ---
 
+## Session 30 (suite 6) — Grammaire : nom de la règle indépendant du cours
+
+Effet de bord de la suite 5 : `groupByLesson` affichait le `custom_title` du
+cours comme étiquette d'accordéon pour la grammaire aussi, masquant le nom
+propre de la règle derrière un accordéon à ouvrir. Corrigé en aplatissant
+l'affichage (chaque règle = sa propre carte, titrée par son propre nom, avec
+le nom du cours d'origine en petit lien "Voir le cours" en dessous).
+
+- [x] `dashboard/grammar/page.tsx` + `grammar-search.tsx` (élève) : liste à
+      plat au lieu d'accordéons groupés par cours
+- [x] `teacher/students/[id]/page.tsx` section "Règles de grammaire" : même
+      aplatissement côté enseignant
+- [x] Vocabulaire et Formulations laissés groupés par cours (inchangé,
+      volontaire — un mot/une expression n'a pas de nom propre)
+- [x] Vérifié sur les vraies données (2 règles réelles "Le mot = الكَلِمَةُ"
+      rattachées à des cours nommés "بَائِعُ الأَصْنَامِ") que le rendu
+      correspond au besoin
+- [x] `npm run build` + `npm run lint` verts
+
 ## Session 30 (suite 4) — Formulations (expressions) + quiz auto-généré
 
 > **Demande propriétaire** : ajouter, à côté du vocabulaire et de la grammaire, une

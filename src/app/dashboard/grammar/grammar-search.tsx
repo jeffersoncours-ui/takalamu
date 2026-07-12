@@ -1,30 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { AccordionGroup } from "@/components/accordion-group";
-import type { LessonGroup } from "@/lib/group-by-lesson";
 
 type GrammarItem = {
   id: string;
   title: string;
   content: string;
+  lessonRecordId: string | null;
+  courseLabel: string | null;
 };
 
-export default function GrammarSearch({ groups }: { groups: LessonGroup<GrammarItem>[] }) {
+export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
-  const filteredGroups = groups.map((group) => ({
-    ...group,
-    items: q
-      ? group.items.filter(
-          (r) => r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q),
-        )
-      : group.items,
-  }));
-
-  const hasAnyItems = groups.some((g) => g.items.length > 0);
-  const hasAnyMatch = filteredGroups.some((g) => g.items.length > 0);
+  const filtered = q
+    ? items.filter((r) => r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))
+    : items;
 
   return (
     <div className="space-y-4">
@@ -60,37 +53,36 @@ export default function GrammarSearch({ groups }: { groups: LessonGroup<GrammarI
         />
       </div>
 
-      {!hasAnyItems && (
+      {items.length === 0 && (
         <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée pour le moment.</p>
       )}
 
-      {hasAnyItems && q && !hasAnyMatch && (
+      {items.length > 0 && q && filtered.length === 0 && (
         <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
       )}
 
       <div className="flex flex-col gap-3">
-        {filteredGroups.map((group) => {
-          if (q && group.items.length === 0) return null;
-          return (
-            <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={!!q}>
-              {group.items.map((r) => (
-                <div
-                  key={r.id}
-                  className="rounded-[14px] px-3.5 py-3"
-                  style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
-                >
-                  <p className="font-bold mb-1" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
-                  <p
-                    className="leading-relaxed whitespace-pre-wrap"
-                    style={{ color: "#4A463F", fontSize: 14 }}
-                  >
-                    {r.content}
-                  </p>
-                </div>
-              ))}
-            </AccordionGroup>
-          );
-        })}
+        {filtered.map((r) => (
+          <div
+            key={r.id}
+            className="rounded-[16px] px-4 py-3.5 space-y-1.5"
+            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+          >
+            <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
+            <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#4A463F", fontSize: 14 }}>
+              {r.content}
+            </p>
+            {r.courseLabel && r.lessonRecordId && (
+              <Link
+                href={`/dashboard/cours/${r.lessonRecordId}`}
+                className="inline-flex items-center gap-1 font-semibold"
+                style={{ color: "#0F9D6E", fontSize: 12 }}
+              >
+                {r.courseLabel} →
+              </Link>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

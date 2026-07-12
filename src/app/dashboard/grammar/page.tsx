@@ -25,6 +25,17 @@ export default async function GrammairePage() {
   });
 
   const groups = groupByLesson(items);
+  // La grammaire est affichée à plat : chaque règle porte son propre nom
+  // (indépendant du cours), avec juste une mention du cours d'origine.
+  const flatRules = groups.flatMap((g) =>
+    g.items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      lessonRecordId: item.lessonRecordId,
+      courseLabel: g.key !== "none" ? g.label : null,
+    })),
+  );
 
   return (
     <div className="space-y-5">
@@ -40,7 +51,7 @@ export default async function GrammairePage() {
         </p>
       </div>
 
-      <GrammarSearch groups={groups} />
+      <GrammarSearch items={flatRules} />
     </div>
   );
 }

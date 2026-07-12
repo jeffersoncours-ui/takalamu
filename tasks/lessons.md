@@ -1,5 +1,19 @@
 # Lessons
 
+## Session 30 (suite 6) — Grammaire : nom de règle vs nom de cours
+
+- **Un utilitaire partagé (`groupByLesson`) peut bien servir à des besoins
+  différents.** Vocabulaire/formulations n'ont pas de nom propre → grouper par
+  cours et étiqueter le groupe par le nom du cours est correct. La grammaire,
+  elle, porte déjà un nom propre par élément (`grammar_rules.title`) →
+  réutiliser le même mécanisme de groupe-étiqueté-par-cours l'a caché derrière
+  un accordéon inutile. Repérer, avant de généraliser un composant/utilitaire,
+  si toutes les données consommatrices ont vraiment la même forme sémantique.
+- **Aplatir plutôt que grouper** quand chaque élément est déjà auto-descriptif :
+  la carte affiche directement le titre de la règle, avec un simple lien vers
+  le cours d'origine pour la traçabilité — pas besoin d'un niveau d'accordéon
+  supplémentaire.
+
 ## Session 30 (suite 4, 2026-07-11) — Formulations (expressions) + quiz auto-généré
 
 ### Décisions
