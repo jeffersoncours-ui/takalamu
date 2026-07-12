@@ -78,7 +78,12 @@ export function AudioRecorderInput({
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: picked.mime });
+      // 64 kbps suffit largement pour de la voix (défaut navigateur ≈ 128 kbps,
+      // calibré musique) — divise le poids par deux sur le Storage.
+      const recorder = new MediaRecorder(stream, {
+        mimeType: picked.mime,
+        audioBitsPerSecond: 64000,
+      });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
