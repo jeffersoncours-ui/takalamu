@@ -63,6 +63,43 @@ export async function updateSession(
     await supabase.storage.from("session-files").remove(removedFiles.map((f) => f.path));
   }
 
+  // Formulations : audios existants conservés, nouveaux uploadés, retirés nettoyés
+  const { data: oldForms } = await supabase
+    .from("formulations")
+    .select("audio_path")
+    .eq("lesson_record_id", recordId);
+  const oldAudioPaths = (oldForms ?? [])
+    .map((f) => f.audio_path)
+    .filter((p): p is string => !!p);
+
+  const formulations: { arabic_text: string; french_text: string; audio_path?: string }[] = [];
+  for (const row of zipFormulation(formData)) {
+    let audioPath: string | undefined;
+    if (row.newAudio) {
+      const ext = row.newAudio.name.split(".").pop() || "webm";
+      const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: audioError } = await supabase.storage
+        .from("formulation-audio")
+        .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
+      if (!audioError) audioPath = path;
+    } else if (row.existingAudioPath) {
+      audioPath = row.existingAudioPath;
+    }
+    formulations.push({
+      arabic_text: row.arabic_text,
+      french_text: row.french_text,
+      ...(audioPath ? { audio_path: audioPath } : {}),
+    });
+  }
+
+  // Nettoyage best-effort des audios qui ne sont plus référencés (remplacés,
+  // retirés, ou dont la ligne a été supprimée).
+  const keptAudio = new Set(formulations.map((f) => f.audio_path).filter(Boolean));
+  const orphanedAudio = oldAudioPaths.filter((p) => !keptAudio.has(p));
+  if (orphanedAudio.length > 0) {
+    await supabase.storage.from("formulation-audio").remove(orphanedAudio);
+  }
+
   // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)
   const { data: existingHomework } = await supabase
     .from("homework")
@@ -80,7 +117,7 @@ export async function updateSession(
     p_homework_instructions: homework ?? undefined,
     p_vocab: zipVocab(formData),
     p_grammar: zipGrammar(formData),
-    p_formulations: zipFormulation(formData),
+    p_formulations: formulations,
     p_support_files: supportFiles,
   });
 

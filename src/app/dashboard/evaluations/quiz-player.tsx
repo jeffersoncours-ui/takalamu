@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { QuizQuestion, QuizAnswer, QuizResult } from "./actions";
 
 type Phase =
@@ -10,6 +10,55 @@ type Phase =
 
 const GREEN = "#0F9D6E";
 const RED = "#B4292E";
+
+/** Lecteur de question audio (compréhension orale) : gros bouton Écouter,
+ *  réécoutable à volonté — aucun texte arabe affiché. */
+function AudioPrompt({ url, compact }: { url: string; compact?: boolean }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const toggle = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      el.currentTime = 0;
+      setPlaying(false);
+    } else {
+      void el.play();
+      setPlaying(true);
+    }
+  };
+
+  return (
+    <span className="inline-flex">
+      <audio ref={audioRef} src={url} preload="auto" onEnded={() => setPlaying(false)} />
+      <button
+        type="button"
+        onClick={toggle}
+        className="inline-flex items-center gap-2 rounded-full font-bold transition-opacity hover:opacity-85"
+        style={{
+          background: playing ? "#0A6B4E" : GREEN,
+          color: "#fff",
+          fontSize: compact ? 12 : 15,
+          padding: compact ? "6px 14px" : "12px 22px",
+        }}
+      >
+        {playing ? (
+          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill="#fff">
+            <rect x="6" y="5" width="4" height="14" rx="1" />
+            <rect x="14" y="5" width="4" height="14" rx="1" />
+          </svg>
+        ) : (
+          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill="#fff">
+            <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.9-6.86a1.03 1.03 0 0 0 0-1.76L9.56 4.26A1.03 1.03 0 0 0 8 5.14Z" />
+          </svg>
+        )}
+        {playing ? "Stop" : compact ? "Réécouter" : "Écouter"}
+      </button>
+    </span>
+  );
+}
 
 type Course = { id: string; label: string; count: number };
 
@@ -198,17 +247,23 @@ export default function QuizPlayer({
           <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#8B857A" }}>
             {q.direction === "ar_to_fr" ? labels.arToFrQuestion : labels.frToArQuestion}
           </p>
-          <p
-            className="text-2xl font-bold leading-snug mb-1"
-            dir={q.direction === "ar_to_fr" ? "rtl" : undefined}
-            lang={q.direction === "ar_to_fr" ? "ar" : undefined}
-            style={{
-              color: "#1C1A17",
-              fontFamily: q.direction === "ar_to_fr" ? "var(--font-amiri)" : "var(--font-spectral)",
-            }}
-          >
-            {q.prompt}
-          </p>
+          {q.audio_url ? (
+            <div className="py-1">
+              <AudioPrompt url={q.audio_url} />
+            </div>
+          ) : (
+            <p
+              className="text-2xl font-bold leading-snug mb-1"
+              dir={q.direction === "ar_to_fr" ? "rtl" : undefined}
+              lang={q.direction === "ar_to_fr" ? "ar" : undefined}
+              style={{
+                color: "#1C1A17",
+                fontFamily: q.direction === "ar_to_fr" ? "var(--font-amiri)" : "var(--font-spectral)",
+              }}
+            >
+              {q.prompt}
+            </p>
+          )}
         </div>
 
         {/* Choices */}
@@ -297,13 +352,19 @@ export default function QuizPlayer({
                     <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
                       {q?.direction === "ar_to_fr" ? "Arabe → Français" : "Français → Arabe"}
                     </p>
-                    <p
-                      className="text-sm font-medium mt-0.5"
-                      style={{ color: "#1C1A17" }}
-                      dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
-                    >
-                      {q?.prompt}
-                    </p>
+                    {q?.audio_url ? (
+                      <div className="mt-1">
+                        <AudioPrompt url={q.audio_url} compact />
+                      </div>
+                    ) : (
+                      <p
+                        className="text-sm font-medium mt-0.5"
+                        style={{ color: "#1C1A17" }}
+                        dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
+                      >
+                        {q?.prompt}
+                      </p>
+                    )}
                     {!a.is_correct && (
                       <div className="mt-1.5 space-y-0.5">
                         <p className="text-xs" style={{ color: RED }}>

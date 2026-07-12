@@ -2,6 +2,60 @@
 
 ---
 
+## Session 31 (suite) — Audio de formulation (compréhension orale au quiz)
+
+> **Demande propriétaire (validée après reformulation)** : pouvoir enregistrer sa voix
+> (expression arabe) pour chaque formulation en fiche de fin de cours. L'audio ne sert
+> QUE dans le quiz de formulation : le sens AR→FR devient exclusivement audio (écoute
+> ma voix → choisis la traduction FR) ; le sens FR→AR reste en texte. Une formulation
+> sans audio ne peut plus apparaître en AR→FR (filet de sécurité — il prévoit de tout
+> enregistrer). Jamais d'audio sur les pages de consultation élève.
+
+### Plan
+- [x] Migration 48 : `formulations.audio_path text` ; bucket privé `formulation-audio`
+      (policies : teacher scopé à SES élèves via `owns_student` — plus strict que le
+      pattern session-files —, élève SELECT son dossier) ;
+      `submit_session_record`/`update_session_record` (CREATE OR REPLACE, même
+      signature — `audio_path` lu dans le jsonb existant, compatible client déployé) ;
+      `generate_formulation_quiz` : AR→FR seulement si `audio_path` présent
+      (payload avec `audio_path`, SANS texte arabe ni prompt), sinon toujours FR→AR
+- [x] `database.types.ts` : édit ciblé (colonne `audio_path` sur formulations)
+- [x] Composant `AudioRecorderInput` (MediaRecorder → input file caché via
+      DataTransfer, préférence audio/mp4 puis webm pour compat lecture iOS/Android ;
+      toujours rendu même vide pour garder l'alignement d'index des lignes)
+- [x] Fiche de fin de cours : micro par ligne de formulation, upload par élève
+      coché dans `formulation-audio/{student_id}/…`, `audio_path` passé à la RPC
+- [x] Édition de séance : audio existant (conserver / réenregistrer / retirer via
+      hidden `form_audio_existing`), nettoyage Storage best-effort des orphelins
+- [x] `deleteSession` : nettoyage best-effort des audios de formulation du cours
+- [x] Quiz élève : `generateFormulationQuiz` signe les URLs (1h, RLS Storage fait
+      autorité) et écarte une question AR→FR dont la signature échoue ; `QuizPlayer`
+      affiche un bouton Écouter au lieu du texte (+ réécoute dans le récap de fin) ;
+      libellés compréhension orale
+- [x] Pages de consultation élève : vérifié — colonnes explicites partout,
+      `audio_path` ne fuit nulle part (aucun changement nécessaire)
+- [x] Build + lint verts (29 routes, 0 nouvelle erreur — seule `drawer-nav.tsx`
+      pré-existante)
+- [x] Vérification MCP (impersonation Jefferson/Anthony/Bilel/Khadija, transactions
+      ROLLBACK, données réelles intactes — 28 formulations/0 audio/0 objet bucket
+      reconfirmés après) :
+      - submit : 3 formulations avec audio + 2 sans persistées ✔
+      - 20 tirages × 5 questions : 34 AR→FR / 66 FR→AR, **0** AR→FR issue d'une
+        formulation sans audio, **0** fuite prompt/texte arabe, **0** AR→FR sans
+        audio_path ✔
+      - update : audio remplacé (A→B) ✔, retiré (NULL) ✔ ; scoring quiz audio
+        1/2 (bonne puis mauvaise réponse) ✔
+      - RLS bucket : Jefferson écrit chez son élève ✔, Khadija bloquée (42501) sur
+        l'élève d'autrui ✔, Anthony lit son fichier ✔, Bilel voit 0 ligne du
+        dossier d'Anthony ✔
+      - Advisor sécurité : mêmes WARN pré-existants, 0 nouveau
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+- [ ] Test manuel du propriétaire sur la preview (enregistrement micro réel depuis
+      son téléphone + lecture côté élève — non testable depuis ce sandbox)
+- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+
+---
+
 ## Session 31 — Clôture des intégrations abandonnées + nettoyage `.env.example`
 
 > **Demande propriétaire** : ne garder dans le todo qu'un seul point en attente

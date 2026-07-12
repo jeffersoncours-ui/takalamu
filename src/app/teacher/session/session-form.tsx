@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
 import { ATTENDANCE_STATUSES } from "@/lib/attendance";
+import { AudioRecorderInput } from "@/components/audio-recorder-input";
 import { submitSession } from "./actions";
 
 type Student = {
@@ -270,13 +271,16 @@ export function SessionForm({
           <div key={id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
             <input name="form_arabic" placeholder="expression (ar)" dir="rtl" className="font-arabic" style={inputStyle} />
             <input name="form_french" placeholder="traduction (fr)" style={inputStyle} />
-            <button
-              type="button"
-              onClick={() => removeRow(setFormRows, id)}
-              style={{ color: "#A8A29E", fontSize: 12 }}
-            >
-              Retirer
-            </button>
+            <div className="flex items-center justify-between gap-2">
+              <AudioRecorderInput name="form_audio" />
+              <button
+                type="button"
+                onClick={() => removeRow(setFormRows, id)}
+                style={{ color: "#A8A29E", fontSize: 12 }}
+              >
+                Retirer
+              </button>
+            </div>
           </div>
         ))}
         <button

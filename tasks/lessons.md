@@ -1,5 +1,47 @@
 # Lessons
 
+## Session 31 (suite) — Audio de formulation (compréhension orale)
+
+### Décisions
+- **« AR→FR devient exclusivement audio » = règle serveur, pas UI.** La contrainte
+  du propriétaire (jamais de texte arabe comme question dans le sens AR→FR) est
+  appliquée dans `generate_formulation_quiz` : le payload d'une question AR→FR ne
+  contient QUE `audio_path` + choix français — ni `prompt` ni texte arabe. Même en
+  ouvrant les devtools, l'élève n'a rien à lire. Corollaire : une formulation sans
+  audio ne sort qu'en FR→AR (filet de sécurité, le propriétaire prévoit de tout
+  enregistrer). Vérifié par 20 tirages agrégés (l'aléatoire interdit de conclure
+  sur un seul tirage) : 0 violation sur 100 questions.
+- **Fichier joint via `<input type="file">` caché + DataTransfer plutôt qu'un
+  câblage JS.** Le blob du MediaRecorder est déposé dans un input file caché
+  (`dt.items.add(file); input.files = dt.files`) — le formulaire reste une
+  soumission FormData classique, l'action serveur reçoit le fichier comme un
+  upload normal. Zéro état à synchroniser entre le composant micro et l'action.
+- **Alignement d'index des lignes répétées** : chaque ligne de formulation rend
+  TOUJOURS un champ de chaque nom (form_arabic/form_french/form_audio
+  [/form_audio_existing]), même vide — un input file non rempli soumet une entrée
+  vide, ce qui garde `getAll()` aligné par index. Ne jamais rendre le champ
+  conditionnellement dans une liste de champs répétés.
+- **Format d'enregistrement : préférence `audio/mp4`, repli webm.** iOS Safari ne
+  lit pas toujours le webm/opus enregistré par Chrome/Android ; on privilégie mp4
+  (lisible partout) quand `MediaRecorder.isTypeSupported` l'accepte. Risque
+  résiduel documenté : un audio webm enregistré sur Android pourrait ne pas se
+  lire sur un vieil iPhone — non testable depuis ce sandbox, à surveiller au
+  premier test réel propriétaire.
+- **Ajouter une clé à un payload jsonb ≠ changer une signature.** `audio_path`
+  transite dans le `p_formulations` jsonb existant → `CREATE OR REPLACE` sans
+  DROP, aucune surcharge, et le client déployé en prod continue de fonctionner
+  pendant la fenêtre preview/prod (migration additive, leçon session 30 suite 7
+  appliquée dès la conception).
+- **Policy Storage plus stricte que le pattern historique** : le bucket
+  `formulation-audio` scope l'écriture enseignant à SES élèves
+  (`owns_student(dossier)`), contrairement à `session-files` (migration 19) où
+  tout teacher écrit partout. Pattern à reprendre pour tout futur bucket ; ne pas
+  copier la policy 19 telle quelle.
+- **La consultation élève n'expose jamais l'audio** : toutes les pages élève
+  sélectionnent des colonnes explicites (jamais `select *`) — `audio_path` ne
+  fuit nulle part sans qu'aucun changement n'ait été nécessaire. Bénéfice direct
+  de la convention « colonnes explicites » tenue depuis le début.
+
 ## Session 31 — Clôture des intégrations abandonnées
 
 - **Un « todo » scattered dans un journal chronologique par session peut être

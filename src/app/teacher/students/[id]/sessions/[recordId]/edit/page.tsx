@@ -43,7 +43,7 @@ export default async function EditSessionPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("formulations")
-      .select("id, arabic_text, french_text")
+      .select("id, arabic_text, french_text, audio_path")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase

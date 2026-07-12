@@ -23,11 +23,11 @@ export default function FormulationQuizRunner({
         unit: "expression",
         unitPlural: "expressions",
         intro:
-          "Comment dit-on… ? Des questions FR → AR et AR → FR générées depuis tes formulations. Le score s'affiche à la fin.",
+          "Comment dit-on… ? Des questions FR → AR en texte, et de la compréhension orale : écoute la voix de ton prof et retrouve la traduction. Le score s'affiche à la fin.",
         emptyTitle: "Pas encore assez de formulations",
         emptyBody: "Il faut au moins 4 formulations enregistrées. Reviens après quelques séances !",
         allScopeLabel: "Toutes les formulations",
-        arToFrQuestion: "Que signifie cette expression ?",
+        arToFrQuestion: "Écoute l'audio et choisis la bonne traduction",
         frToArQuestion: "Comment dit-on cette expression en arabe ?",
       }}
     />

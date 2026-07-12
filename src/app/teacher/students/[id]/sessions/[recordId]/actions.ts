@@ -26,6 +26,18 @@ export async function deleteSession(studentId: string, recordId: string) {
     await supabase.storage.from("session-files").remove(files.map((f) => f.path));
   }
 
+  // Audios de formulation du cours (même nettoyage best-effort)
+  const { data: forms } = await supabase
+    .from("formulations")
+    .select("audio_path")
+    .eq("lesson_record_id", recordId);
+  const audioPaths = (forms ?? [])
+    .map((f) => f.audio_path)
+    .filter((p): p is string => !!p);
+  if (audioPaths.length > 0) {
+    await supabase.storage.from("formulation-audio").remove(audioPaths);
+  }
+
   const { error } = await supabase.rpc("delete_session_record", {
     p_record_id: recordId,
   });

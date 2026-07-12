@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
 import { ATTENDANCE_STATUSES, type AttendanceStatus } from "@/lib/attendance";
+import { AudioRecorderInput } from "@/components/audio-recorder-input";
 import { updateSession } from "./actions";
 
 type SupportFile = { path: string; name: string };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
 type GrammarRow = { id: string; title: string; content: string };
-type FormulationRow = { id: string; arabic_text: string; french_text: string };
+type FormulationRow = { id: string; arabic_text: string; french_text: string; audio_path: string | null };
 
 const PRESENCE_COLOR: Record<string, { border: string; bg: string; text: string; dot: string }> = {
   present: { border: "#9FE3C8", bg: "#ECFAF4", text: "#0A6B4E", dot: "#0F9D6E" },
@@ -88,7 +89,12 @@ export function EditSessionForm({
     grammar.map((g) => ({ id: g.id, title: g.title, content: g.content }))
   );
   const [formRows, setFormRows] = useState(
-    formulations.map((f) => ({ id: f.id, arabic_text: f.arabic_text, french_text: f.french_text }))
+    formulations.map((f) => ({
+      id: f.id,
+      arabic_text: f.arabic_text,
+      french_text: f.french_text,
+      audio_path: f.audio_path,
+    }))
   );
   const [nextId, setNextId] = useState(-1);
   const [keptFiles, setKeptFiles] = useState<Set<string>>(new Set(supportFiles.map((f) => f.path)));
@@ -296,19 +302,29 @@ export function EditSessionForm({
               defaultValue={row.french_text}
               style={inputStyle}
             />
-            <button
-              type="button"
-              onClick={() => setFormRows((rows) => rows.filter((r) => r.id !== row.id))}
-              style={{ color: "#A8A29E", fontSize: 12 }}
-            >
-              Retirer
-            </button>
+            <div className="flex items-center justify-between gap-2">
+              <AudioRecorderInput
+                name="form_audio"
+                existingName="form_audio_existing"
+                existingPath={row.audio_path}
+              />
+              <button
+                type="button"
+                onClick={() => setFormRows((rows) => rows.filter((r) => r.id !== row.id))}
+                style={{ color: "#A8A29E", fontSize: 12 }}
+              >
+                Retirer
+              </button>
+            </div>
           </div>
         ))}
         <button
           type="button"
           onClick={() => {
-            setFormRows((rows) => [...rows, { id: String(nextId), arabic_text: "", french_text: "" }]);
+            setFormRows((rows) => [
+              ...rows,
+              { id: String(nextId), arabic_text: "", french_text: "", audio_path: null },
+            ]);
             setNextId((n) => n - 1);
           }}
           className="font-bold"

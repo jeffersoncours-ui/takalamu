@@ -12,6 +12,9 @@ export type QuizQuestion = {
   direction: "fr_to_ar" | "ar_to_fr";
   prompt: string;
   choices: string[];
+  /** Question de compréhension orale (formulation AR→FR) : URL signée courte
+   *  de la voix du prof — le texte arabe n'est jamais transmis au client. */
+  audio_url?: string;
 };
 
 export type QuizAnswer = {
@@ -35,7 +38,13 @@ export type QuizResult = {
 };
 
 type RawVocabQuestion = { vocab_id: string; direction: "fr_to_ar" | "ar_to_fr"; prompt: string; choices: string[] };
-type RawFormQuestion = { form_id: string; direction: "fr_to_ar" | "ar_to_fr"; prompt: string; choices: string[] };
+type RawFormQuestion = {
+  form_id: string;
+  direction: "fr_to_ar" | "ar_to_fr";
+  prompt?: string;
+  audio_path?: string;
+  choices: string[];
+};
 
 export async function generateVocabQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
   const { studentId } = await requireStudent();
@@ -78,12 +87,38 @@ export async function generateFormulationQuiz(lessonRecordId?: string): Promise<
   });
 
   if (error) throw new Error(error.message);
-  return ((data as RawFormQuestion[]) ?? []).map((q) => ({
-    item_id: q.form_id,
-    direction: q.direction,
-    prompt: q.prompt,
-    choices: q.choices,
-  }));
+  const raw = (data as RawFormQuestion[]) ?? [];
+
+  // URLs signées courtes pour les questions audio (AR→FR). La RLS Storage
+  // limite l'élève à son propre dossier — la signature échoue sinon.
+  const audioPaths = raw
+    .map((q) => q.audio_path)
+    .filter((p): p is string => !!p);
+  const urlByPath = new Map<string, string>();
+  if (audioPaths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from("formulation-audio")
+      .createSignedUrls(audioPaths, 3600);
+    for (const item of signed ?? []) {
+      if (item.signedUrl && item.path) urlByPath.set(item.path, item.signedUrl);
+    }
+  }
+
+  const questions: QuizQuestion[] = [];
+  for (const q of raw) {
+    const audioUrl = q.audio_path ? urlByPath.get(q.audio_path) : undefined;
+    // Une question AR→FR est inécoutable sans URL signée (le texte arabe n'est
+    // volontairement pas transmis) — on l'écarte plutôt que d'afficher un vide.
+    if (q.direction === "ar_to_fr" && !audioUrl) continue;
+    questions.push({
+      item_id: q.form_id,
+      direction: q.direction,
+      prompt: q.prompt ?? "",
+      choices: q.choices,
+      ...(audioUrl ? { audio_url: audioUrl } : {}),
+    });
+  }
+  return questions;
 }
 
 export async function submitFormulationQuiz(answers: QuizAnswer[]): Promise<QuizResult> {

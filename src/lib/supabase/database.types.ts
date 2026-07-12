@@ -56,6 +56,7 @@ export type Database = {
       formulations: {
         Row: {
           arabic_text: string
+          audio_path: string | null
           created_at: string
           french_text: string
           id: string
@@ -65,6 +66,7 @@ export type Database = {
         }
         Insert: {
           arabic_text: string
+          audio_path?: string | null
           created_at?: string
           french_text: string
           id?: string
@@ -74,6 +76,7 @@ export type Database = {
         }
         Update: {
           arabic_text?: string
+          audio_path?: string | null
           created_at?: string
           french_text?: string
           id?: string

@@ -36,7 +36,7 @@ export async function submitSession(
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
   const vocab = zipVocab(formData);
   const grammar = zipGrammar(formData);
-  const formulations = zipFormulation(formData);
+  const formulationRows = zipFormulation(formData);
 
   const supabase = await createClient();
   const rawFiles = formData
@@ -57,6 +57,26 @@ export async function submitSession(
       if (!uploadError) {
         supportFiles.push({ path: storagePath, name: raw.name });
       }
+    }
+
+    // Audio de formulation : uploadé dans le dossier de chaque élève (le même
+    // enregistrement sert à tous les élèves cochés, comme les supports).
+    const formulations: { arabic_text: string; french_text: string; audio_path?: string }[] = [];
+    for (const row of formulationRows) {
+      let audioPath: string | undefined;
+      if (row.newAudio) {
+        const ext = row.newAudio.name.split(".").pop() || "webm";
+        const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: audioError } = await supabase.storage
+          .from("formulation-audio")
+          .upload(path, row.newAudio, { contentType: row.newAudio.type || "audio/webm" });
+        if (!audioError) audioPath = path;
+      }
+      formulations.push({
+        arabic_text: row.arabic_text,
+        french_text: row.french_text,
+        ...(audioPath ? { audio_path: audioPath } : {}),
+      });
     }
 
     const { data: recordId, error } = await supabase.rpc("submit_session_record", {

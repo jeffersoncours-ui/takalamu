@@ -26,15 +26,36 @@ export function zipGrammar(formData: FormData) {
   return rows;
 }
 
-export function zipFormulation(formData: FormData) {
+export type FormulationRowInput = {
+  arabic_text: string;
+  french_text: string;
+  /** Nouvel enregistrement micro (fiche de création ET édition). */
+  newAudio: File | null;
+  /** Audio déjà en Storage conservé tel quel (édition uniquement). */
+  existingAudioPath: string | null;
+};
+
+/**
+ * Chaque ligne de formulation rend exactement un champ de chaque nom
+ * (form_arabic / form_french / form_audio [/ form_audio_existing]), y compris
+ * vides — l'alignement se fait par index.
+ */
+export function zipFormulation(formData: FormData): FormulationRowInput[] {
   const arabic = formData.getAll("form_arabic").map((v) => String(v).trim());
   const french = formData.getAll("form_french").map((v) => String(v).trim());
+  const audios = formData.getAll("form_audio");
+  const existing = formData.getAll("form_audio_existing").map((v) => String(v).trim());
 
-  const rows: { arabic_text: string; french_text: string }[] = [];
+  const rows: FormulationRowInput[] = [];
   for (let i = 0; i < arabic.length; i++) {
-    if (arabic[i] && french[i]) {
-      rows.push({ arabic_text: arabic[i], french_text: french[i] });
-    }
+    if (!arabic[i] || !french[i]) continue;
+    const audio = audios[i];
+    rows.push({
+      arabic_text: arabic[i],
+      french_text: french[i],
+      newAudio: audio instanceof File && audio.size > 0 ? audio : null,
+      existingAudioPath: existing[i] || null,
+    });
   }
   return rows;
 }
