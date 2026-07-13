@@ -28,8 +28,16 @@ const FILTERS: { key: FilterKey; label: string; statuses: string[] }[] = [
   { key: "corrige", label: "Corrigé", statuses: ["corrige", "vu"] },
 ];
 
-export function HomeworkTabs({ items, studentId }: { items: HomeworkItem[]; studentId: string }) {
-  const [filter, setFilter] = useState<FilterKey>("a_rendre");
+export function HomeworkTabs({
+  items,
+  studentId,
+  initialFilter = "a_rendre",
+}: {
+  items: HomeworkItem[];
+  studentId: string;
+  initialFilter?: FilterKey;
+}) {
+  const [filter, setFilter] = useState<FilterKey>(initialFilter);
   const [open, setOpen] = useState(false);
 
   const countFor = (f: FilterKey) => {

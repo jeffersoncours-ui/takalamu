@@ -87,11 +87,11 @@ export default async function CoursPage() {
         )}
       </div>
 
-      {/* Tuiles : Mots · Expressions · Dernière note */}
+      {/* Tuiles cliquables : Mots · Expressions · Dernière note */}
       <div className="flex gap-2.5 pt-3">
-        <StatTile value={String(vocabCount ?? 0)} label="Mots" />
-        <StatTile value={String(formCount ?? 0)} label="Expressions" />
-        <StatTile value={lastGrade ?? "—"} label="Dernière note" accent />
+        <StatTile value={String(vocabCount ?? 0)} label="Mots" href="/dashboard/vocabulary" />
+        <StatTile value={String(formCount ?? 0)} label="Expressions" href="/dashboard/formulations" />
+        <StatTile value={lastGrade ?? "—"} label="Dernière note" href="/dashboard/homework?filter=corrige" accent />
       </div>
 
       {/* Reprendre mes cours */}
@@ -160,10 +160,11 @@ export default async function CoursPage() {
   );
 }
 
-function StatTile({ value, label, accent }: { value: string; label: string; accent?: boolean }) {
+function StatTile({ value, label, href, accent }: { value: string; label: string; href: string; accent?: boolean }) {
   return (
-    <div
-      className="flex-1 rounded-[16px] p-3.5"
+    <Link
+      href={href}
+      className="flex-1 rounded-[16px] p-3.5 transition-opacity hover:opacity-85"
       style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
     >
       <div className="leading-none" style={{ fontWeight: 800, fontSize: 22, color: accent ? "#0F9D6E" : "#1C1A17" }}>
@@ -172,6 +173,6 @@ function StatTile({ value, label, accent }: { value: string; label: string; acce
       <div className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>
         {label}
       </div>
-    </div>
+    </Link>
   );
 }

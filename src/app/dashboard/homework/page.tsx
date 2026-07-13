@@ -15,7 +15,14 @@ function parseFiles(raw: unknown, fallback: string | null): SubmissionFile[] {
   return fallback ? [{ path: fallback, name: fallback.split("/").pop() ?? fallback }] : [];
 }
 
-export default async function DevoirsPage() {
+export default async function DevoirsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter } = await searchParams;
+  const initialFilter =
+    filter === "corrige" || filter === "rendu" || filter === "a_rendre" ? filter : "a_rendre";
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
@@ -85,7 +92,7 @@ export default async function DevoirsPage() {
         Mes devoirs
       </h1>
 
-      <HomeworkTabs items={items} studentId={studentId} />
+      <HomeworkTabs items={items} studentId={studentId} initialFilter={initialFilter} />
     </div>
   );
 }
