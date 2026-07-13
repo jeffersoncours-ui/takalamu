@@ -94,6 +94,9 @@ export async function generateFormulationQuiz(lessonRecordId?: string): Promise<
 
   const { data, error } = await supabase.rpc("generate_formulation_quiz", {
     p_student_id: studentId,
+    // Opt-in explicite au mode audio-choix (base partagée preview/prod : l'ancien
+    // client prod n'envoie pas ce flag et ne reçoit donc jamais le nouveau mode).
+    p_allow_audio_choices: true,
     ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
   });
 

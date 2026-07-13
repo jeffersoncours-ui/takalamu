@@ -35,6 +35,12 @@
       audio_path} uniquement, **0** caractère arabe et **0** form_id-source dans le payload ;
       scoring 1/2 (bonne puis mauvaise réponse) ✔ ; Anthony (1 formulation/0 audio) →
       quiz vide sans crash (fallback) ✔ ; advisor 0 nouvelle catégorie ; test non persisté
+- [x] **Migration 52 (drapeau de compatibilité)** : base partagée preview/prod → le
+      client PROD actuel (ancien code) planterait s'il recevait une question audio-choix.
+      Ajout de `p_allow_audio_choices boolean DEFAULT false` (DROP+CREATE) : seul le
+      nouveau client passe `true`, l'ancien tombe sur le défaut et ne reçoit jamais le
+      nouveau mode. Vérifié MCP : appel 2-args → 0/105 audio ✔ ; appel avec flag → 45/105 ✔.
+      `database.types.ts` mis à jour (édit ciblé), client passe le flag.
 - [x] Push branche de session (preview) — merge prod après validation propriétaire
 - [ ] Test manuel du propriétaire sur la preview (écoute réelle des 4 audios + choix)
 - [ ] Après validation : fast-forward `main` + branche de prod Vercel

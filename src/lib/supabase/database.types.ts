@@ -799,6 +799,7 @@ export type Database = {
       }
       generate_formulation_quiz: {
         Args: {
+          p_allow_audio_choices?: boolean
           p_lesson_record_id?: string
           p_size?: number
           p_student_id: string

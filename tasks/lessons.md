@@ -31,8 +31,25 @@
   générique d'il y a 2 sessions continue de payer.
 - **Signatures RPC identiques → `CREATE OR REPLACE`, pas de DROP.** Les deux RPC ont gagné
   de la logique interne (nouvelle direction, nouveau scoring) mais gardent exactement la
-  même signature (`uuid, uuid, int` / `uuid, jsonb`) → remplacement en place, aucun impact
-  sur `database.types.ts`, client déployé compatible pendant la fenêtre preview/prod.
+  même signature (`uuid, uuid, int` / `uuid, jsonb`) → remplacement en place.
+- **PIÈGE RATTRAPÉ — une RPC « rétrocompatible en signature » peut casser la prod par son
+  COMPORTEMENT sur base partagée.** J'avais d'abord conclu « CREATE OR REPLACE, signatures
+  inchangées, donc client prod compatible ». FAUX : la base est partagée preview/prod, et
+  dès l'`apply_migration`, `generate_formulation_quiz` s'est mis à émettre des questions
+  `fr_to_ar_audio` que l'ANCIEN client prod (toujours déployé) ne sait pas rendre — il
+  aurait planté (`choices.map` sur `undefined`) pour Hamza/Bilel/Rayan (≥4 audios).
+  Signature compatible ≠ payload compatible. La règle « une migration de comportement sur
+  base partagée casse la prod dès son application » (session 30 suite 7) vaut AUSSI quand
+  la signature ne bouge pas — c'est la FORME DU RÉSULTAT qui compte, pas juste les args.
+- **Correctif : opt-in explicite plutôt que timing de déploiement.** Comme la preview et la
+  prod partagent la même RPC, on ne peut pas « désactiver pour prod, activer pour preview »
+  par l'état de la base. Solution propre : un paramètre `p_allow_audio_choices DEFAULT
+  false` — seul le nouveau client (preview, puis prod après déploiement) passe `true`.
+  L'ancien client prod (2 args) tombe sur le défaut → ne reçoit jamais le nouveau mode →
+  zéro plantage, sans dépendre de l'ordre migration/déploiement. Le drapeau devient
+  inoffensif une fois la prod à jour. À réutiliser pour toute future RPC dont le NOUVEAU
+  résultat casserait un client encore déployé : gate le nouveau comportement derrière un
+  param opt-in, ne compte pas sur un fenêtrage de déploiement.
 
 ## Session 31 (suite 5) — Un seul quiz visible à la fois
 
