@@ -21,7 +21,9 @@
 - [x] Build + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
 - [x] Vérif MCP : devoirs corrigés d'Anthony (2-3 pièces, feedback, note 18/20 ; pas encore
       de copie corrigée uploadée → lien masqué, pièces affichées) ; aucune migration
-- [ ] Push preview → validation → merge prod (avec la suite 8)
+- [x] Push preview → validation propriétaire (capture accueil Anthony conforme) →
+      **déployé** en prod (avec la suite 8) + tuiles d'accueil cliquables (vocab /
+      expressions / dernière note → onglet Devoirs « Corrigé »)
 
 ---
 
@@ -63,7 +65,7 @@
       livre d'une autre prof (inséré en test → toujours 3) ; Khadija voit 0 livre de Jefferson,
       1 des siens ; rangement `book_id` : Khadija bloquée (0 ligne), Jefferson autorisé (1) ;
       advisor 0 nouvelle catégorie
-- [x] Push preview → validation → merge prod
+- [x] Push preview → validation → **déployé** en prod (fast-forward main + branche Vercel)
 
 ### Review
 - Accueil élève repensé et épuré : salutation + « En évolution depuis le [1ᵉʳ cours en
