@@ -39,8 +39,12 @@
       élève → rejeté (42501) ✔ ; verrou après correction → rejeté ✔ ; liste vide → retour
       à_rendre + submitted_at NULL ✔ ; ancienne surcharge texte alimente aussi submission_files ✔
 - [x] Push preview — validation propriétaire avant merge prod
-- [ ] Test manuel propriétaire sur la preview (Anthony dépose plusieurs photos + audio depuis
-      son iPhone, modifie/retire, prof voit toutes les pièces)
+- [x] Test manuel propriétaire → **tout fonctionne** (dépôt, correction, retour vu par l'élève).
+      Seul retour : envoi **trop lent**. Correctif : **compression d'image navigateur** avant
+      upload (`src/lib/compress-image.ts` : ~1800 px, JPEG 0,8, orientation EXIF respectée,
+      audio/PDF/HEIC-non-décodable passent tels quels) → poids ÷5–15 ; + uploads **parallélisés**
+      (`uploadFilesToBucket` en `Promise.all`). Build + lint verts.
+- [ ] Test manuel propriétaire sur la preview (vitesse d'envoi désormais correcte)
 - [ ] Après validation : fast-forward `main` + branche de prod Vercel
 
 ### Review

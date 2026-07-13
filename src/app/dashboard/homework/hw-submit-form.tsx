@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { uploadFilesToBucket, removeFilesFromBucket, type UploadedFile } from "@/lib/upload-files";
+import { compressImage } from "@/lib/compress-image";
 import { saveHomeworkSubmission } from "./actions";
 
 const GREEN = "#0F9D6E";
@@ -127,9 +128,12 @@ export function HwSubmitForm({
     setError(null);
     startTransition(async () => {
       try {
-        // 1) Upload direct des nouvelles pièces vers le dossier de l'élève.
+        // 1) Compression des images (les photos de téléphone sont énormes → envoi
+        //    très lent en 4G) puis upload direct vers le dossier de l'élève. L'audio
+        //    et les PDF passent tels quels.
         const newFiles = items.filter((it): it is Extract<Item, { kind: "new" }> => it.kind === "new");
-        const uploaded = await uploadFilesToBucket(BUCKET, studentId, newFiles.map((it) => it.file));
+        const prepared = await Promise.all(newFiles.map((it) => compressImage(it.file)));
+        const uploaded = await uploadFilesToBucket(BUCKET, studentId, prepared);
 
         // 2) Liste finale = pièces conservées + nouvelles.
         const kept: UploadedFile[] = items

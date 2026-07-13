@@ -17,17 +17,19 @@ export async function uploadFilesToBucket(
   files: File[],
 ): Promise<UploadedFile[]> {
   const supabase = createClient();
-  const out: UploadedFile[] = [];
-  for (const file of files) {
-    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safe}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, {
-      contentType: file.type || "application/octet-stream",
-    });
-    if (error) throw new Error(error.message);
-    out.push({ path, name: file.name });
-  }
-  return out;
+  // Uploads en parallèle (chemins distincts) — plus rapide qu'un par un pour
+  // plusieurs pièces. L'ordre est préservé par Promise.all.
+  return Promise.all(
+    files.map(async (file) => {
+      const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safe}`;
+      const { error } = await supabase.storage.from(bucket).upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+      });
+      if (error) throw new Error(error.message);
+      return { path, name: file.name };
+    }),
+  );
 }
 
 /** Supprime des chemins d'un bucket (best-effort — les erreurs sont ignorées). */

@@ -39,6 +39,15 @@
   RLS Storage l'empêche déjà d'uploader ailleurs — le client fournit des chaînes libres,
   on ne fait jamais confiance au chemin envoyé. Verrou aussi sur le statut (pas de
   modification après correction) pour protéger le travail du prof.
+- **Upload direct résout le CRASH, pas la LENTEUR — compresser côté navigateur AVANT
+  d'envoyer.** Une fois le plafond contourné, l'envoi d'une photo pleine résolution
+  (3–8 Mo) reste lent en 4G. Fix standard : `createImageBitmap` → `canvas` réduit à
+  ~1800 px → `toBlob('image/jpeg', 0.8)` → poids ÷5–15, envoi quasi instantané, lisibilité
+  d'un devoir manuscrit intacte. Deux pièges gérés : (a) `imageOrientation: "from-image"`
+  pour respecter l'EXIF des photos iPhone (sinon image retournée) ; (b) fallback sur le
+  fichier d'origine si le décodage échoue (HEIC) ou si la « compression » alourdit. Ne
+  s'applique qu'aux images (audio 64 kbps déjà minuscule, PDF intact). Uploads multiples
+  parallélisés (`Promise.all`) en complément.
 
 ## Session 31 (suite 6) — Quiz formulation : 3ᵉ mode « FR → écoute des 4 audios »
 
