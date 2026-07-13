@@ -4,38 +4,30 @@ import { revalidatePath } from "next/cache";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import type { UploadedFile } from "@/lib/upload-files";
 
 type ActionState = { error?: string; success?: boolean };
 
-export async function submitHomework(
+/**
+ * Enregistre le dépôt d'un devoir. Les fichiers ont déjà été uploadés en direct
+ * depuis le navigateur vers Storage — cette action ne reçoit que leurs chemins
+ * (aucun octet ne transite par le serveur, donc pas de plafond de taille). La RPC
+ * `submit_homework(uuid, jsonb)` remplace la liste, gère le statut et la notif, et
+ * vérifie que chaque chemin est bien dans le dossier de l'élève.
+ */
+export async function saveHomeworkSubmission(
   homeworkId: string,
-  _prev: ActionState,
-  formData: FormData,
+  files: UploadedFile[],
 ): Promise<ActionState> {
-  const { studentId } = await requireStudent();
-
-  const file = formData.get("submission_file");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "Ajoute une photo de ton devoir." };
-  }
-
+  await requireStudent();
   const supabase = await createClient();
-
-  const storagePath = `${studentId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-  const { error: uploadError } = await supabase.storage
-    .from("homework-submissions")
-    .upload(storagePath, file, {
-      contentType: file.type || "application/octet-stream",
-    });
-
-  if (uploadError) return { error: "Échec de l'envoi du fichier." };
 
   const { error } = await supabase.rpc("submit_homework", {
     p_homework_id: homeworkId,
-    p_submission_file: storagePath,
+    p_files: files,
   });
 
-  if (error) return { error: "Échec de la soumission." };
+  if (error) return { error: "Échec de l'enregistrement du devoir." };
 
   revalidatePath("/dashboard/homework");
   return { success: true };

@@ -340,7 +340,7 @@ export function SessionForm({
           style={{ color: "#4A463F" }}
         />
         <p style={{ color: "#A8A29E", fontSize: 11 }}>
-          PDF, Word, image ou audio — max 10 Mo par fichier
+          PDF, Word, image ou audio — max 20 Mo par fichier
         </p>
       </div>
 

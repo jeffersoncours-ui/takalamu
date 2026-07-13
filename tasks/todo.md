@@ -2,6 +2,62 @@
 
 ---
 
+## Session 31 (suite 7) — Dépôt de devoir robuste (élève) + upload direct fiche de cours
+
+> **Bug remonté (élève Anthony, capture)** : page 500 « server error » en rendant un
+> devoir (photo) ; impossible de déposer +1 photo ; impossible de modifier/supprimer
+> après coup. **Rapport validé par le propriétaire** (« je valide tout »).
+> Cause racine : l'upload passe par un server action Next → plafond 1 Mo (et **Vercel
+> plafonne le corps serverless à ~4,5 Mo**), donc une photo iPhone plante avant même
+> d'exécuter le code. Fix : **upload direct navigateur → Supabase Storage** (le fichier
+> ne transite plus par le serveur), multi-fichiers, édition/suppression tant que non
+> corrigé. Même correctif appliqué à la fiche de fin de cours (même piège latent).
+
+### Plan
+- [x] Migration 53 : `homework.submission_files jsonb` (liste, comme `support_files`) +
+      backfill depuis `submission_file` (gardé + synchronisé pour l'ancien client prod) ;
+      buckets `homework-submissions`/`session-files` → 20 Mo ; policy student DELETE sur
+      son dossier `homework-submissions` (nettoyage) ; nouvelle RPC
+      `submit_homework(uuid, jsonb)` (remplace la liste, statut rendu/à_rendre, verrou
+      après correction, valide chemins dans le dossier de l'élève, notifie au 1ᵉʳ dépôt) —
+      **coexiste** avec l'ancienne `(uuid, text)` (ancien client prod, resynchronisée aussi)
+- [x] `database.types.ts` : `submission_files` + surcharge RPC (union) — édits ciblés
+- [x] Helper client `src/lib/upload-files.ts` (`uploadFilesToBucket`/`removeFilesFromBucket`)
+- [x] Devoir élève : `hw-submit-form` multi-photos + audio, upload direct navigateur, liste
+      éditable (ajouter/retirer/miniatures), re-soumission ; `actions.ts` (`saveHomeworkSubmission`)
+      ne reçoit que les chemins ; `page.tsx` affiche le formulaire tant que `a_rendre`/`rendu`
+      (verrou après correction) + compteur de pièces
+- [x] Vue prof `teacher/homework` : signe et affiche plusieurs pièces (image/audio/fichier)
+- [x] Fiche de fin de cours : **choix de portée** — plutôt qu'un refactor risqué du composant
+      critique <30s (non testable en navigateur ici), plafond server action relevé à 20 Mo
+      (`next.config.ts`) → lève le blocage 1 Mo. Audios de formulation déjà minuscules (64 kbps) ;
+      supports couverts jusqu'au plafond plateforme Vercel (~4,5 Mo). Direct-upload complet
+      de la fiche = follow-up dédié + testé si souhaité.
+- [x] Build (compilation OK) + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
+- [x] Vérif MCP (impersonation Anthony, transactions ROLLBACK, données réelles intactes) :
+      dépôt 2 fichiers → rendu + liste + 1ʳᵉ pièce compat + 1 notif ✔ ; chemin d'un autre
+      élève → rejeté (42501) ✔ ; verrou après correction → rejeté ✔ ; liste vide → retour
+      à_rendre + submitted_at NULL ✔ ; ancienne surcharge texte alimente aussi submission_files ✔
+- [x] Push preview — validation propriétaire avant merge prod
+- [ ] Test manuel propriétaire sur la preview (Anthony dépose plusieurs photos + audio depuis
+      son iPhone, modifie/retire, prof voit toutes les pièces)
+- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+
+### Review
+- Dépôt de devoir refait à neuf côté élève : **plusieurs photos et/ou un audio** par devoir,
+  **upload direct navigateur → Storage** (le fichier ne transite plus par le server action,
+  fini le crash 500 sur les photos iPhone), **liste éditable** (ajouter/retirer) et
+  **re-soumission tant que non corrigé** (verrouillé une fois corrigé — le travail de
+  correction du prof est protégé).
+- Côté prof, la file de correction affiche **toutes les pièces** déposées (image / audio /
+  fichier), plus une seule.
+- Fiche de fin de cours : plafond relevé à 20 Mo (lève le blocage 1 Mo) sans toucher au
+  composant critique. Direct-upload complet possible en follow-up dédié.
+- Rétrocompatible base partagée : colonne + RPC **additives**, ancienne RPC conservée et
+  resynchronisée → l'ancien client prod continue de fonctionner pendant la fenêtre preview/prod.
+
+---
+
 ## Session 31 (suite 6) — Quiz formulation : 3ᵉ mode « FR → écoute des 4 audios »
 
 > **Demande propriétaire (reformulée + validée)** : maintenant que TOUS les audios de

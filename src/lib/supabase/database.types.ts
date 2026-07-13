@@ -161,6 +161,7 @@ export type Database = {
           status: Database["public"]["Enums"]["homework_status"]
           student_id: string
           submission_file: string | null
+          submission_files: Json
           submitted_at: string | null
           updated_at: string
         }
@@ -178,6 +179,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["homework_status"]
           student_id: string
           submission_file?: string | null
+          submission_files?: Json
           submitted_at?: string | null
           updated_at?: string
         }
@@ -195,6 +197,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["homework_status"]
           student_id?: string
           submission_file?: string | null
+          submission_files?: Json
           submitted_at?: string | null
           updated_at?: string
         }
@@ -828,7 +831,9 @@ export type Database = {
         Returns: Json
       }
       submit_homework: {
-        Args: { p_homework_id: string; p_submission_file: string }
+        Args:
+          | { p_homework_id: string; p_submission_file: string }
+          | { p_files: Json; p_homework_id: string }
         Returns: undefined
       }
       submit_individual_quiz: {

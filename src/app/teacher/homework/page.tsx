@@ -13,7 +13,7 @@ export default async function HomeworkQueuePage() {
   const { data: homework, error: homeworkError } = await supabase
     .from("homework")
     .select(
-      "id, instructions, assigned_at, submission_file, students(id, profiles(full_name)), lesson_records(session_date, custom_title)",
+      "id, instructions, assigned_at, submission_file, submission_files, students(id, profiles(full_name)), lesson_records(session_date, custom_title)",
     )
     .eq("status", "rendu")
     .order("assigned_at", { ascending: true });
@@ -21,17 +21,41 @@ export default async function HomeworkQueuePage() {
   if (homeworkError) console.error("teacher/homework query failed:", homeworkError.message);
   const items = homework ?? [];
 
-  // URLs signées (1 h) pour les copies déposées par les élèves
-  const submissionUrls = new Map<string, string>();
+  const AUDIO_RE = /\.(webm|mp4|m4a|ogg|mp3|wav)$/i;
+  type SubmittedPiece = { url: string; name: string; isAudio: boolean };
+
+  // Pièces déposées : la liste `submission_files`, sinon l'ancien champ mono-fichier.
+  const filesOf = (hw: (typeof items)[number]): { path: string; name: string }[] => {
+    const raw = hw.submission_files;
+    if (Array.isArray(raw)) {
+      return raw.filter(
+        (f): f is { path: string; name: string } =>
+          !!f && typeof f === "object" && typeof (f as { path?: unknown }).path === "string",
+      );
+    }
+    return hw.submission_file
+      ? [{ path: hw.submission_file, name: hw.submission_file.split("/").pop() ?? hw.submission_file }]
+      : [];
+  };
+
+  // URLs signées (1 h) pour toutes les pièces déposées.
+  const submissionFiles = new Map<string, SubmittedPiece[]>();
   await Promise.all(
-    items
-      .filter((hw) => hw.submission_file)
-      .map(async (hw) => {
-        const { data } = await supabase.storage
-          .from("homework-submissions")
-          .createSignedUrl(hw.submission_file as string, 3600);
-        if (data?.signedUrl) submissionUrls.set(hw.id, data.signedUrl);
-      }),
+    items.map(async (hw) => {
+      const files = filesOf(hw);
+      if (files.length === 0) return;
+      const signed = await Promise.all(
+        files.map(async (f) => {
+          const { data } = await supabase.storage
+            .from("homework-submissions")
+            .createSignedUrl(f.path, 3600);
+          return data?.signedUrl
+            ? { url: data.signedUrl, name: f.name, isAudio: AUDIO_RE.test(f.name) || AUDIO_RE.test(f.path) }
+            : null;
+        }),
+      );
+      submissionFiles.set(hw.id, signed.filter((s): s is SubmittedPiece => s !== null));
+    }),
   );
 
   return (
@@ -104,34 +128,41 @@ export default async function HomeworkQueuePage() {
                 </div>
               )}
 
-              {submissionUrls.has(hw.id) &&
-                (/\.(webm|mp4|m4a|ogg|mp3|wav)$/i.test(hw.submission_file ?? "") ? (
-                  <div
-                    className="rounded-[14px] p-3"
-                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
-                  >
-                    <p className="font-semibold uppercase mb-2" style={{ color: "#2C4BB8", fontSize: 11, letterSpacing: ".05em" }}>
-                      🎙 Réponse audio de l&apos;élève
-                    </p>
-                    <audio controls src={submissionUrls.get(hw.id)} className="w-full" style={{ height: 40 }} />
-                  </div>
-                ) : (
-                  <a
-                    href={submissionUrls.get(hw.id)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-[14px] p-3 transition-opacity hover:opacity-80"
-                    style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                      <circle cx="12" cy="13" r="3" />
-                    </svg>
-                    <span className="font-semibold" style={{ color: "#2C4BB8", fontSize: 13 }}>
-                      Voir la copie déposée
-                    </span>
-                  </a>
-                ))}
+              {(submissionFiles.get(hw.id)?.length ?? 0) > 0 && (
+                <div className="flex flex-col gap-2">
+                  {submissionFiles.get(hw.id)!.map((piece, i) =>
+                    piece.isAudio ? (
+                      <div
+                        key={i}
+                        className="rounded-[14px] p-3"
+                        style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                      >
+                        <p className="font-semibold uppercase mb-2" style={{ color: "#2C4BB8", fontSize: 11, letterSpacing: ".05em" }}>
+                          🎙 Réponse audio de l&apos;élève
+                        </p>
+                        <audio controls src={piece.url} className="w-full" style={{ height: 40 }} />
+                      </div>
+                    ) : (
+                      <a
+                        key={i}
+                        href={piece.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 rounded-[14px] p-3 transition-opacity hover:opacity-80"
+                        style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        <span className="font-semibold" style={{ color: "#2C4BB8", fontSize: 13 }}>
+                          {piece.name || "Voir la copie déposée"}
+                        </span>
+                      </a>
+                    ),
+                  )}
+                </div>
+              )}
 
               <HwCorrectionForm homeworkId={hw.id} />
             </div>

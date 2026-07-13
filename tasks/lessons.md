@@ -1,5 +1,45 @@
 # Lessons
 
+## Session 31 (suite 7) — Dépôt de devoir robuste (upload direct navigateur)
+
+- **Un « erreur serveur » plein écran ≠ l'erreur inline du formulaire — c'est un crash
+  AVANT l'exécution du code.** La capture de l'élève montrait une page 500 (« a server
+  error occurred »), pas le message géré `{error}` du formulaire. Signal fort : le server
+  action n'a jamais tourné (confirmé : `submission_file` resté NULL en base). Cause : le
+  **plafond du corps d'un server action Next (1 Mo par défaut)**, dépassé par une photo
+  iPhone (2-5 Mo) → rejet framework avant le code. Diagnostiquer d'abord la NATURE de
+  l'erreur (page 500 vs message applicatif) : elles pointent vers des couches différentes.
+- **Sur Vercel, relever `bodySizeLimit` ne suffit pas : la plateforme plafonne le corps
+  serverless à ~4,5 Mo.** Donc pour un upload FIABLE de fichiers lourds, la seule vraie
+  solution est l'**upload direct navigateur → Storage** : le fichier ne transite plus par
+  le server action du tout, seuls les CHEMINS sont envoyés. Le client navigateur Supabase
+  (`createBrowserClient`, clé anon) porte la session → la RLS Storage s'applique
+  exactement comme côté serveur (insert/select/delete scopés au dossier de l'élève). Pas
+  besoin de service-role.
+- **Choix de portée assumé sur le composant critique.** Le même plafond touche la fiche de
+  fin de cours (supports), MAIS c'est l'écran le plus critique (<30s) et le refactor
+  direct-upload y est non testable en navigateur depuis ce sandbox. Décision : upload
+  direct COMPLET là où c'est le vrai problème (dépôt élève : photos pleine résolution,
+  fréquent, multi-fichiers) ; simple relèvement de `bodySizeLimit` (1 ligne, sans risque)
+  pour la fiche de cours. Ne pas refactorer un composant critique non testable « parce que
+  c'est validé » — livrer le fix là où ça fait mal, proposer le reste en follow-up testé.
+- **Multi-fichiers = colonne jsonb jumelle + RPC qui remplace la liste (comme
+  `support_files`/`update_session_record`).** `homework.submission_files jsonb`, la RPC
+  reçoit la liste complète à chaque fois (le client envoie l'état voulu). `submission_file`
+  (mono) est CONSERVÉ et resynchronisé (1ʳᵉ pièce) pour ne pas casser l'ancien lecteur prod.
+- **Rétrocompat base partagée par SURCHARGE, pas remplacement.** Nouvelle
+  `submit_homework(uuid, jsonb)` créée À CÔTÉ de l'ancienne `(uuid, text)` : PostgREST
+  distingue par les noms de paramètres (`p_files` vs `p_submission_file`), donc l'ancien
+  client prod (qui envoie `p_submission_file`) reste fonctionnel pendant la fenêtre
+  preview/prod. Les deux alimentent les deux colonnes → cohérence quel que soit le client.
+  (Rappel de la leçon suite 6 : sur base partagée, une migration doit rester additive et
+  ne jamais retirer ce que le client encore déployé consomme.)
+- **Défense en profondeur dans la RPC malgré la RLS Storage.** La RPC vérifie que chaque
+  chemin est bien dans le dossier de l'élève (`path LIKE student_id || '/%'`) même si la
+  RLS Storage l'empêche déjà d'uploader ailleurs — le client fournit des chaînes libres,
+  on ne fait jamais confiance au chemin envoyé. Verrou aussi sur le statut (pas de
+  modification après correction) pour protéger le travail du prof.
+
 ## Session 31 (suite 6) — Quiz formulation : 3ᵉ mode « FR → écoute des 4 audios »
 
 - **Le mode « réponses en audio » a une contrainte inverse du mode « question en audio ».**

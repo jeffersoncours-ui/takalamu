@@ -6,13 +6,26 @@ import { createClient } from "@/lib/supabase/server";
 import { StatusBadge, homeworkBadge } from "@/components/status-badge";
 import { HwSubmitForm } from "./hw-submit-form";
 
+type SubmissionFile = { path: string; name: string };
+
+function parseFiles(raw: unknown, fallback: string | null): SubmissionFile[] {
+  if (Array.isArray(raw)) {
+    return raw.filter(
+      (f): f is SubmissionFile =>
+        !!f && typeof f === "object" && typeof (f as SubmissionFile).path === "string",
+    );
+  }
+  // Compat : ancien champ mono-fichier si la liste est vide.
+  return fallback ? [{ path: fallback, name: fallback.split("/").pop() ?? fallback }] : [];
+}
+
 export default async function DevoirsPage() {
-  await requireStudent();
+  const { studentId } = await requireStudent();
   const supabase = await createClient();
 
   const { data: homeworks, error: homeworksError } = await supabase
     .from("homework")
-    .select("id, instructions, status, feedback, grade, assigned_at, submission_file, lesson_records(custom_title)")
+    .select("id, instructions, status, feedback, grade, assigned_at, submission_file, submission_files, lesson_records(custom_title)")
     .order("assigned_at", { ascending: false });
 
   if (homeworksError) console.error("dashboard/homework query failed:", homeworksError.message);
@@ -79,21 +92,41 @@ export default async function DevoirsPage() {
                 </div>
               )}
 
-              {hw.status === "a_rendre" && <HwSubmitForm homeworkId={hw.id} />}
+              {(() => {
+                const files = parseFiles(hw.submission_files, hw.submission_file);
+                const editable = hw.status === "a_rendre" || hw.status === "rendu";
+                return (
+                  <>
+                    {hw.status === "rendu" && (
+                      <div
+                        className="flex items-center gap-2 rounded-[12px] px-3 py-2.5 mt-3"
+                        style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                        <p className="font-medium" style={{ color: "#2C4BB8", fontSize: 13 }}>
+                          Devoir envoyé ({files.length} pièce{files.length > 1 ? "s" : ""}), en attente de correction. Tu peux encore le modifier.
+                        </p>
+                      </div>
+                    )}
 
-              {hw.status === "rendu" && hw.submission_file && (
-                <div
-                  className="flex items-center gap-2 rounded-[12px] px-3 py-2.5 mt-3"
-                  style={{ background: "#EAEFFD", border: "1px solid #C5D2F7" }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3E63DD" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                  <p className="font-medium" style={{ color: "#2C4BB8", fontSize: 13 }}>
-                    Devoir envoyé, en attente de correction.
-                  </p>
-                </div>
-              )}
+                    {editable && (
+                      <HwSubmitForm
+                        homeworkId={hw.id}
+                        studentId={studentId}
+                        existingFiles={files}
+                      />
+                    )}
+
+                    {!editable && files.length > 0 && (
+                      <p className="mt-3 text-xs font-medium" style={{ color: "#8B857A" }}>
+                        Devoir rendu — {files.length} pièce{files.length > 1 ? "s" : ""} déposée{files.length > 1 ? "s" : ""}.
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
 
               <div
                 className="flex items-center gap-2 mt-3 pt-2.5"
