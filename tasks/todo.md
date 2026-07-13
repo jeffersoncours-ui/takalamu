@@ -44,8 +44,8 @@
       upload (`src/lib/compress-image.ts` : ~1800 px, JPEG 0,8, orientation EXIF respectée,
       audio/PDF/HEIC-non-décodable passent tels quels) → poids ÷5–15 ; + uploads **parallélisés**
       (`uploadFilesToBucket` en `Promise.all`). Build + lint verts.
-- [ ] Test manuel propriétaire sur la preview (vitesse d'envoi désormais correcte)
-- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+- [x] Test manuel propriétaire sur la preview (vitesse d'envoi désormais correcte) → validé
+- [x] **Déployé** : fast-forward `main` + branche de prod Vercel depuis la branche de session
 
 ### Review
 - Dépôt de devoir refait à neuf côté élève : **plusieurs photos et/ou un audio** par devoir,
@@ -102,8 +102,8 @@
       nouveau mode. Vérifié MCP : appel 2-args → 0/105 audio ✔ ; appel avec flag → 45/105 ✔.
       `database.types.ts` mis à jour (édit ciblé), client passe le flag.
 - [x] Push branche de session (preview) — merge prod après validation propriétaire
-- [ ] Test manuel du propriétaire sur la preview (écoute réelle des 4 audios + choix)
-- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+- [x] Test manuel du propriétaire sur la preview (écoute réelle des 4 audios + choix) → validé
+- [x] **Déployé** : fast-forward `main` + branche de prod Vercel depuis la branche de session
 
 ### Review
 - Le quiz formulation a désormais **3 modes** au lieu de 2 : AR→FR (écoute la voix du
