@@ -1,5 +1,27 @@
 # Lessons
 
+## Session 31 (suite 8b) — Retouches livres/devoirs + tuiles cliquables
+
+- **Découpler l'affichage sans toucher aux données.** « Retirer le devoir du cours »,
+  « retirer le lien grammaire→cours », « ne montrer la grammaire que dans son livre » : tout
+  s'est fait en supprimant des blocs d'affichage / des requêtes côté page, jamais en
+  changeant le schéma. La donnée reste liée (grammar_rules.lesson_record_id, homework.
+  lesson_record_id) ; seule la présentation change. Réflexe : une demande « enlève X de tel
+  écran » est presque toujours une modif de rendu, pas de modèle.
+- **Filtre par défaut restrictif = anti-pollution.** L'onglet Devoirs ouvre sur « À faire »
+  uniquement (menu déroulant pour révéler « Correction en attente » / « Corrigé »). Le
+  propriétaire ne voulait « aucun visible sauf ceux à faire » — un défaut de filtre bien
+  choisi vaut mieux qu'une liste tout-affichée qu'on encombre.
+- **Une feature réclamée peut réparer un bug latent.** « L'élève peut revoir un devoir
+  corrigé » a rendu visible la `correction_file` que le prof uploadait mais que l'élève ne
+  voyait jamais (trou signalé à l'audit suite 4). Construire la revue = signer les pièces
+  rendues (bucket homework-submissions, RLS élève sur son dossier) + la copie corrigée
+  (homework-corrections) → les deux buckets/policies existaient déjà, zéro migration.
+- **Deep-link vers un état d'UI via searchParam.** La tuile « Dernière note » ouvre
+  `/dashboard/homework?filter=corrige` ; la page (server) lit le param et le passe en
+  `initialFilter` au composant client. Permet de « tomber pile » sur le bon onglet sans
+  état global ni navigation en deux temps.
+
 ## Session 31 (suite 8) — Cours rangés par livre
 
 - **Un « livre » qui contient des cours vs un « livre » qui agrège des règles : une même
