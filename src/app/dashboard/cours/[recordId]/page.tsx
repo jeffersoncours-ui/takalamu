@@ -29,7 +29,7 @@ export default async function StudentSessionPage({
 
   if (!record) notFound();
 
-  const [orderRes, vocabRes, formRes, hwRes] = await Promise.all([
+  const [orderRes, vocabRes, formRes] = await Promise.all([
     supabase
       .from("lesson_records")
       .select("id")
@@ -45,18 +45,12 @@ export default async function StudentSessionPage({
       .select("id, arabic_text, french_text")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
-    supabase
-      .from("homework")
-      .select("id, instructions")
-      .eq("lesson_record_id", recordId)
-      .maybeSingle(),
   ]);
 
   const courseNumber =
     (orderRes.data ?? []).findIndex((r) => r.id === recordId) + 1;
   const vocab = vocabRes.data ?? [];
   const formulations = formRes.data ?? [];
-  const homework = hwRes.data;
   const badge = attendanceBadge(record.attendance);
 
   const supportFiles = (record.support_files as SupportFile[] | null) ?? [];
@@ -184,20 +178,8 @@ export default async function StudentSessionPage({
         </div>
       )}
 
-      {/* Devoir du cours */}
-      {homework?.instructions && (
-        <div className="rounded-[16px] p-4 space-y-1.5" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-          <div className="flex items-center justify-between">
-            <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
-              Devoir
-            </p>
-            <Link href="/dashboard/homework" className="font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
-              Voir →
-            </Link>
-          </div>
-          <p style={{ color: "#1C1A17", fontSize: 14 }}>{homework.instructions}</p>
-        </div>
-      )}
+      {/* Le devoir n'est plus affiché ici : il vit dans l'onglet « Devoirs »
+          (+ la cloche), pas dans la présentation du cours. */}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 type GrammarItem = {
@@ -72,15 +71,6 @@ export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
             <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#4A463F", fontSize: 14 }}>
               {r.content}
             </p>
-            {r.courseLabel && r.lessonRecordId && (
-              <Link
-                href={`/dashboard/cours/${r.lessonRecordId}`}
-                className="inline-flex items-center gap-1 font-semibold"
-                style={{ color: "#0F9D6E", fontSize: 12 }}
-              >
-                {r.courseLabel} →
-              </Link>
-            )}
           </div>
         ))}
       </div>

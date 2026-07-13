@@ -2,6 +2,29 @@
 
 ---
 
+## Session 31 (suite 8b) — Retouches livres/devoirs (retour propriétaire)
+
+> Après test de la suite 8 : (1) retirer le lien « → cours » sous les règles du livre de
+> grammaire ; (2) retirer le bloc « Devoir » de la présentation d'un cours (l'onglet
+> Devoirs, lui, garde le nom du cours — c'est bien) ; (3) onglet Devoirs épuré : menu
+> déroulant À faire / Correction en attente / Corrigé (défaut À faire, seuls ceux-là
+> visibles) + un devoir corrigé **cliquable pour être revu** (pièces rendues + copie
+> corrigée + retour + note, lecture seule) → l'élève suit sa progression.
+
+- [x] `grammar-search.tsx` : lien « → cours » retiré (grammaire autonome)
+- [x] `dashboard/cours/[recordId]` : bloc « Devoir » retiré (le devoir vit dans l'onglet
+      Devoirs + cloche, pas dans le cours)
+- [x] `dashboard/homework` : `page.tsx` (fetch + signature pièces/copie corrigée pour les
+      corrigés) + nouveau `homework-tabs.tsx` (menu déroulant, défaut À faire, revue
+      lecture seule des corrigés). Corrige au passage le manque « correction_file jamais
+      affichée côté élève » (audit suite 4)
+- [x] Build + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
+- [x] Vérif MCP : devoirs corrigés d'Anthony (2-3 pièces, feedback, note 18/20 ; pas encore
+      de copie corrigée uploadée → lien masqué, pièces affichées) ; aucune migration
+- [ ] Push preview → validation → merge prod (avec la suite 8)
+
+---
+
 ## Session 31 (suite 8) — Cours rangés par livre (anti pollution visuelle)
 
 > **Demande propriétaire (validée après plusieurs allers-retours)** : ranger les cours
