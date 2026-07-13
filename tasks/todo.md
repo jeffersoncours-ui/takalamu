@@ -2,6 +2,60 @@
 
 ---
 
+## Session 31 (suite 6) — Quiz formulation : 3ᵉ mode « FR → écoute des 4 audios »
+
+> **Demande propriétaire (reformulée + validée)** : maintenant que TOUS les audios de
+> formulation existent, ajouter au quiz un 3ᵉ mode dans le sens FR→AR mais avec les
+> réponses en audio : la **question est en texte français**, les **4 propositions sont
+> des audios arabes** (la bonne + 3 distracteurs audio), l'élève écoute et retrouve
+> lequel traduit la phrase. Filet de sécurité validé : ce mode ne se déclenche que si
+> la source ET assez de distracteurs ont un audio ; sinon on retombe sur le FR→AR texte.
+> Anti-triche : aucun texte arabe ni identifiant-source dans le payload (rien à lire/
+> corréler en devtools) — cohérent avec le mode AR→FR existant.
+
+### Plan
+- [x] Migration 51 : `generate_formulation_quiz` gagne la direction `fr_to_ar_audio`
+      (source AVEC audio + ≥3 autres formulations AVEC audio → 4 audio_choices {id,
+      audio_path} mélangés, prompt = texte FR, PAS de form_id source dans le payload) ;
+      `submit_formulation_quiz` score `fr_to_ar_audio` par correspondance du FR de la
+      formulation choisie avec le prompt (leak-free), renvoie l'arabe choisi/cible pour
+      la revue. CREATE OR REPLACE (signatures inchangées).
+- [x] `database.types.ts` : inchangé (signatures RPC identiques → aucun diff)
+- [x] `actions.ts` : `QuizQuestion.audio_choices?`, `QuizAnswer.prompt?`, direction
+      `fr_to_ar_audio` ; signature des URLs des audios de choix (batch), drop d'une
+      question audio si une signature échoue ; mapping submit spécifique au nouveau mode
+- [x] `quiz-player.tsx` : rendu des choix audio (écouter + « Choisir »), label question,
+      revue (arabe = réponses des 2 sens FR→AR) ; `AudioPrompt` variante neutre
+- [x] `formulation-quiz-runner.tsx` : intro + label du 3ᵉ mode
+- [x] Build (30 routes, compilation OK) + lint verts (seule l'erreur pré-existante
+      `drawer-nav.tsx` subsiste, mes fichiers 0 problème)
+- [x] Vérif MCP (impersonation Hamza/Anthony, transactions/auto-rollback, données réelles
+      intactes 14/14) : mode `fr_to_ar_audio` apparaît (120/210 tirages), **4** choix audio
+      toujours, bonne réponse toujours présente parmi les 4, clés des choix = {id,
+      audio_path} uniquement, **0** caractère arabe et **0** form_id-source dans le payload ;
+      scoring 1/2 (bonne puis mauvaise réponse) ✔ ; Anthony (1 formulation/0 audio) →
+      quiz vide sans crash (fallback) ✔ ; advisor 0 nouvelle catégorie ; test non persisté
+- [x] Push branche de session (preview) — merge prod après validation propriétaire
+- [ ] Test manuel du propriétaire sur la preview (écoute réelle des 4 audios + choix)
+- [ ] Après validation : fast-forward `main` + branche de prod Vercel
+
+### Review
+- Le quiz formulation a désormais **3 modes** au lieu de 2 : AR→FR (écoute la voix du
+  prof → choix FR texte), FR→AR texte (lis le FR → choix arabe texte), et le nouveau
+  **FR→AR audio** (lis la phrase française → écoute les **4 propositions audio arabes** et
+  choisis celle qui la traduit). Chaque proposition = un bouton « Écouter » + « Choisir ».
+- Filet de sécurité respecté : le mode audio-choix ne se déclenche que si la source ET
+  au moins 3 autres formulations ont un audio ; sinon on retombe sur les modes texte
+  (Anthony, sans audio, ne le voit jamais — quiz vide sans planter).
+- Anti-triche **leak-free** prouvé empiriquement : le payload d'une question FR→AR audio
+  ne contient ni texte arabe ni identifiant-source (seulement le prompt FR affiché + 4
+  audios {id opaque, url signée} mélangés). Le scoring serveur passe par la correspondance
+  du français choisi avec le prompt — aucun id-source à corréler dans les devtools.
+- Aucun changement de signature RPC (CREATE OR REPLACE), aucune nouvelle table/colonne —
+  purement de la logique de génération/scoring + le rendu client des choix audio.
+
+---
+
 ## Session 31 (suite 5) — Un seul quiz visible à la fois
 
 > **Bug remonté par le propriétaire** (capture d'écran) : sur `/dashboard/evaluations`,

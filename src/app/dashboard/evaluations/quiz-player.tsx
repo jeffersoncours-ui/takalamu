@@ -12,8 +12,18 @@ const GREEN = "#0F9D6E";
 const RED = "#B4292E";
 
 /** Lecteur de question audio (compréhension orale) : gros bouton Écouter,
- *  réécoutable à volonté — aucun texte arabe affiché. */
-function AudioPrompt({ url, compact }: { url: string; compact?: boolean }) {
+ *  réécoutable à volonté — aucun texte arabe affiché. Variante `neutral`
+ *  (contour) pour les boutons d'écoute des propositions, où le vert est
+ *  réservé au bouton « Choisir ». */
+function AudioPrompt({
+  url,
+  compact,
+  neutral,
+}: {
+  url: string;
+  compact?: boolean;
+  neutral?: boolean;
+}) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -30,6 +40,22 @@ function AudioPrompt({ url, compact }: { url: string; compact?: boolean }) {
     }
   };
 
+  const fill = neutral ? (playing ? "#0A6B4E" : "#4A463F") : "#fff";
+  const btnStyle: React.CSSProperties = neutral
+    ? {
+        background: playing ? "#ECFAF4" : "#FBF9F5",
+        color: playing ? "#0A6B4E" : "#4A463F",
+        border: `1.5px solid ${playing ? "#C8EBDB" : "#E9E3D8"}`,
+        fontSize: compact ? 12 : 14,
+        padding: compact ? "6px 14px" : "10px 18px",
+      }
+    : {
+        background: playing ? "#0A6B4E" : GREEN,
+        color: "#fff",
+        fontSize: compact ? 12 : 15,
+        padding: compact ? "6px 14px" : "12px 22px",
+      };
+
   return (
     <span className="inline-flex">
       <audio ref={audioRef} src={url} preload="auto" onEnded={() => setPlaying(false)} />
@@ -37,24 +63,19 @@ function AudioPrompt({ url, compact }: { url: string; compact?: boolean }) {
         type="button"
         onClick={toggle}
         className="inline-flex items-center gap-2 rounded-full font-bold transition-opacity hover:opacity-85"
-        style={{
-          background: playing ? "#0A6B4E" : GREEN,
-          color: "#fff",
-          fontSize: compact ? 12 : 15,
-          padding: compact ? "6px 14px" : "12px 22px",
-        }}
+        style={btnStyle}
       >
         {playing ? (
-          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill="#fff">
+          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill={fill}>
             <rect x="6" y="5" width="4" height="14" rx="1" />
             <rect x="14" y="5" width="4" height="14" rx="1" />
           </svg>
         ) : (
-          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill="#fff">
+          <svg width={compact ? 12 : 16} height={compact ? 12 : 16} viewBox="0 0 24 24" fill={fill}>
             <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.9-6.86a1.03 1.03 0 0 0 0-1.76L9.56 4.26A1.03 1.03 0 0 0 8 5.14Z" />
           </svg>
         )}
-        {playing ? "Stop" : compact ? "Réécouter" : "Écouter"}
+        {playing ? "Stop" : "Écouter"}
       </button>
     </span>
   );
@@ -72,6 +93,8 @@ export type QuizLabels = {
   allScopeLabel: string;
   arToFrQuestion: string;
   frToArQuestion: string;
+  /** Mode « FR → écoute des 4 audios » (formulation seulement). */
+  frToArAudioQuestion?: string;
 };
 
 export default function QuizPlayer({
@@ -121,7 +144,14 @@ export default function QuizPlayer({
     const q = questions[current];
     const newAnswers: QuizAnswer[] = [
       ...answers,
-      { item_id: q.item_id, direction: q.direction, chosen },
+      {
+        item_id: q.item_id,
+        direction: q.direction,
+        chosen,
+        // fr_to_ar_audio : `chosen` = token de la formulation écoutée, le prompt
+        // français round-trip pour le scoring serveur (pas d'id-source échangé).
+        ...(q.direction === "fr_to_ar_audio" ? { prompt: q.prompt } : {}),
+      },
     ];
 
     if (current + 1 < questions.length) {
@@ -257,7 +287,11 @@ export default function QuizPlayer({
           style={{ background: "#fff", border: "1px solid #EFEAE0" }}
         >
           <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#8B857A" }}>
-            {q.direction === "ar_to_fr" ? labels.arToFrQuestion : labels.frToArQuestion}
+            {q.direction === "ar_to_fr"
+              ? labels.arToFrQuestion
+              : q.direction === "fr_to_ar_audio"
+              ? labels.frToArAudioQuestion ?? labels.frToArQuestion
+              : labels.frToArQuestion}
           </p>
           {q.audio_url ? (
             <div className="py-1">
@@ -281,29 +315,57 @@ export default function QuizPlayer({
           )}
         </div>
 
-        {/* Choices */}
-        <div className="flex flex-col gap-2.5">
-          {q.choices.map((choice, idx) => (
-            <button
-              key={idx}
-              onClick={() => choose(choice)}
-              disabled={loading}
-              className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{
-                background: "#fff",
-                border: "1.5px solid #EFEAE0",
-                color: "#1C1A17",
-                textAlign: isArabicAnswer ? "right" : "left",
-              }}
-              dir={isArabicAnswer ? "rtl" : undefined}
-              lang={isArabicAnswer ? "ar" : undefined}
-            >
-              <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
-                {choice}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* Choices : audio (mode audio-choix) ou texte */}
+        {q.audio_choices ? (
+          <div className="flex flex-col gap-2.5">
+            {q.audio_choices.map((c, idx) => (
+              <div
+                key={`${current}-${c.token}`}
+                className="w-full rounded-[14px] px-3.5 py-3 flex items-center gap-3"
+                style={{ background: "#fff", border: "1.5px solid #EFEAE0" }}
+              >
+                <span
+                  className="shrink-0 inline-flex items-center justify-center rounded-full text-xs font-bold"
+                  style={{ width: 24, height: 24, background: "#F7F4EE", color: "#8B857A" }}
+                >
+                  {idx + 1}
+                </span>
+                <AudioPrompt url={c.audio_url} neutral compact />
+                <button
+                  onClick={() => choose(c.token)}
+                  disabled={loading}
+                  className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+                  style={{ background: GREEN }}
+                >
+                  Choisir
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {q.choices.map((choice, idx) => (
+              <button
+                key={idx}
+                onClick={() => choose(choice)}
+                disabled={loading}
+                className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
+                style={{
+                  background: "#fff",
+                  border: "1.5px solid #EFEAE0",
+                  color: "#1C1A17",
+                  textAlign: isArabicAnswer ? "right" : "left",
+                }}
+                dir={isArabicAnswer ? "rtl" : undefined}
+                lang={isArabicAnswer ? "ar" : undefined}
+              >
+                <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
+                  {choice}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {loading && (
           <p className="text-center text-sm" style={{ color: "#8B857A" }}>
@@ -349,7 +411,8 @@ export default function QuizPlayer({
         <div className="flex flex-col gap-2">
           {result.answers.map((a, idx) => {
             const q = questions[idx];
-            const isAr = a.direction === "fr_to_ar";
+            // Réponses en arabe pour les deux sens FR→AR (texte et audio-choix).
+            const isAr = a.direction !== "ar_to_fr";
             return (
               <div
                 key={idx}

@@ -1,5 +1,39 @@
 # Lessons
 
+## Session 31 (suite 6) — Quiz formulation : 3ᵉ mode « FR → écoute des 4 audios »
+
+- **Le mode « réponses en audio » a une contrainte inverse du mode « question en audio ».**
+  AR→FR (migration 48) n'exige un audio QUE sur la formulation-source (les 3 distracteurs
+  restent du texte FR). Le nouveau FR→AR-audio exige un audio sur les **4 choix** (bonne
+  réponse + 3 distracteurs) → il faut ≥4 formulations audio dans le glossaire, pas juste 1.
+  Le filet de sécurité en découle : mode activé seulement si `count(audio) >= 4`, sinon
+  fallback texte. Ne pas copier bêtement la condition de déclenchement de l'autre sens.
+- **Anti-triche : la vraie fuite n'était pas le texte arabe mais la CORRÉLATION d'ids.**
+  Réflexe initial : « pas de texte arabe dans le payload » (comme AR→FR). Insuffisant ici :
+  si on envoie le `form_id` source ET des choix identifiés par leur `formulation.id`, un
+  coup d'œil devtools suffit à matcher l'id-source à un choix → réponse sans écouter.
+  Solution : **ne jamais mettre l'id-source dans le payload**. Le round-trip de scoring
+  passe par le **prompt français** (déjà affiché, donc non-secret) + l'id du choix cliqué ;
+  le serveur score par `formulation_choisie.french == prompt`. Aucun secret à corréler.
+  Généralisable : quand question ET réponse sont des entités de même type, identifier la
+  question par une propriété déjà visible, jamais par un id qui apparaît aussi côté choix.
+- **CTE non matérialisé + fonction volatile (`random()`) = ré-évaluations indépendantes.**
+  Un test structurel a d'abord donné « 0 question audio » alors que la distribution était
+  bonne : le CTE `draws` (qui appelle `generate_formulation_quiz`, plein de `random()`)
+  était ré-exécuté séparément pour chaque CTE consommateur → chaque agrégat voyait un
+  tirage différent. `WITH draws AS MATERIALIZED (...)` fige un seul tirage partagé. À
+  utiliser dès qu'un test agrège plusieurs vues d'un même appel de fonction volatile.
+- **Une nouvelle direction de quiz = extension du même contrat générique, pas un composant
+  neuf.** Le `QuizPlayer` générique (extrait session 30 suite 4) a absorbé le 3ᵉ mode via
+  2 champs optionnels (`audio_choices` côté question, `prompt` côté réponse) + une branche
+  de rendu, sans toucher aux 2 modes existants ni au quiz vocabulaire (label du 3ᵉ mode
+  laissé optionnel dans `QuizLabels` → le runner vocab n'a pas eu à changer). L'extraction
+  générique d'il y a 2 sessions continue de payer.
+- **Signatures RPC identiques → `CREATE OR REPLACE`, pas de DROP.** Les deux RPC ont gagné
+  de la logique interne (nouvelle direction, nouveau scoring) mais gardent exactement la
+  même signature (`uuid, uuid, int` / `uuid, jsonb`) → remplacement en place, aucun impact
+  sur `database.types.ts`, client déployé compatible pendant la fenêtre preview/prod.
+
 ## Session 31 (suite 5) — Un seul quiz visible à la fois
 
 - **Masquer visuellement APRÈS coup ne suffit pas contre un lancement concurrent — il
