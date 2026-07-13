@@ -31,6 +31,17 @@ export async function submitSession(
   const customTitle = String(formData.get("custom_title") ?? "").trim();
   if (!customTitle) return { error: "Le nom du cours est obligatoire." };
 
+  const bookId = String(formData.get("book_id") ?? "").trim();
+  if (!bookId) return { error: "Choisis un livre pour ce cours." };
+
+  const supabaseCheck = await createClient();
+  const { data: book } = await supabaseCheck
+    .from("course_books")
+    .select("id")
+    .eq("id", bookId)
+    .maybeSingle(); // RLS : ne renvoie le livre que s'il appartient à l'enseignant
+  if (!book) return { error: "Livre invalide." };
+
   const publicRecap = String(formData.get("public_recap") ?? "").trim() || null;
   const privateNote = String(formData.get("private_note") ?? "").trim() || null;
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
@@ -107,6 +118,10 @@ export async function submitSession(
     if (error || !recordId) {
       return { error: "Échec de l'enregistrement pour un des élèves sélectionnés." };
     }
+
+    // Rangement du cours dans le livre choisi (mise à jour directe, RLS enseignant —
+    // aucune modification de la RPC critique submit_session_record).
+    await supabase.from("lesson_records").update({ book_id: bookId }).eq("id", recordId);
 
     // Notifier l'élève si un devoir a été assigné pendant cette séance.
     if (homework) {

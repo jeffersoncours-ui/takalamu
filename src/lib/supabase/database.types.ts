@@ -218,9 +218,54 @@ export type Database = {
           },
         ]
       }
+      course_books: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          kind: string
+          order_index: number
+          subtitle: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          order_index?: number
+          subtitle?: string | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          order_index?: number
+          subtitle?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_books_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_records: {
         Row: {
           attendance: Database["public"]["Enums"]["attendance_status"]
+          book_id: string | null
           course_group_id: string
           created_at: string
           custom_title: string | null
@@ -234,6 +279,7 @@ export type Database = {
         }
         Insert: {
           attendance: Database["public"]["Enums"]["attendance_status"]
+          book_id?: string | null
           course_group_id?: string
           created_at?: string
           custom_title?: string | null
@@ -247,6 +293,7 @@ export type Database = {
         }
         Update: {
           attendance?: Database["public"]["Enums"]["attendance_status"]
+          book_id?: string | null
           course_group_id?: string
           created_at?: string
           custom_title?: string | null
@@ -259,6 +306,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lesson_records_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "course_books"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_records_student_id_fkey"
             columns: ["student_id"]

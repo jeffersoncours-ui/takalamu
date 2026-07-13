@@ -35,7 +35,7 @@ export async function duplicateSession(
   // Source (RLS garantit que c'est un cours de l'enseignant courant)
   const { data: record, error: recordError } = await supabase
     .from("lesson_records")
-    .select("id, custom_title, session_date, public_recap, support_files, course_group_id")
+    .select("id, custom_title, session_date, public_recap, support_files, course_group_id, book_id")
     .eq("id", recordId)
     .maybeSingle();
 
@@ -107,7 +107,7 @@ export async function duplicateSession(
     ]);
     const supportFiles = supportResults.filter((f): f is SupportFile => f !== null);
 
-    const { error } = await supabase.rpc("submit_session_record", {
+    const { data: newRecordId, error } = await supabase.rpc("submit_session_record", {
       p_student_id: targetId,
       p_session_date: record.session_date,
       p_attendance: "present",
@@ -122,8 +122,13 @@ export async function duplicateSession(
       p_course_group_id: record.course_group_id,
     });
 
-    if (error) {
+    if (error || !newRecordId) {
       return { error: "Échec de la duplication pour un des élèves sélectionnés." };
+    }
+
+    // Le cours dupliqué hérite du livre du cours source.
+    if (record.book_id) {
+      await supabase.from("lesson_records").update({ book_id: record.book_id }).eq("id", newRecordId);
     }
   }
 

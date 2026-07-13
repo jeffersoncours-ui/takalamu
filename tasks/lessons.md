@@ -1,5 +1,44 @@
 # Lessons
 
+## Session 31 (suite 8) — Cours rangés par livre
+
+- **Un « livre » qui contient des cours vs un « livre » qui agrège des règles : une même
+  table, un `kind`.** العربية/قصص (`kind='courses'`) contiennent des `lesson_records` via
+  `book_id`. La grammaire (`kind='grammar'`) ne contient PAS de cours : sa page agrège tous
+  les `grammar_rules` de l'élève. Résultat : « la grammaire va automatiquement dans son
+  livre » est gratuit — aucune colonne `book_id` sur `grammar_rules`, aucun rangement manuel,
+  la vue agrège par nature. Repérer quand une catégorie a une sémantique différente et la
+  modéliser par un discriminant plutôt que par une 2ᵉ table.
+- **Ranger un cours dans un livre = simple `UPDATE lesson_records SET book_id` après la RPC,
+  pas un nouveau paramètre.** Ajouter `p_book_id` à `submit_session_record`/`update_session_record`
+  aurait imposé un DROP+CREATE (changement de signature) sur la fiche la plus critique (<30s),
+  avec le risque de la fenêtre preview/prod. La RPC renvoie déjà l'id du cours créé → un
+  `.update({book_id}).eq('id', recordId)` côté action, couvert par la policy `lr_teacher_all`
+  existante, fait le travail sans toucher la RPC. Préférer une mise à jour ciblée post-RPC
+  quand la donnée à poser est indépendante et que la RPC est sensible.
+- **Éviter un `book_id` forgé pointant vers le livre d'un autre prof : valider par un SELECT
+  sous RLS, pas par confiance.** L'action lit `course_books` par id avec `.maybeSingle()` :
+  la policy `book_teacher_all` ne renvoie le livre que s'il appartient à l'enseignant courant.
+  Null → « Livre invalide ». Prouvé : Khadija ne voit pas le livre de Jefferson (0), et son
+  UPDATE d'un cours de Jefferson affecte 0 ligne.
+- **Seed de couvertures : assets `public/` (que je peux écrire) pour le seed, bucket public
+  pour l'ajout par l'enseignant.** Le MCP Supabase n'accède pas au Storage → impossible
+  d'uploader les 3 couvertures par SQL. Solution : les copier dans `public/books/` (elles
+  shippent avec l'app, `cover_url='/books/xxx.jpg'`) et créer un bucket public `book-covers`
+  pour les couvertures que l'enseignant ajoutera via l'UI (upload direct navigateur +
+  compression réutilisés). `cover_url` stocke indifféremment un chemin d'asset ou une URL
+  publique de bucket — l'`<img>` gère les deux.
+- **`groupByLesson` inflait mes comptes.** Un premier `count(distinct g.id)` via une jointure
+  vocab×grammar×formulations a renvoyé 3 règles au lieu d'1 (produit cartésien). Le
+  propriétaire l'a corrigé. Toujours compter par sous-requêtes scalaires indépendantes
+  (`(select count(*) …)`) plutôt que par jointures multiples quand on agrège plusieurs
+  relations enfants d'une même ligne.
+- **Backfill par `course_group_id`, pas par élève.** Le propriétaire raisonnait « cours
+  d'Anthony → récits », mais avec les cours dupliqués (course_group partagé Anthony/Bilel/
+  Hamza), le rangement correct est par COURS (course_group), pas par élève : un même cours
+  chez plusieurs élèves reçoit un seul livre, et Bilel (qui suit les deux) hérite
+  correctement des deux livres via ses deux course_groups.
+
 ## Session 31 (suite 7) — Dépôt de devoir robuste (upload direct navigateur)
 
 - **Un « erreur serveur » plein écran ≠ l'erreur inline du formulaire — c'est un crash

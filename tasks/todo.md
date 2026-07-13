@@ -2,6 +2,64 @@
 
 ---
 
+## Session 31 (suite 8) — Cours rangés par livre (anti pollution visuelle)
+
+> **Demande propriétaire (validée après plusieurs allers-retours)** : ranger les cours
+> par **livre** sur l'accueil élève. 3 livres : العربية بين يديك (arabe), تهذيب قصص النبيين
+> (récits), النحو الميسّر (grammaire, spécial). Accueil épuré. Clic sur une couverture →
+> **page dédiée** au livre. Grammaire **automatique** (toute règle saisie va au livre
+> grammaire, retirée du détail du cours côté élève). Fiche de fin de cours : radio
+> « Livre » obligatoire (arabe/récits). Écran « Gérer mes livres ». Accueil : salutation
+> + « En évolution depuis le [1ᵉʳ cours en lettres] » + 3 tuiles (Mots / Expressions /
+> Dernière note), plus de tuiles séances/assiduité.
+
+### Plan
+- [ ] Migration 54 : table `course_books` (teacher, titre, sous-titre, cover_url, kind
+      courses|grammar, order) + RLS (prof gère, élève lit ceux de son prof) ;
+      `lesson_records.book_id` (FK, ON DELETE SET NULL) ; bucket public `book-covers` ;
+      seed des 3 livres de Jefferson (couvertures en assets `public/books/`) ; backfill
+      des 3 cours (التحية→arabe, بائع الأصنام+ولد آزر→récits ; grammaire = auto)
+- [ ] Couvertures copiées dans `public/books/`
+- [ ] `database.types.ts` : `course_books` + `lesson_records.book_id`
+- [ ] Accueil élève (`dashboard/page.tsx`) : salutation + « En évolution depuis … » +
+      3 tuiles (Mots/Expressions/Dernière note) + « Reprendre mes cours » + couvertures
+      des livres où l'élève a du contenu → lien page dédiée
+- [ ] Page livre `dashboard/livres/[bookId]` : cours du livre (courses) OU règles de
+      grammaire (grammar) — épurée, en-tête couverture
+- [ ] Détail cours élève (`dashboard/cours/[recordId]`) : retirer la grammaire (auto → livre)
+- [ ] Fiche fin de cours (`session-form` + `new/page` + `actions`) : radio « Livre »
+      obligatoire (livres kind=courses) → book_id posé après enregistrement (pas de RPC)
+- [ ] Édition de cours (edit-session-form + page + actions) : radio prérempli + book_id
+- [ ] Duplication (`library/[recordId]/actions`) : le cours dupliqué garde le book_id source
+- [ ] « Gérer mes livres » (`teacher/books`) : liste + ajouter/renommer/couverture/supprimer
+      (upload couverture direct + compressé) + entrée nav
+- [x] Build (compilation OK, routes `/dashboard/livres/[bookId]` + `/teacher/books`) + lint
+      (seule l'erreur pré-existante `drawer-nav.tsx`)
+- [x] Tests MCP : backfill (arabe 1 cours / récits 2 cours / grammaire 0 = agrège les règles),
+      0 fiche sans livre ; RLS — Anthony voit 3 livres (ceux de Jefferson) et **jamais** le
+      livre d'une autre prof (inséré en test → toujours 3) ; Khadija voit 0 livre de Jefferson,
+      1 des siens ; rangement `book_id` : Khadija bloquée (0 ligne), Jefferson autorisé (1) ;
+      advisor 0 nouvelle catégorie
+- [x] Push preview → validation → merge prod
+
+### Review
+- Accueil élève repensé et épuré : salutation + « En évolution depuis le [1ᵉʳ cours en
+  lettres] » + 3 tuiles (Mots / Expressions / Dernière note) + « Reprendre mes cours » avec
+  les **couvertures des livres** (seulement ceux où l'élève a du contenu). Clic sur une
+  couverture → **page dédiée** au livre.
+- 3 livres seedés (arabe / récits / grammaire). La **grammaire est automatique** : le livre
+  النحو agrège toutes les règles de l'élève (kind='grammar'), et la grammaire est retirée du
+  détail du cours côté élève. Les 2 livres de cours affichent la liste de leurs cours.
+- Fiche de fin de cours + édition + duplication : **livre obligatoire** (radio, arabe/récits),
+  posé par simple mise à jour après la RPC (aucune RPC critique touchée). La duplication
+  hérite du livre source.
+- Écran **« Gérer mes livres »** (nav prof) : ajouter / modifier / supprimer un livre, avec
+  upload de couverture (compressé + direct). Suppression bloquée si le livre contient des cours.
+- Rétrocompat base partagée : `course_books` + `lesson_records.book_id` **additifs** ; l'ancien
+  client prod ignore la colonne. Backfill par `course_group_id` (pas de doublon).
+
+---
+
 ## Session 31 (suite 7) — Dépôt de devoir robuste (élève) + upload direct fiche de cours
 
 > **Bug remonté (élève Anthony, capture)** : page 500 « server error » en rendant un

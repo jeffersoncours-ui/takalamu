@@ -8,6 +8,7 @@ import { AudioRecorderInput } from "@/components/audio-recorder-input";
 import { updateSession } from "./actions";
 
 type SupportFile = { path: string; name: string };
+type Book = { id: string; title: string; subtitle: string | null };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
 type GrammarRow = { id: string; title: string; content: string };
 type FormulationRow = { id: string; arabic_text: string; french_text: string; audio_path: string | null };
@@ -51,6 +52,8 @@ export function EditSessionForm({
   studentName,
   sessionDateIso,
   customTitle,
+  books,
+  currentBookId,
   attendance: initialAttendance,
   publicRecap,
   privateNote,
@@ -66,6 +69,8 @@ export function EditSessionForm({
   studentName: string;
   sessionDateIso: string;
   customTitle: string;
+  books: Book[];
+  currentBookId: string;
   attendance: AttendanceStatus;
   publicRecap: string;
   privateNote: string;
@@ -81,6 +86,9 @@ export function EditSessionForm({
 
   const [dateLocal, setDateLocal] = useState(toLocalValue(sessionDateIso));
   const [presence, setPresence] = useState<AttendanceStatus>(initialAttendance);
+  const [bookId, setBookId] = useState<string>(
+    currentBookId || (books.length === 1 ? books[0].id : ""),
+  );
 
   const [vocabRows, setVocabRows] = useState(
     vocab.map((v) => ({ id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition }))
@@ -183,6 +191,48 @@ export function EditSessionForm({
           placeholder="ex. Les couleurs, Le passé simple…"
           style={inputStyle}
         />
+      </div>
+
+      {/* Livre (obligatoire) — la grammaire est rangée automatiquement */}
+      <div className="space-y-2">
+        <span style={sectionLabel}>Livre</span>
+        <input type="hidden" name="book_id" value={bookId} />
+        <div className="flex flex-col gap-2">
+          {books.map((b) => {
+            const active = bookId === b.id;
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBookId(b.id)}
+                className="flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-left transition-colors"
+                style={{
+                  border: `1.5px solid ${active ? "#9FE3C8" : "#E9E3D8"}`,
+                  background: active ? "#ECFAF4" : "#fff",
+                }}
+              >
+                <span
+                  className="rounded-full shrink-0"
+                  style={{
+                    width: 16,
+                    height: 16,
+                    border: `2px solid ${active ? "#0F9D6E" : "#C7C0B4"}`,
+                    background: active ? "#0F9D6E" : "#fff",
+                    boxShadow: active ? "inset 0 0 0 2px #fff" : "none",
+                  }}
+                />
+                <span className="min-w-0">
+                  <span dir="rtl" lang="ar" className="block font-arabic font-bold" style={{ fontSize: 16, color: "#1C1A17" }}>
+                    {b.title}
+                  </span>
+                  {b.subtitle && (
+                    <span className="block" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Récap public */}
@@ -430,7 +480,7 @@ export function EditSessionForm({
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !bookId}
             className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] font-bold text-white disabled:opacity-60"
             style={{ background: "#0F9D6E", fontSize: 15, boxShadow: "0 10px 22px rgba(15,157,110,.30)" }}
           >

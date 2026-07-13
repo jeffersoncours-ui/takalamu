@@ -24,6 +24,15 @@ export default async function NewSessionPage({
     status: s.status,
   }));
 
+  // Livres « à cours » (la grammaire est automatique, pas dans le choix).
+  const { data: bookRows, error: booksError } = await supabase
+    .from("course_books")
+    .select("id, title, subtitle, kind, order_index")
+    .eq("kind", "courses")
+    .order("order_index");
+  if (booksError) console.error("session/new books query failed:", booksError.message);
+  const books = (bookRows ?? []).map((b) => ({ id: b.id, title: b.title, subtitle: b.subtitle }));
+
   return (
     <div className="space-y-5">
       <div className="px-0.5">
@@ -46,7 +55,7 @@ export default async function NewSessionPage({
           Aucun élève rattaché pour l&apos;instant.
         </p>
       ) : (
-        <SessionForm students={students} defaultStudentId={defaultStudentId} />
+        <SessionForm students={students} books={books} defaultStudentId={defaultStudentId} />
       )}
     </div>
   );

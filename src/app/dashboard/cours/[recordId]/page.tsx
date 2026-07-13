@@ -29,7 +29,7 @@ export default async function StudentSessionPage({
 
   if (!record) notFound();
 
-  const [orderRes, vocabRes, grammarRes, formRes, hwRes] = await Promise.all([
+  const [orderRes, vocabRes, formRes, hwRes] = await Promise.all([
     supabase
       .from("lesson_records")
       .select("id")
@@ -38,11 +38,6 @@ export default async function StudentSessionPage({
     supabase
       .from("vocabulary")
       .select("id, arabic_word, french_definition")
-      .eq("lesson_record_id", recordId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("grammar_rules")
-      .select("id, title, content")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
@@ -60,7 +55,6 @@ export default async function StudentSessionPage({
   const courseNumber =
     (orderRes.data ?? []).findIndex((r) => r.id === recordId) + 1;
   const vocab = vocabRes.data ?? [];
-  const grammar = grammarRes.data ?? [];
   const formulations = formRes.data ?? [];
   const homework = hwRes.data;
   const badge = attendanceBadge(record.attendance);
@@ -170,20 +164,8 @@ export default async function StudentSessionPage({
         </div>
       )}
 
-      {/* Grammaire du cours */}
-      {grammar.length > 0 && (
-        <div className="rounded-[16px] p-4 space-y-2.5" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-          <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
-            Règles de grammaire ({grammar.length})
-          </p>
-          {grammar.map((g) => (
-            <div key={g.id}>
-              <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
-              <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#4A463F", fontSize: 13 }}>{g.content}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* La grammaire n'est plus affichée ici : elle est centralisée dans le
+          livre de grammaire (النحو الميسّر) côté élève. */}
 
       {/* Formulations du cours */}
       {formulations.length > 0 && (

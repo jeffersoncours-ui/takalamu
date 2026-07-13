@@ -32,11 +32,21 @@ export async function updateSession(
   const customTitle = String(formData.get("custom_title") ?? "").trim();
   if (!customTitle) return { error: "Le nom du cours est obligatoire." };
 
+  const bookId = String(formData.get("book_id") ?? "").trim();
+  if (!bookId) return { error: "Choisis un livre pour ce cours." };
+
   const publicRecap = String(formData.get("public_recap") ?? "").trim() || null;
   const privateNote = String(formData.get("private_note") ?? "").trim() || null;
   const homework = String(formData.get("homework_instructions") ?? "").trim() || null;
 
   const supabase = await createClient();
+
+  const { data: book } = await supabase
+    .from("course_books")
+    .select("id")
+    .eq("id", bookId)
+    .maybeSingle(); // RLS : uniquement les livres de l'enseignant
+  if (!book) return { error: "Livre invalide." };
 
   // Fichiers existants conservés (cases cochées) + nouveaux uploads ajoutés
   const existingFiles: SupportFile[] = JSON.parse(
@@ -128,6 +138,9 @@ export async function updateSession(
   if (error) {
     return { error: "Échec de la mise à jour de la séance." };
   }
+
+  // Rangement dans le livre choisi (mise à jour directe, RLS enseignant).
+  await supabase.from("lesson_records").update({ book_id: bookId }).eq("id", recordId);
 
   if (homework && !existingHomework) {
     const { data: student } = await supabase
