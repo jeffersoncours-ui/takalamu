@@ -21,12 +21,32 @@ export default async function TeacherMessagesListPage() {
   const { data: conversations, error: convError } = await supabase
     .from("conversations")
     .select(
-      "id, student_id, students(id, profiles(full_name)), messages(id, body, sent_at, sender_id, read_at)",
+      "id, student_id, students(id, profiles(full_name, avatar_url)), messages(id, body, sent_at, sender_id, read_at)",
     )
     .eq("teacher_id", teacher.id)
     .order("sent_at", { referencedTable: "messages", ascending: false });
 
   if (convError) console.error("teacher/messages query failed:", convError.message);
+
+  const avatarPaths = (conversations ?? [])
+    .map((conv) => {
+      const student = Array.isArray(conv.students) ? conv.students[0] : conv.students;
+      const profile = student
+        ? Array.isArray(student.profiles)
+          ? student.profiles[0]
+          : student.profiles
+        : null;
+      return profile?.avatar_url ?? null;
+    })
+    .filter((p): p is string => !!p);
+
+  let signedAvatars: { path: string; signedUrl: string }[] = [];
+  if (avatarPaths.length > 0) {
+    const { data: signedList } = await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 3600);
+    signedAvatars = (signedList ?? [])
+      .filter((s) => !!s.path && !!s.signedUrl)
+      .map((s) => ({ path: s.path as string, signedUrl: s.signedUrl as string }));
+  }
 
   const items = (conversations ?? []).map((conv) => {
     const student = Array.isArray(conv.students) ? conv.students[0] : conv.students;
@@ -36,6 +56,9 @@ export default async function TeacherMessagesListPage() {
         : student.profiles
       : null;
     const name = profile?.full_name ?? "Élève";
+    const avatarUrl = profile?.avatar_url
+      ? (signedAvatars.find((s) => s.path === profile.avatar_url)?.signedUrl ?? null)
+      : null;
 
     // Premier message du tableau = le plus récent (trié desc)
     const msgs = Array.isArray(conv.messages) ? conv.messages : conv.messages ? [conv.messages] : [];
@@ -50,6 +73,7 @@ export default async function TeacherMessagesListPage() {
       convId: conv.id,
       studentId: student?.id ?? "",
       name,
+      avatarUrl,
       lastMsg,
       unreadCount,
     };
@@ -86,7 +110,7 @@ export default async function TeacherMessagesListPage() {
       )}
 
       <div className="flex flex-col gap-2">
-        {items.map(({ convId, studentId, name, lastMsg, unreadCount }) => (
+        {items.map(({ convId, studentId, name, avatarUrl, lastMsg, unreadCount }) => (
           <Link
             key={convId}
             href={`/teacher/messages/${studentId}`}
@@ -95,10 +119,15 @@ export default async function TeacherMessagesListPage() {
           >
             {/* Avatar */}
             <div
-              className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-bold"
+              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
               style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
             >
-              {name[0]?.toUpperCase() ?? "?"}
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                name[0]?.toUpperCase() ?? "?"
+              )}
             </div>
 
             {/* Contenu */}

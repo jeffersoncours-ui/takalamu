@@ -1157,3 +1157,40 @@
   pour `course_group_id`), pas créer un groupe indépendant — sinon la garde
   "déjà membre" resterait juste pour les élèves de la soumission d'origine et
   se re-casserait dès la duplication suivante vers un troisième élève.
+
+## Photos de profil dans messages/listes : la RLS Storage doit précéder l'UI (session 32, suite 5)
+
+- **Une fonctionnalité "juste UI" peut cacher une lacune RLS.** Le bucket
+  `avatars` existait déjà (upload fonctionnel côté profil propriétaire), mais
+  sa seule policy (`avatars_owner_all`) limitait strictement la LECTURE au
+  propriétaire du dossier — cohérent avec le principe deny-by-default, mais
+  bloquant totalement l'affichage demandé ici (voir la photo d'un tiers).
+  Vérifié via `execute_sql` AVANT d'écrire une ligne de composant : sans les
+  nouvelles policies, `createSignedUrl` aurait échoué silencieusement (pas
+  d'erreur remontée à l'UI, juste `signedUrl: null` → pas de photo) — un bug
+  très facile à diagnostiquer à tort comme "problème d'affichage" plutôt que
+  RLS.
+- **Policies SELECT-only additives = extension sûre, pas un affaiblissement.**
+  RLS Postgres combine les policies en OR : ajouter 3 policies `for select`
+  scoped à une relation réelle (enseignant↔élève, admin) élargit strictement
+  la lecture sans jamais toucher aux droits d'écriture déjà garantis par
+  `avatars_owner_all` (`for all`, toujours actif).
+- **Tester une policy Storage avant l'UI, avec de vrais faux objets.**
+  Pattern réutilisé : `INSERT INTO storage.objects (bucket_id, name, owner)
+  VALUES (...)` dans une transaction, puis `SET LOCAL ROLE authenticated` +
+  `set_config('request.jwt.claims', ...)` pour impersonner chacun des rôles
+  concernés, `SELECT name FROM storage.objects WHERE bucket_id = '...'` pour
+  voir exactement ce que chaque policy laisse passer, `ROLLBACK` à la fin —
+  bien plus rapide et fiable qu'un test manuel dans le navigateur pour ce
+  genre de garde d'accès.
+- **`createSignedUrls` (pluriel) batché plutôt qu'un `createSignedUrl` par
+  ligne** dans une liste (messages, élèves, enseignants) — un seul appel
+  Storage au lieu de N, pattern déjà établi pour les photos de règles de
+  grammaire, réutilisé ici sans modification.
+- **Piège TypeScript avec un type predicate après un filtre `!!`** :
+  `createSignedUrls` renvoie `{ path: string | null; signedUrl: string | null;
+  error: ... }[]`, et un `.filter((s): s is {path: string; signedUrl: string}
+  => !!s.path && !!s.signedUrl)` échoue à la compilation car le type source
+  contient un champ (`error`) absent du type cible — TS n'accepte pas la
+  narrowing dans ce sens. Fix : `.filter(...).map((s) => ({ path: s.path as
+  string, signedUrl: s.signedUrl as string }))` plutôt qu'un type predicate.

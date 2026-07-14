@@ -10,6 +10,7 @@ type Student = {
   id: string;
   status: StudentStatus;
   name: string;
+  avatarUrl: string | null;
 };
 
 const STATUS_META: Record<StudentStatus, { hue: BadgeHue; label: string }> = {
@@ -95,10 +96,15 @@ export function StudentsList({ students }: { students: Student[] }) {
                 style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
               >
                 <span
-                  className="flex shrink-0 items-center justify-center rounded-[14px] text-white font-bold"
+                  className="flex shrink-0 items-center justify-center overflow-hidden rounded-[14px] text-white font-bold"
                   style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
                 >
-                  {s.name[0]?.toUpperCase() ?? "?"}
+                  {s.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    s.name[0]?.toUpperCase() ?? "?"
+                  )}
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="block font-bold truncate" style={{ color: "#1C1A17", fontSize: 16 }}>{s.name}</span>

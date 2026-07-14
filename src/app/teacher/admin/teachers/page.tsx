@@ -9,10 +9,22 @@ export default async function AdminTeachersPage() {
   // L'admin lit tous les profils enseignants (policy profiles_admin_all).
   const { data: teachers, error: teachersError } = await supabase
     .from("teachers")
-    .select("id, display_name, profiles(full_name, email, gender, role)")
+    .select("id, display_name, profiles(full_name, email, gender, role, avatar_url)")
     .order("created_at", { ascending: true });
 
   if (teachersError) console.error("admin/teachers query failed:", teachersError.message);
+
+  const avatarPaths = (teachers ?? [])
+    .map((t) => (Array.isArray(t.profiles) ? t.profiles[0]?.avatar_url : t.profiles?.avatar_url))
+    .filter((p): p is string => !!p);
+
+  let signedAvatars: { path: string; signedUrl: string }[] = [];
+  if (avatarPaths.length > 0) {
+    const { data: signedList } = await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 3600);
+    signedAvatars = (signedList ?? [])
+      .filter((s) => !!s.path && !!s.signedUrl)
+      .map((s) => ({ path: s.path as string, signedUrl: s.signedUrl as string }));
+  }
 
   const items = (teachers ?? []).map((t) => {
     const profile = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles;
@@ -22,6 +34,9 @@ export default async function AdminTeachersPage() {
       email: profile?.email ?? "—",
       gender: profile?.gender ?? null,
       isAdmin: profile?.role === "admin",
+      avatarUrl: profile?.avatar_url
+        ? (signedAvatars.find((s) => s.path === profile.avatar_url)?.signedUrl ?? null)
+        : null,
     };
   });
 
@@ -48,10 +63,15 @@ export default async function AdminTeachersPage() {
             style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
           >
             <div
-              className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-bold"
+              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
               style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
             >
-              {t.name[0]?.toUpperCase() ?? "?"}
+              {t.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={t.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                t.name[0]?.toUpperCase() ?? "?"
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">

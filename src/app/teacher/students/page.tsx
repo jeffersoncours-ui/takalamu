@@ -12,7 +12,7 @@ export default async function StudentsPage() {
   const [studentsRes, teachersRes] = await Promise.all([
     supabase
       .from("students")
-      .select("id, status, profiles(full_name, email)")
+      .select("id, status, profiles(full_name, email, avatar_url)")
       .order("created_at", { ascending: true }),
     supabase.from("teachers").select("id, display_name"),
   ]);
@@ -23,12 +23,27 @@ export default async function StudentsPage() {
 
   const teachers = (teacherRows ?? []).map((t) => ({ id: t.id, name: t.display_name ?? "Enseignant" }));
 
+  const avatarPaths = (students ?? [])
+    .map((s) => (Array.isArray(s.profiles) ? s.profiles[0]?.avatar_url : s.profiles?.avatar_url))
+    .filter((p): p is string => !!p);
+
+  let signedAvatars: { path: string; signedUrl: string }[] = [];
+  if (avatarPaths.length > 0) {
+    const { data: signedList } = await supabase.storage.from("avatars").createSignedUrls(avatarPaths, 3600);
+    signedAvatars = (signedList ?? [])
+      .filter((s) => !!s.path && !!s.signedUrl)
+      .map((s) => ({ path: s.path as string, signedUrl: s.signedUrl as string }));
+  }
+
   const list = (students ?? []).map((s) => {
     const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
     return {
       id: s.id,
       status: s.status,
       name: profile?.full_name ?? profile?.email ?? "—",
+      avatarUrl: profile?.avatar_url
+        ? (signedAvatars.find((sa) => sa.path === profile.avatar_url)?.signedUrl ?? null)
+        : null,
     };
   });
 

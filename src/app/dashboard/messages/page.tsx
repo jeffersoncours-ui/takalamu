@@ -10,7 +10,7 @@ export default async function StudentMessagesPage() {
   // Récupérer l'enseignant de l'élève
   const { data: student } = await supabase
     .from("students")
-    .select("teacher_id, teachers:teacher_id(display_name)")
+    .select("teacher_id, teachers:teacher_id(display_name, profiles(avatar_url))")
     .eq("id", studentId)
     .maybeSingle();
 
@@ -24,6 +24,19 @@ export default async function StudentMessagesPage() {
     ? student.teachers[0]
     : student.teachers;
   const teacherName = teacher?.display_name ?? "Mon enseignant";
+
+  const teacherProfile = teacher
+    ? Array.isArray(teacher.profiles)
+      ? teacher.profiles[0]
+      : teacher.profiles
+    : null;
+  let teacherAvatarUrl: string | null = null;
+  if (teacherProfile?.avatar_url) {
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(teacherProfile.avatar_url, 3600);
+    teacherAvatarUrl = signed?.signedUrl ?? null;
+  }
 
   // Trouver ou créer la conversation (la policy INSERT permet aux élèves de créer leur propre conv)
   let { data: conv } = await supabase
@@ -66,10 +79,15 @@ export default async function StudentMessagesPage() {
       {/* En-tête prof */}
       <div className="flex items-center gap-3 px-0.5">
         <div
-          className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-semibold"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-semibold"
           style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
         >
-          {teacherName[0]?.toUpperCase() ?? "?"}
+          {teacherAvatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={teacherAvatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            teacherName[0]?.toUpperCase() ?? "?"
+          )}
         </div>
         <div>
           <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{teacherName}</div>

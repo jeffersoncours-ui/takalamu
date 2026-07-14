@@ -2433,3 +2433,54 @@ Reformulation validée à partir des captures d'écran et retours du propriétai
   s'occupe seul de griser qui a déjà la règle, source comprise. Aligné avec le
   pattern des cours à l'identique.
 - `npm run build` : vert.
+
+## Session 32 (suite 5) — Photos de profil dans messages/listes
+
+Demande : afficher la vraie photo de profil (déjà uploadable via `AvatarUpload`,
+bucket privé `avatars`) à la place du rond avec l'initiale, dans :
+1. En-tête de conversation côté élève (photo de son enseignant)
+2. En-tête + liste de conversations côté enseignant (photo de l'élève)
+3. Liste "Enseignants" (admin) — photo de chaque enseignant
+4. Liste "Mes élèves" côté enseignant — photo de chaque élève
+
+### Plan
+- [x] **RLS d'abord** : le bucket `avatars` n'était lisible que par son
+      propriétaire (`avatars_owner_all`, dossier = son propre `auth.uid()`).
+      Migration additive (62) : 3 policies SELECT-only en plus (OR, n'enlèvent
+      aucun droit d'écriture) — `avatars_teacher_read_students` (un enseignant
+      lit l'avatar de SES élèves via `students.teacher_id`),
+      `avatars_student_read_teacher` (un élève lit l'avatar de SON enseignant
+      via `students.teacher_id → teachers.profile_id`), `avatars_admin_read_all`
+      (`private.is_admin()`, pour la liste Enseignants).
+- [x] Testé la RLS AVANT de coder l'UI (impersonation + objets factices en
+      transaction ROLLBACK) : Hamza voit l'avatar de Jefferson (son prof) et le
+      sien, PAS celui de Khadija ; Khadija (aucun élève) ne voit que le sien ;
+      Jefferson (admin) voit son avatar ET celui de Khadija via `is_admin()`.
+- [x] `dashboard/messages/page.tsx` : avatar de l'enseignant dans l'en-tête
+- [x] `teacher/messages/[studentId]/page.tsx` : avatar de l'élève dans l'en-tête
+- [x] `teacher/messages/page.tsx` : avatar de chaque élève dans la liste de
+      conversations (signature groupée `createSignedUrls`, pas un appel par
+      élève)
+- [x] `teacher/admin/teachers/page.tsx` : avatar de chaque enseignant
+- [x] `teacher/students/page.tsx` + `students-list.tsx` : avatar de chaque
+      élève dans "Mes élèves" (prop `avatarUrl` threadée jusqu'au composant
+      client)
+- [x] `npm run build` + `npm run lint` : verts après correction d'un type
+      predicate incompatible (`createSignedUrls` renvoie `path`/`signedUrl`
+      potentiellement `null` même après filtre `!!`, TS ne l'infère pas —
+      filter + map plutôt que filter avec type predicate)
+- [ ] Commit + push preview
+
+### Review
+- Toujours vérifier la RLS du bucket Storage concerné AVANT d'écrire le code
+  d'affichage — ici, sans les 3 nouvelles policies, tous les `createSignedUrl`
+  auraient simplement échoué silencieusement (pas d'erreur visible, juste pas
+  de photo affichée), ce qui aurait pu passer pour "ça ne marche pas" sans
+  cause évidente.
+- Cohérent avec le principe deny-by-default (§6 CLAUDE.md) : les 3 nouvelles
+  policies sont strictement scoped à une relation réelle existante
+  (enseignant↔élève via `teacher_id`, admin via `role`), jamais un accès
+  généralisé à tous les avatars.
+- Non touché (hors périmètre de la demande) : `teacher/students/[id]/page.tsx`
+  (fiche élève détaillée) et `teacher/homework/page.tsx` (file de correction)
+  ont le même rond-avec-initiale — à traiter si le propriétaire le demande.

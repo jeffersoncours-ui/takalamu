@@ -17,15 +17,22 @@ export default async function TeacherMessagesPage({
   // Vérifier que l'élève appartient bien à cet enseignant
   const { data: student } = await supabase
     .from("students")
-    .select("id, profiles(full_name)")
+    .select("id, profiles(full_name, avatar_url)")
     .eq("id", studentId)
     .maybeSingle();
 
   if (!student) notFound();
 
-  const studentName = Array.isArray(student.profiles)
-    ? student.profiles[0]?.full_name
-    : student.profiles?.full_name;
+  const studentProfile = Array.isArray(student.profiles) ? student.profiles[0] : student.profiles;
+  const studentName = studentProfile?.full_name;
+
+  let studentAvatarUrl: string | null = null;
+  if (studentProfile?.avatar_url) {
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(studentProfile.avatar_url, 3600);
+    studentAvatarUrl = signed?.signedUrl ?? null;
+  }
 
   // Obtenir le teacher_id
   const { data: teacher } = await supabase
@@ -65,10 +72,15 @@ export default async function TeacherMessagesPage({
     <div className="space-y-4">
       <div className="flex items-center gap-3 px-0.5">
         <div
-          className="flex shrink-0 items-center justify-center rounded-[13px] text-white font-bold"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
           style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
         >
-          {name[0]?.toUpperCase() ?? "?"}
+          {studentAvatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={studentAvatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            name[0]?.toUpperCase() ?? "?"
+          )}
         </div>
         <div>
           <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{name}</div>
