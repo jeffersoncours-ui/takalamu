@@ -1112,3 +1112,19 @@
   seraient touchés), puis revérifier `HAVING count(DISTINCT rule_group_id) > 1`
   APRÈS (doit être vide) pour confirmer qu'aucune fusion erronée n'a eu lieu
   sur le reste de la table.
+
+## Retrait des noms d'élèves sur les cartes groupées (session 32, suite 4 ter)
+
+- **Une info "pratique" affichée sur une liste peut devenir un risque quand
+  elle expose plusieurs identités à la fois.** Le nom d'un seul élève sur sa
+  propre fiche (espace élève) est normal. Mais lister "Donné à Bilel, Rayan,
+  Hamza" sur une carte consultée côté enseignant expose les noms de plusieurs
+  élèves ensemble au même endroit — le propriétaire l'a jugé à risque à terme
+  (capture d'écran, partage, etc.) et redondant : l'écran "Dupliquer" donne
+  déjà cette info via les cases à cocher déjà grisées/cochées pour qui possède
+  déjà le cours/la règle.
+- **Retirer une donnée de l'affichage ne suffit pas si elle reste dans la
+  requête.** Corrigé en supprimant complètement l'embed
+  `students(profiles(full_name))` des deux requêtes (cours et grammaire) dans
+  `teacher/books/[bookId]/page.tsx`, pas seulement le JSX qui l'affichait —
+  la donnée n'est ni récupérée ni tenue en mémoire côté serveur.

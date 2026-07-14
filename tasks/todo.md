@@ -2342,6 +2342,13 @@ Reformulation validée (propriétaire : "quoi que ce soit, je valide") :
       fusion par `(course_group_id, title, content)`. Vérifié avant/après via
       MCP : exactement 1 groupe à fusionner détecté et fusionné, 0 fusion
       erronée après coup sur l'ensemble de la table.
+- [x] **Correctif complémentaire 2** : retrait du nom des élèves affiché sur
+      les cartes (cours ET grammaire) dans "Mes livres" — demande explicite du
+      propriétaire ("à terme ça peut porter préjudice"), jugé redondant avec
+      l'écran "Dupliquer" qui montre déjà l'attribution via les cases cochées/
+      grisées. Ne conserve que titre + date sur la carte. Suppression complète
+      de l'embed `students(profiles(full_name))` des deux requêtes (plus
+      seulement non-affiché : plus du tout récupéré ni tenu en mémoire).
 
 ### Review
 - Les 3 correctifs demandés sont en place : plus de Modifier/Suppr sur "Mes

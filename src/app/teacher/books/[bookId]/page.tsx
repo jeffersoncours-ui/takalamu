@@ -80,7 +80,7 @@ async function CoursesContent({ bookId }: { bookId: string }) {
   const { data: rows, error } = await supabase
     .from("lesson_records")
     .select(
-      "id, custom_title, session_date, updated_at, support_files, course_group_id, student_id, students(profiles(full_name)), vocabulary(count), formulations(audio_path)"
+      "id, custom_title, session_date, updated_at, support_files, course_group_id, vocabulary(count), formulations(audio_path)"
     )
     .eq("book_id", bookId)
     .order("updated_at", { ascending: false });
@@ -89,13 +89,15 @@ async function CoursesContent({ bookId }: { bookId: string }) {
 
   // Regroupe par cours (course_group_id) : un même cours donné à plusieurs
   // élèves = une seule carte. Représentant = fiche la plus récemment modifiée.
+  // Pas de nom d'élève affiché sur la carte (attribution visible uniquement en
+  // ouvrant "Dupliquer", via les cases déjà cochées/grisées) — demande explicite
+  // du propriétaire pour limiter l'exposition de ces informations.
   const byGroup = new Map<
     string,
     {
       id: string;
       title: string;
       date: string;
-      students: string[];
       vocabCount: number;
       formCount: number;
       audioCount: number;
@@ -104,19 +106,7 @@ async function CoursesContent({ bookId }: { bookId: string }) {
   >();
 
   for (const r of rows ?? []) {
-    const student = Array.isArray(r.students) ? r.students[0] : r.students;
-    const profile = student
-      ? Array.isArray(student.profiles)
-        ? student.profiles[0]
-        : student.profiles
-      : null;
-    const name = profile?.full_name ?? "—";
-    const existing = byGroup.get(r.course_group_id);
-
-    if (existing) {
-      if (!existing.students.includes(name)) existing.students.push(name);
-      continue;
-    }
+    if (byGroup.has(r.course_group_id)) continue;
 
     const vocabCount = Array.isArray(r.vocabulary) ? (r.vocabulary[0]?.count ?? 0) : 0;
     const forms = Array.isArray(r.formulations) ? r.formulations : [];
@@ -124,7 +114,6 @@ async function CoursesContent({ bookId }: { bookId: string }) {
       id: r.id,
       title: r.custom_title || format(new Date(r.session_date), "d MMMM yyyy", { locale: fr }),
       date: format(new Date(r.session_date), "d MMM yyyy", { locale: fr }),
-      students: [name],
       vocabCount,
       formCount: forms.length,
       audioCount: forms.filter((f) => !!f.audio_path).length,
@@ -160,7 +149,7 @@ async function CoursesContent({ bookId }: { bookId: string }) {
                 {c.title}
               </p>
               <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
-                {c.students.length > 1 ? `Donné à ${c.students.join(", ")}` : c.students[0]} · {c.date}
+                {c.date}
               </p>
             </div>
             <span
@@ -201,35 +190,19 @@ async function GrammarRulesContent() {
   // enseignant), jamais rattachée au livre de la séance d'origine.
   const { data: rules, error } = await supabase
     .from("grammar_rules")
-    .select(
-      "id, title, created_at, student_id, rule_group_id, students(profiles(full_name)), lesson_records(session_date)"
-    )
+    .select("id, title, created_at, rule_group_id, lesson_records(session_date)")
     .order("created_at", { ascending: false });
 
   if (error) console.error("teacher/books/[bookId] grammar_rules query failed:", error.message);
 
   // Regroupe par rule_group_id : une même règle donnée à plusieurs élèves dans
   // la même fiche de fin de cours = une seule carte (comme les cours).
-  // Représentante = ligne la plus récente du groupe.
-  const byGroup = new Map<
-    string,
-    { id: string; title: string; date: string; students: string[] }
-  >();
+  // Représentante = ligne la plus récente du groupe. Pas de nom d'élève affiché
+  // (attribution visible uniquement via "Dupliquer") — demande du propriétaire.
+  const byGroup = new Map<string, { id: string; title: string; date: string }>();
 
   for (const r of rules ?? []) {
-    const student = Array.isArray(r.students) ? r.students[0] : r.students;
-    const profile = student
-      ? Array.isArray(student.profiles)
-        ? student.profiles[0]
-        : student.profiles
-      : null;
-    const name = profile?.full_name ?? "—";
-    const existing = byGroup.get(r.rule_group_id);
-
-    if (existing) {
-      if (!existing.students.includes(name)) existing.students.push(name);
-      continue;
-    }
+    if (byGroup.has(r.rule_group_id)) continue;
 
     const lessonRecord = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
     const date = lessonRecord?.session_date ?? r.created_at;
@@ -237,7 +210,6 @@ async function GrammarRulesContent() {
       id: r.id,
       title: r.title,
       date: format(new Date(date), "d MMM yyyy", { locale: fr }),
-      students: [name],
     });
   }
 
@@ -269,7 +241,7 @@ async function GrammarRulesContent() {
                   {r.title}
                 </p>
                 <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
-                  {r.students.length > 1 ? `Donné à ${r.students.join(", ")}` : r.students[0]} · {r.date}
+                  {r.date}
                 </p>
               </div>
               <span
