@@ -2529,3 +2529,61 @@ bucket privé `avatars`) à la place du rond avec l'initiale, dans :
   table, ou source de la requête) — d'où l'importance de vérifier chaque
   correctif via une requête SQL directe reproduisant exactement le chemin de
   données réel (embed PostgREST inclus), pas seulement "la policy existe".
+
+## Session 32 (suite 7) — Règlement intérieur (élève)
+
+Reformulation validée (2 questions tranchées : notification envoyée aussi aux
+4 élèves déjà existants ; contenu unique pour toute la plateforme, pas
+éditable par enseignant) :
+- Nouvelle tuile "Règlement intérieur" dans l'onglet "Plus" côté élève.
+- Page dédiée : toujours la liste numérotée des 6 règles visible ; en plus,
+  soit un bandeau vert "déjà validé" avec date/heure (si déjà signé), soit une
+  case à cocher + bouton pour valider (si pas encore signé). Une fois signé,
+  irréversible côté UI ET côté serveur (RPC idempotente).
+- 6 règles : caméra obligatoire, position de cours, nom/prénom obligatoire,
+  retard non toléré, interdiction d'enregistrer, **rendre les devoirs avant le
+  prochain cours** (nouvelle, ajoutée à la demande).
+- Notification automatique (cloche) pour toute nouvelle fiche `students`
+  (déclencheur DB, pas une simple case dans le formulaire de création — fiable
+  quel que soit le point d'entrée de création) + backfill pour les 4 élèves
+  actuels.
+
+### Plan
+- [ ] Migration A : `ALTER TYPE notification_type ADD VALUE 'house_rules'`
+      (seule dans sa migration — ne peut pas être utilisée dans la même
+      transaction que son ajout)
+- [ ] Migration B : colonne `students.house_rules_accepted_at timestamptz
+      NULL` ; RPC `accept_house_rules()` (SECURITY DEFINER, idempotente —
+      `COALESCE(house_rules_accepted_at, now())`) ; trigger
+      `AFTER INSERT ON students` qui insère la notification `house_rules`
+      pour `NEW.profile_id` ; backfill one-shot de la notification pour les
+      élèves actuels sans `house_rules_accepted_at`
+- [ ] `dashboard/more/page.tsx` : nouvelle tuile "Règlement intérieur"
+- [ ] `dashboard/reglement/page.tsx` (NEW) : header + liste des 6 règles +
+      bandeau validé (avec date/heure) OU formulaire de validation
+- [ ] `dashboard/reglement/accept-form.tsx` + `actions.ts` (NEW) : case à
+      cocher, appelle `accept_house_rules()` via RPC
+- [ ] `notif-bell.tsx` : libellé `house_rules` → "Règlement intérieur à
+      valider"
+- [ ] Tester via MCP (impersonation, ROLLBACK) : trigger déclenche bien la
+      notification à la création d'un élève ; RPC idempotente (2 appels
+      successifs ne changent pas la date après le 1er) ; backfill couvre bien
+      les 4 élèves actuels sans dupliquer si rejoué
+- [ ] `database.types.ts` régénéré (nouvelle colonne + nouvelle valeur d'enum
+      + nouvelle RPC)
+- [ ] `npm run build` + `npm run lint`
+- [ ] Commit + push preview
+
+### Review
+- Contenu des 6 règles fixé en code (`RULES` dans `dashboard/reglement/page.tsx`),
+  pas de table dédiée ni d'interface d'auteur — décision validée (un seul
+  règlement pour toute la plateforme).
+- Le déclencheur DB (`AFTER INSERT ON students`) garantit qu'aucun futur point
+  d'entrée de création de compte élève (admin, self-service à venir, script...)
+  ne puisse oublier d'envoyer la notification — testé via `pg_trigger`
+  (attaché, activé) plutôt que reconstruit "à l'aveugle".
+- `accept_house_rules()` idempotente côté SERVEUR (`COALESCE`), pas seulement
+  via la case décochée côté UI — testé explicitement (2 appels successifs,
+  même timestamp) et testé en négatif (un enseignant ne peut pas l'appeler).
+- Testé via MCP avant tout code UI : backfill confirmé sur les 4 élèves
+  actuels, idempotence RPC confirmée, garde-fou "réservé à un élève" confirmé.

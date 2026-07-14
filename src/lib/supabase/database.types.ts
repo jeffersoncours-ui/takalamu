@@ -668,6 +668,7 @@ export type Database = {
           birth_date: string | null
           created_at: string
           gender: Database["public"]["Enums"]["gender_type"] | null
+          house_rules_accepted_at: string | null
           id: string
           profile_id: string
           school_background: string | null
@@ -681,6 +682,7 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          house_rules_accepted_at?: string | null
           id?: string
           profile_id: string
           school_background?: string | null
@@ -694,6 +696,7 @@ export type Database = {
           birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          house_rules_accepted_at?: string | null
           id?: string
           profile_id?: string
           school_background?: string | null
@@ -807,6 +810,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_house_rules: { Args: never; Returns: undefined }
       delete_session_record: {
         Args: { p_record_id: string }
         Returns: undefined
@@ -911,6 +915,7 @@ export type Database = {
         | "homework_submitted"
         | "trial_request"
         | "session_reminder"
+        | "house_rules"
       quiz_scope: "individual"
       quiz_source: "glossary" | "grammar" | "formulation"
       student_status: "active" | "suspended_absences"
@@ -1064,6 +1069,7 @@ export const Constants = {
         "homework_submitted",
         "trial_request",
         "session_reminder",
+        "house_rules",
       ],
       quiz_scope: ["individual"],
       quiz_source: ["glossary", "grammar", "formulation"],

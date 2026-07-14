@@ -1223,3 +1223,33 @@
   ou "la table contient les bonnes lignes". C'est ce niveau de fidélité qui a
   permis de localiser le vrai point de blocage (`profiles`, pas `avatars`)
   au lieu de re-corriger la mauvaise couche.
+
+## Règlement intérieur élève (session 32, suite 7)
+
+- **Un déclencheur DB plutôt qu'un appel dans le code de création** pour
+  garantir "toute nouvelle fiche élève reçoit X" : le propriétaire voulait que
+  ça soit "directement présent" pour tout nouvel élève, sans dépendre d'un
+  développeur futur qui se souvient d'ajouter l'appel dans le bon formulaire.
+  `AFTER INSERT ON students` couvre tous les points d'entrée présents ET
+  futurs par construction — vérifié via `pg_trigger` (attaché + activé) plutôt
+  que supposé correct après écriture.
+- **`ALTER TYPE ... ADD VALUE` doit être seule dans sa migration/transaction**
+  si la nouvelle valeur est utilisée ailleurs dans la même migration (ici : le
+  trigger et le backfill utilisent `'house_rules'`) — Postgres refuse d'utiliser
+  une valeur d'enum ajoutée dans la même transaction que son ajout. Toujours
+  scinder en deux migrations distinctes (déjà rencontré dans cette session,
+  confirmé de nouveau).
+- **Idempotence côté serveur pour une action "signée une seule fois"** :
+  `accept_house_rules()` utilise `COALESCE(house_rules_accepted_at, now())`
+  plutôt que `now()` seul — même si l'UI désactive déjà la re-validation, la
+  garantie réelle doit être en base (cf. §3 CLAUDE.md, "jamais de règle
+  métier critique côté client uniquement"). Testé explicitement par deux
+  appels RPC successifs dans la même transaction.
+- **Tester un trigger `AFTER INSERT` avec une vraie ligne `auth.users` est
+  hors de portée du MCP SQL seul** : `INSERT INTO auth.users` est bloqué par
+  permissions même pour des rôles élevés (dépend du service Auth, colonnes
+  requises non triviales). Quand ce blocage survient, se rabattre sur une
+  vérification structurelle du trigger (`pg_trigger` : attaché, activé) plutôt
+  que forcer un contournement risqué (création manuelle d'un faux compte) —
+  le risque de laisser des données de test orphelines dépasse la valeur du
+  test dans ce cas précis.
