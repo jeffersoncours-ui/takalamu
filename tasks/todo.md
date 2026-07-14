@@ -2,6 +2,20 @@
 
 ---
 
+## Idée future (non spécifiée, à ne PAS implémenter sans reformulation validée)
+
+> **Quiz de grammaire auto-généré depuis les notes de grammaire de la fiche de fin de
+> cours** — sur le même principe que les quiz vocabulaire/formulation (auto-générés
+> depuis `vocabulary`/`formulations`, sans rien à écrire à la main). Actuellement, la
+> grammaire (`grammar_rules`) n'alimente qu'un livre de consultation côté élève
+> (النحو الميسّر), pas de quiz. Le propriétaire n'a pas encore d'idée précise de la
+> mécanique de génération (une règle de grammaire n'a pas de structure question/
+> réponse/distracteurs évidente comme un mot de vocabulaire ou une formulation
+> ar↔fr). Remis à plus tard le temps qu'il affine l'idée — ne pas coder avant
+> reformulation + validation explicite.
+
+---
+
 ## Session 32 (suite 2) — Retrait du quiz de grammaire rédigé à la main
 
 > **Demande propriétaire** : retirer l'onglet « Évaluations » côté enseignant (capture
