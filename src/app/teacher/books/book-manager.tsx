@@ -103,7 +103,9 @@ export function BookManager({ books }: { books: Book[] }) {
               </div>
               {b.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</div>}
               <div className="mt-0.5" style={{ fontSize: 11, color: "#8B857A" }}>
-                {b.kind === "grammar" ? "Grammaire" : `${b.courseCount} cours`}
+                {b.kind === "grammar"
+                  ? `${b.courseCount} règle${b.courseCount > 1 ? "s" : ""}`
+                  : `${b.courseCount} cours`}
               </div>
             </div>
           </Link>

@@ -21,13 +21,19 @@ export default async function TeacherBooksPage() {
     groupsByBook.get(r.book_id)!.add(r.course_group_id);
   }
 
+  // Nombre de règles distinctes (rule_group_id) pour le livre de grammaire —
+  // pas de book_id sur grammar_rules, RLS (gr_teacher_all) scope déjà aux
+  // élèves de l'enseignant courant.
+  const { data: ruleRows } = await supabase.from("grammar_rules").select("rule_group_id");
+  const ruleGroupCount = new Set((ruleRows ?? []).map((r) => r.rule_group_id)).size;
+
   const items = (books ?? []).map((b) => ({
     id: b.id,
     title: b.title,
     subtitle: b.subtitle,
     cover_url: b.cover_url,
     kind: b.kind,
-    courseCount: groupsByBook.get(b.id)?.size ?? 0,
+    courseCount: b.kind === "grammar" ? ruleGroupCount : (groupsByBook.get(b.id)?.size ?? 0),
   }));
 
   return (

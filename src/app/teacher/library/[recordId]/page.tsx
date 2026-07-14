@@ -21,7 +21,7 @@ export default async function LibraryCoursePage({
 
   const { data: record, error: recordError } = await supabase
     .from("lesson_records")
-    .select("id, custom_title, session_date, support_files, student_id, course_group_id, book_id, students(profiles(full_name))")
+    .select("id, custom_title, session_date, support_files, student_id, course_group_id, book_id")
     .eq("id", recordId)
     .maybeSingle();
 
@@ -38,14 +38,6 @@ export default async function LibraryCoursePage({
   // Élèves qui possèdent déjà ce cours (même groupe) → on les marque pour éviter
   // de créer un doublon en re-dupliquant vers eux.
   const alreadyHas = new Set((groupRes.data ?? []).map((r) => r.student_id));
-
-  const sourceStudent = Array.isArray(record.students) ? record.students[0] : record.students;
-  const sourceProfile = sourceStudent
-    ? Array.isArray(sourceStudent.profiles)
-      ? sourceStudent.profiles[0]
-      : sourceStudent.profiles
-    : null;
-  const sourceName = sourceProfile?.full_name ?? "—";
 
   const vocab = vocabRes.data ?? [];
   const formulations = formRes.data ?? [];
@@ -79,7 +71,7 @@ export default async function LibraryCoursePage({
           {title}
         </h1>
         <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
-          Cours de {sourceName} · {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+          {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
         </p>
       </div>
 

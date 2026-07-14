@@ -18,7 +18,10 @@ function randSuffix() {
  * de tout cours : un élève peut recevoir une règle isolée sans suivre le même
  * programme que les autres. La copie n'est rattachée à aucune séance
  * (`lesson_record_id: null`), la date affichée retombe alors sur sa date de
- * création. Insertion directe (RLS `gr_teacher_all`, pas de RPC nécessaire).
+ * création. Les cibles rejoignent le `rule_group_id` de la règle source →
+ * une seule carte groupée (comme pour les cours), et un élève qui l'a déjà
+ * (même groupe) est bloqué côté formulaire ET revérifié ici.
+ * Insertion directe (RLS `gr_teacher_all`, pas de RPC nécessaire).
  */
 export async function duplicateGrammarRule(
   ruleId: string,
@@ -34,15 +37,28 @@ export async function duplicateGrammarRule(
   // Source (RLS garantit que c'est une règle d'un élève de l'enseignant courant)
   const { data: rule, error: ruleError } = await supabase
     .from("grammar_rules")
-    .select("id, title, content, photos, student_id")
+    .select("id, title, content, photos, student_id, rule_group_id")
     .eq("id", ruleId)
     .maybeSingle();
 
   if (ruleError || !rule) return { error: "Règle introuvable." };
 
+  // Ignore les élèves qui possèdent déjà cette règle (même groupe) — évite un
+  // doublon si la sélection est forgée malgré la désactivation côté UI.
+  const { data: groupMembers, error: groupError } = await supabase
+    .from("grammar_rules")
+    .select("student_id")
+    .eq("rule_group_id", rule.rule_group_id);
+  if (groupError) console.error("duplicateGrammarRule groupMembers query failed:", groupError.message);
+  const already = new Set((groupMembers ?? []).map((r) => r.student_id));
+  already.add(rule.student_id);
+  const targetIds = rawTargets.filter((id) => !already.has(id));
+
+  if (targetIds.length === 0) {
+    return { error: "Les élèves sélectionnés possèdent déjà cette règle." };
+  }
+
   const sourcePhotos = (rule.photos as Photo[] | null) ?? [];
-  const targetIds = rawTargets.filter((id) => id !== rule.student_id);
-  if (targetIds.length === 0) return { error: "Sélectionne au moins un élève." };
 
   for (const targetId of targetIds) {
     const copiedPhotos = (
@@ -66,6 +82,7 @@ export async function duplicateGrammarRule(
       content: rule.content,
       lesson_record_id: null,
       photos: copiedPhotos,
+      rule_group_id: rule.rule_group_id,
     });
 
     if (insertError) {

@@ -2360,7 +2360,59 @@ Reformulation validée (propriétaire : "quoi que ce soit, je valide") :
 - Le regroupement des règles est porté par le client (une valeur générée par
   ligne de règle, jamais côté RPC) car une même fiche peut contenir plusieurs
   règles distinctes pour un même élève — les regrouper par soumission entière
-  aurait fusionné à tort des règles différentes. Une duplication individuelle
-  ne rejoint jamais le groupe d'origine (nouveau groupe via le DEFAULT de la
-  colonne), cohérent avec la demande du propriétaire.
+  aurait fusionné à tort des règles différentes.
   (Formulations), après validation manuelle du propriétaire sur la preview.
+
+## Session 32 (suite 4 quater) — 3 ajustements après test manuel
+
+Reformulation validée à partir des captures d'écran et retours du propriétaire :
+1. **Retirer l'attribution ("Cours de X" / "Règle de X") en haut des fiches**
+   `/teacher/library/[recordId]` et `/teacher/library/grammar/[ruleId]` —
+   même rationale que le retrait des noms sur les cartes (redondant, risque à
+   terme). Ne garde que le titre + la date.
+2. **Bug réel trouvé en testant** : sur la page de duplication d'une règle de
+   grammaire groupée, les élèves qui possèdent DÉJÀ la règle (même
+   `rule_group_id`) apparaissaient comme sélectionnables au lieu d'être
+   grisés — contrairement aux cours, qui ont toujours ce garde-fou via
+   `course_group_id`. Corrigé en calculant `alreadyHas` à partir de
+   `rule_group_id` (même schéma que les cours), avec un label générique sur
+   `DuplicateForm` (`alreadyHasLabel`, string — donc sans risque de
+   redéclencher le bug "fonction passée à un Client Component" du correctif
+   précédent). Décision cohérente qui en découle : `duplicateGrammarRule`
+   fait désormais rejoindre le `rule_group_id` de la règle source aux
+   nouvelles cibles (au lieu d'un groupe indépendant) + revérifie côté
+   serveur qui possède déjà la règle, exactement comme `duplicateSession`.
+3. **"Mes livres" — livre de grammaire** : affichait un libellé statique
+   "Grammaire" au lieu d'un compte, contrairement aux livres de cours
+   ("N cours"). Affiche maintenant "N règle(s)" (nombre de `rule_group_id`
+   distincts, calculé dans `teacher/books/page.tsx`).
+
+### Plan
+- [x] Retirer "Cours de {nom}" / "Règle de {nom}" des deux pages détail,
+      supprimer les embeds `students(profiles(full_name))` désormais inutiles
+- [x] `DuplicateForm` : généraliser le label "a déjà ce cours" en prop
+      `alreadyHasLabel` (string, safe cross Server/Client)
+- [x] `library/grammar/[ruleId]/page.tsx` : calculer `alreadyHas` via
+      `rule_group_id`, passer `alreadyHasLabel="a déjà cette règle"`
+- [x] `duplicateGrammarRule` (actions.ts) : filtre serveur des cibles déjà
+      dans le groupe (comme `duplicateSession`) + rejoint le `rule_group_id`
+      source au lieu d'un groupe indépendant
+- [x] `teacher/books/page.tsx` : calcule `ruleGroupCount` (distinct
+      `rule_group_id`) pour le livre de grammaire
+- [x] `book-manager.tsx` : affiche "N règle(s)" au lieu de "Grammaire" pour le
+      livre de grammaire
+- [x] Testé via MCP (impersonation Jefferson, ROLLBACK) : le groupe "Le mot"
+      contient bien Hamza/Bilel/Anthony (pas Rayan) ; simulation du filtre
+      serveur → Bilel exclu, Rayan retenu ; `count(DISTINCT rule_group_id)` =
+      1, conforme à l'attente du propriétaire
+- [x] `npm run build` + `npm run lint` : verts (seule erreur = `drawer-nav.tsx`,
+      pré-existante, sans rapport)
+- [ ] Commit + push preview
+
+### Review
+- Le bug de la garde "a déjà" pour la grammaire n'était pas visible avant
+  cette session car il n'existait aucun regroupement (`rule_group_id`) avant
+  aujourd'hui — dès qu'il a existé, l'absence de garde est devenue visible au
+  premier test manuel du propriétaire. Bien noter pour la suite : toute
+  nouvelle notion de "groupe" doit immédiatement s'accompagner de sa garde
+  "déjà membre", pas seulement de l'affichage groupé.

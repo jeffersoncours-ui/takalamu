@@ -11,10 +11,12 @@ export function DuplicateForm({
   dupAction,
   students,
   submitLabel = "Dupliquer",
+  alreadyHasLabel = "a déjà ce cours",
 }: {
   dupAction: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
   students: Student[];
   submitLabel?: string;
+  alreadyHasLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(dupAction, {});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -68,7 +70,7 @@ export function DuplicateForm({
                     className="ml-auto rounded-full"
                     style={{ background: "#F4F1EB", color: "#8B857A", fontSize: 10, fontWeight: 700, padding: "2px 8px" }}
                   >
-                    a déjà ce cours
+                    {alreadyHasLabel}
                   </span>
                 )}
               </label>

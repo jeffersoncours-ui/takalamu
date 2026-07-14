@@ -21,24 +21,21 @@ export default async function LibraryGrammarRulePage({
 
   const { data: rule, error: ruleError } = await supabase
     .from("grammar_rules")
-    .select(
-      "id, title, content, photos, student_id, created_at, lesson_records(session_date), students(profiles(full_name))"
-    )
+    .select("id, title, content, photos, student_id, rule_group_id, created_at, lesson_records(session_date)")
     .eq("id", ruleId)
     .maybeSingle();
 
   if (ruleError) console.error("library/grammar/[ruleId] rule query failed:", ruleError.message);
   if (!rule) notFound();
 
-  const { data: studentsRes } = await supabase.from("students").select("id, status, profiles(full_name)");
-
-  const sourceStudent = Array.isArray(rule.students) ? rule.students[0] : rule.students;
-  const sourceProfile = sourceStudent
-    ? Array.isArray(sourceStudent.profiles)
-      ? sourceStudent.profiles[0]
-      : sourceStudent.profiles
-    : null;
-  const sourceName = sourceProfile?.full_name ?? "—";
+  const [{ data: studentsRes }, { data: groupRows }] = await Promise.all([
+    supabase.from("students").select("id, status, profiles(full_name)"),
+    // Élèves qui possèdent déjà cette règle (même rule_group_id) → on les
+    // marque pour éviter un doublon en re-dupliquant vers eux, comme pour
+    // les cours.
+    supabase.from("grammar_rules").select("student_id").eq("rule_group_id", rule.rule_group_id),
+  ]);
+  const alreadyHasIds = new Set((groupRows ?? []).map((r) => r.student_id));
 
   const lessonRecord = Array.isArray(rule.lesson_records) ? rule.lesson_records[0] : rule.lesson_records;
   const date = lessonRecord?.session_date ?? rule.created_at;
@@ -57,17 +54,13 @@ export default async function LibraryGrammarRulePage({
       .filter((f): f is { name: string; url: string } => f !== null);
   }
 
-  // Une règle dupliquée vers un élève qui l'a déjà (même titre exact) n'est
-  // pas bloquée — pas de programme partagé garanti pour la grammaire (chaque
-  // règle est individuelle, cf. demande propriétaire), donc pas de garde
-  // "a déjà cette règle" comme pour les cours.
   const students = (studentsRes ?? [])
     .filter((s) => s.id !== rule.student_id)
     .map((s) => ({
       id: s.id,
       name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) ?? "Élève",
       status: s.status,
-      alreadyHas: false,
+      alreadyHas: alreadyHasIds.has(s.id),
     }));
 
   return (
@@ -82,7 +75,7 @@ export default async function LibraryGrammarRulePage({
           {rule.title}
         </h1>
         <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
-          Règle de {sourceName} · {format(new Date(date), "d MMMM yyyy", { locale: fr })}
+          {format(new Date(date), "d MMMM yyyy", { locale: fr })}
         </p>
       </div>
 
@@ -120,6 +113,7 @@ export default async function LibraryGrammarRulePage({
         dupAction={duplicateGrammarRule.bind(null, ruleId)}
         students={students}
         submitLabel="Dupliquer la règle"
+        alreadyHasLabel="a déjà cette règle"
       />
     </div>
   );

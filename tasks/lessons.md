@@ -1128,3 +1128,32 @@
   `students(profiles(full_name))` des deux requêtes (cours et grammaire) dans
   `teacher/books/[bookId]/page.tsx`, pas seulement le JSX qui l'affichait —
   la donnée n'est ni récupérée ni tenue en mémoire côté serveur.
+
+## Garde "déjà membre du groupe" oubliée à la première introduction du groupement (session 32, suite 4 quater)
+
+- **Un groupement fraîchement introduit doit immédiatement avoir sa garde de
+  duplication, pas seulement son affichage.** `rule_group_id` venait d'être
+  ajouté (suite 4) pour afficher une seule carte par règle multi-élèves, en
+  copiant volontairement le pattern d'affichage de `course_group_id`. Mais la
+  garde "a déjà ce cours" côté cours existait déjà AVANT le regroupement
+  d'affichage (elle datait de l'introduction de `course_group_id` lui-même) —
+  côté grammaire, comme il n'y avait jamais eu de notion de groupe avant
+  aujourd'hui, il n'y avait jamais eu de garde non plus, et la copie du
+  pattern d'affichage n'a pas automatiquement entraîné la copie de la garde.
+  Résultat : Bilel et Anthony (déjà dans le groupe "Le mot") apparaissaient
+  sélectionnables sur l'écran de duplication au lieu d'être grisés — repéré
+  uniquement par le propriétaire en testant manuellement le flux complet
+  (cocher → dupliquer), pas par une simple relecture de code.
+- **Un label passé en prop `string` (`alreadyHasLabel`) est sans risque**,
+  contrairement à une fonction (`submitLabelPlural`, cause du crash corrigé
+  plus tôt dans cette même session) — les strings traversent normalement la
+  frontière Server → Client Component. Bon réflexe : dès qu'un composant
+  partagé doit varier un texte selon l'appelant, préférer une prop `string`
+  simple plutôt qu'une fonction de formatage, même quand ça semble plus
+  "élégant".
+- **Cohérence de duplication == la cible rejoint le même groupe.** Après
+  réflexion, dupliquer une règle vers un nouvel élève doit le faire rejoindre
+  le `rule_group_id` de la règle source (comme `duplicateSession` le fait déjà
+  pour `course_group_id`), pas créer un groupe indépendant — sinon la garde
+  "déjà membre" resterait juste pour les élèves de la soumission d'origine et
+  se re-casserait dès la duplication suivante vers un troisième élève.
