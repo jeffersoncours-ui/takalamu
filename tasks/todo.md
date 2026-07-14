@@ -2,6 +2,56 @@
 
 ---
 
+## Session 32 — Retrait de la fonctionnalité paiement in-app
+
+> **Demande propriétaire** : retirer entièrement le paiement in-app (écrans « Mes
+> paiements » élève / « Paiements » enseignant, captures fournies) — le paiement est
+> géré 100% en externe, directement avec l'élève. Retirer aussi les emails (lien
+> PayPal.Me via Resend) et toutes les connexions de code liées. Décisions validées par
+> le propriétaire (AskUserQuestion) : (1) retirer aussi le statut manuel élève
+> « Suspendu (paiement) » (`suspended_payment`), (2) nettoyage base de données complet
+> (DROP, pas juste dormant) — table `payments` vide, 0 notification concernée, 0 élève
+> à ce statut au moment du retrait (vérifié MCP).
+>
+> **Séquencement base partagée preview/prod** (rappelé au propriétaire, confirmé) :
+> code d'abord (déployé en prod), migration de suppression **seulement après**
+> confirmation du déploiement — sinon le code encore déployé en prod casse en
+> appelant une table/RPC qui n'existe plus.
+
+### Plan
+- [x] Suppression `src/app/teacher/payments/` (page, actions, `send-payment-form.tsx`,
+      `payment-actions.tsx`) et `src/app/dashboard/payments/` — dossiers entiers
+- [x] Suppression `src/lib/paypal.ts` et `src/lib/resend.ts` (aucun autre consommateur —
+      les invitations passent par l'auth Supabase, pas par Resend)
+- [x] `drawer-nav.tsx` : retrait de l'entrée « Paiements » ; `dashboard/more/page.tsx` :
+      retrait de l'entrée « Mes paiements »
+- [x] `status-badge.tsx` : retrait de `paymentBadge` ; `notif-bell.tsx` : retrait des
+      libellés `payment_requested`/`payment_confirmed`
+- [x] Statut élève `suspended_payment` retiré de 6 fichiers : `status-form.tsx`
+      (options + couleurs, type local découplé de `Database`), `teacher/students/actions.ts`
+      (`VALID_STATUSES`), `students-list.tsx` (type + `STATUS_META`), `teacher/page.tsx`
+      (`STATUS_LABEL` + requête `.eq` au lieu de `.in`), `teacher/students/page.tsx` +
+      `[id]/page.tsx` (cast temporaire au point de lecture — l'enum DB garde encore
+      `suspended_payment` tant que la migration n'est pas appliquée)
+- [x] `package.json` : dépendance `resend` retirée, lockfile régénéré (`npm install`)
+- [x] `.env.example` : blocs Resend + PayPal.Me retirés
+- [x] Build (27 routes, les 2 routes paiement ont disparu) + lint verts (seule l'erreur
+      pré-existante `drawer-nav.tsx` subsiste) ; grep final : 0 référence résiduelle à
+      payment/paypal/resend dans `src/` (hors `database.types.ts`, généré)
+- [x] Migration 55 **rédigée** (`DROP TABLE payments`, `DROP FUNCTION confirm_payment/
+      cancel_payment`, `DROP TYPE payment_plan/payment_product/payment_status`, retrait
+      des valeurs `payment_requested`/`payment_confirmed` de `notification_type` et
+      `suspended_payment` de `student_status` — pattern rename→create→alter→drop,
+      cohérent avec migration 47) — **PAS encore appliquée** (attend le déploiement prod
+      du code ci-dessus, base partagée)
+- [ ] Push branche de session (preview) — validation propriétaire avant merge prod
+- [ ] Merge prod (fast-forward `main` + branche Vercel prod)
+- [ ] Une fois le déploiement prod confirmé : appliquer la migration 55 via MCP +
+      régénérer `database.types.ts` + vérification empirique (table absente, `students`/
+      `notifications` intacts, advisor sécurité)
+
+---
+
 ## Session 31 (suite 8b) — Retouches livres/devoirs (retour propriétaire)
 
 > Après test de la suite 8 : (1) retirer le lien « → cours » sous les règles du livre de

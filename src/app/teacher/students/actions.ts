@@ -91,7 +91,6 @@ export async function createStudentManually(
 
 const VALID_STATUSES: StudentStatus[] = [
   "active",
-  "suspended_payment",
   "suspended_absences",
 ];
 

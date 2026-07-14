@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { StatusBadge, type BadgeHue } from "@/components/status-badge";
 
-type StudentStatus = "active" | "suspended_payment" | "suspended_absences";
+type StudentStatus = "active" | "suspended_absences";
 
 type Student = {
   id: string;
@@ -15,7 +15,6 @@ type Student = {
 
 const STATUS_META: Record<StudentStatus, { hue: BadgeHue; label: string }> = {
   active: { hue: "green", label: "Actif" },
-  suspended_payment: { hue: "amber", label: "Suspendu" },
   suspended_absences: { hue: "red", label: "Suspendu" },
 };
 

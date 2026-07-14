@@ -4,13 +4,9 @@ import { fr } from "date-fns/locale";
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/database.types";
 
-type StudentStatus = Database["public"]["Enums"]["student_status"];
-
-const STATUS_LABEL: Record<StudentStatus, string> = {
+const STATUS_LABEL: Record<"active" | "suspended_absences", string> = {
   active: "Actif",
-  suspended_payment: "Paiement en attente",
   suspended_absences: "Trop d'absences",
 };
 
@@ -30,7 +26,7 @@ export default async function TeacherHome({
     supabase
       .from("students")
       .select("id, status, profiles(full_name)")
-      .in("status", ["suspended_payment", "suspended_absences"]),
+      .eq("status", "suspended_absences"),
   ]);
 
   const pendingHwCount = hwResult.count ?? 0;
@@ -90,7 +86,7 @@ export default async function TeacherHome({
               {suspended.length} élève{suspended.length > 1 ? "s" : ""} suspendu{suspended.length > 1 ? "s" : ""}
             </span>
             <span className="block" style={{ color: "#B5862E", fontSize: 12 }}>
-              {STATUS_LABEL[suspended[0].status]}
+              {STATUS_LABEL[suspended[0].status as "active" | "suspended_absences"]}
             </span>
           </span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99A3A" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">

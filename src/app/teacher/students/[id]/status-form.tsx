@@ -2,19 +2,16 @@
 
 import { useActionState } from "react";
 import { updateStudentStatus } from "../actions";
-import type { Database } from "@/lib/supabase/database.types";
 
-type StudentStatus = Database["public"]["Enums"]["student_status"];
+type StudentStatus = "active" | "suspended_absences";
 
 const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
   { value: "active", label: "Actif" },
-  { value: "suspended_payment", label: "Suspendu (paiement)" },
   { value: "suspended_absences", label: "Suspendu (absences)" },
 ];
 
 const STATUS_COLOR: Record<StudentStatus, string> = {
   active: "text-emerald-700 border-emerald-200 bg-emerald-50",
-  suspended_payment: "text-amber-700 border-amber-200 bg-amber-50",
   suspended_absences: "text-red-700 border-red-200 bg-red-50",
 };
 

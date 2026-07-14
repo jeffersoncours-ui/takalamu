@@ -69,18 +69,3 @@ export function homeworkBadge(value: string): { hue: BadgeHue; label: string } {
       return { hue: "slate", label: "À rendre" };
   }
 }
-
-/** Mapping statut de paiement → hue + label affiché. */
-export function paymentBadge(value: string): { hue: BadgeHue; label: string } {
-  switch (value) {
-    case "paid":
-      return { hue: "green", label: "Payé" };
-    case "pending":
-      return { hue: "amber", label: "En attente" };
-    case "failed":
-      return { hue: "red", label: "Échoué" };
-    case "cancelled":
-    default:
-      return { hue: "slate", label: "Annulé" };
-  }
-}
