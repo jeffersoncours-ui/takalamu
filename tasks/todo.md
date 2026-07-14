@@ -2329,7 +2329,19 @@ Reformulation validée (propriétaire : "quoi que ce soit, je valide") :
       Khadija ne peut lire aucune règle d'un élève de Jefferson (0 ligne)
 - [x] `npm run build` + `npm run lint` : verts (seule erreur = `drawer-nav.tsx`,
       pré-existante, déjà documentée, sans rapport)
-- [ ] Commit + push preview (pas de déploiement prod demandé)
+- [x] Commit + push preview (pas de déploiement prod demandé)
+- [x] **Correctif complémentaire** : le propriétaire a signalé que la règle
+      "Le mot = الكَلِمَةُ" (donnée à Hamza, Bilel, Anthony le 11-12/07, donc
+      AVANT la migration 60) restait affichée en 3 cartes distinctes. Cause :
+      la migration 60 a donné à chaque ligne EXISTANTE son propre
+      `rule_group_id` indépendant via le `DEFAULT gen_random_uuid()` — seules
+      les lignes créées APRÈS le déploiement du nouveau code (qui envoie la clé
+      `rule_group_id`) sont groupées par le client. Corrigé par un backfill
+      ponctuel (migration 61) : les 3 lignes historiques partagent déjà le même
+      `lesson_records.course_group_id` (créées par la même boucle d'origine) —
+      fusion par `(course_group_id, title, content)`. Vérifié avant/après via
+      MCP : exactement 1 groupe à fusionner détecté et fusionné, 0 fusion
+      erronée après coup sur l'ensemble de la table.
 
 ### Review
 - Les 3 correctifs demandés sont en place : plus de Modifier/Suppr sur "Mes

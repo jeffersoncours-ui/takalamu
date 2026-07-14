@@ -1086,3 +1086,29 @@
   copie son propre groupe d'un seul élève. Aucun code à écrire pour ce
   comportement : le design de la colonne le garantit nativement, testé
   empiriquement pour confirmer (pas supposé).
+
+## Backfill oublié après une migration additive avec DEFAULT par ligne (session 32, suite 4 bis)
+
+- **Un `DEFAULT gen_random_uuid()` sur une nouvelle colonne "groupe" ne groupe
+  jamais les lignes existantes entre elles** — chaque ligne reçoit sa propre
+  valeur aléatoire indépendante au moment de l'`ALTER TABLE`. La migration 60
+  a corrigé le regroupement pour toute nouvelle soumission (le client envoie
+  désormais `rule_group_id`), mais les règles déjà en base avant le déploiement
+  du nouveau code sont restées éclatées une carte par élève — exactement ce
+  que le propriétaire a signalé (règle "Le mot" x3 toujours séparée).
+- **Le correctif de bug pour l'avenir n'est pas un correctif pour le passé.**
+  Toujours se demander explicitement : "et les données déjà en base ?" après
+  toute migration additive qui introduit une notion de regroupement/dérivation
+  — sinon la même donnée réelle reste incohérente en prod jusqu'à ce que
+  quelqu'un s'en aperçoive (ici, le propriétaire, en test manuel).
+- **Reconstituer un regroupement historique perdu grâce à une corrélation
+  déjà présente ailleurs** : `course_group_id` (sur `lesson_records`) existait
+  déjà avant `rule_group_id` et était partagé par construction entre les
+  lignes créées dans la même boucle d'origine (une soumission = un
+  `p_course_group_id`, une itération par élève). Backfill = fusionner les
+  `grammar_rules` historiques par `(course_group_id via lesson_record_id,
+  title, content)`. Toujours vérifier par une requête `HAVING count(*) > 1`
+  en lecture seule AVANT d'appliquer le backfill (voir combien de groupes
+  seraient touchés), puis revérifier `HAVING count(DISTINCT rule_group_id) > 1`
+  APRÈS (doit être vide) pour confirmer qu'aucune fusion erronée n'a eu lieu
+  sur le reste de la table.
