@@ -17,27 +17,21 @@ export default async function TeacherMessagesListPage() {
 
   if (!teacher) return <p style={{ color: "#8B857A" }}>Profil enseignant introuvable.</p>;
 
-  // Toutes les conversations de ce teacher, avec le nom de l'élève et le dernier message
-  const { data: conversations, error: convError } = await supabase
-    .from("conversations")
+  // Tous les élèves de ce teacher (pas seulement ceux ayant déjà une ligne
+  // `conversations`) — sinon un élève jamais contacté disparaît purement et
+  // simplement de la liste au lieu d'apparaître avec "Démarrer la
+  // conversation →", comme les autres élèves sans message.
+  const { data: students, error: studentsError } = await supabase
+    .from("students")
     .select(
-      "id, student_id, students(id, profiles(full_name, avatar_url)), messages(id, body, sent_at, sender_id, read_at)",
+      "id, profiles(full_name, avatar_url), conversations(id, messages(id, body, sent_at, sender_id, read_at))",
     )
-    .eq("teacher_id", teacher.id)
-    .order("sent_at", { referencedTable: "messages", ascending: false });
+    .eq("teacher_id", teacher.id);
 
-  if (convError) console.error("teacher/messages query failed:", convError.message);
+  if (studentsError) console.error("teacher/messages query failed:", studentsError.message);
 
-  const avatarPaths = (conversations ?? [])
-    .map((conv) => {
-      const student = Array.isArray(conv.students) ? conv.students[0] : conv.students;
-      const profile = student
-        ? Array.isArray(student.profiles)
-          ? student.profiles[0]
-          : student.profiles
-        : null;
-      return profile?.avatar_url ?? null;
-    })
+  const avatarPaths = (students ?? [])
+    .map((s) => (Array.isArray(s.profiles) ? s.profiles[0]?.avatar_url : s.profiles?.avatar_url))
     .filter((p): p is string => !!p);
 
   let signedAvatars: { path: string; signedUrl: string }[] = [];
@@ -48,21 +42,17 @@ export default async function TeacherMessagesListPage() {
       .map((s) => ({ path: s.path as string, signedUrl: s.signedUrl as string }));
   }
 
-  const items = (conversations ?? []).map((conv) => {
-    const student = Array.isArray(conv.students) ? conv.students[0] : conv.students;
-    const profile = student
-      ? Array.isArray(student.profiles)
-        ? student.profiles[0]
-        : student.profiles
-      : null;
+  const items = (students ?? []).map((s) => {
+    const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
     const name = profile?.full_name ?? "Élève";
     const avatarUrl = profile?.avatar_url
-      ? (signedAvatars.find((s) => s.path === profile.avatar_url)?.signedUrl ?? null)
+      ? (signedAvatars.find((sa) => sa.path === profile.avatar_url)?.signedUrl ?? null)
       : null;
 
-    // Premier message du tableau = le plus récent (trié desc)
-    const msgs = Array.isArray(conv.messages) ? conv.messages : conv.messages ? [conv.messages] : [];
-    const lastMsg = msgs[0] ?? null;
+    const conv = Array.isArray(s.conversations) ? s.conversations[0] : s.conversations;
+    const msgs = conv ? (Array.isArray(conv.messages) ? conv.messages : conv.messages ? [conv.messages] : []) : [];
+    const sortedMsgs = [...msgs].sort((a, b) => b.sent_at.localeCompare(a.sent_at));
+    const lastMsg = sortedMsgs[0] ?? null;
 
     // Nombre de messages non lus envoyés par l'élève
     const unreadCount = msgs.filter(
@@ -70,8 +60,7 @@ export default async function TeacherMessagesListPage() {
     ).length;
 
     return {
-      convId: conv.id,
-      studentId: student?.id ?? "",
+      studentId: s.id,
       name,
       avatarUrl,
       lastMsg,
@@ -96,7 +85,7 @@ export default async function TeacherMessagesListPage() {
           Messages
         </h1>
         <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
-          {items.length} conversation{items.length > 1 ? "s" : ""}
+          {items.length} élève{items.length > 1 ? "s" : ""}
         </p>
       </div>
 
@@ -105,14 +94,14 @@ export default async function TeacherMessagesListPage() {
           className="rounded-[16px] p-4"
           style={{ background: "#FBF9F5", border: "1px solid #EFEAE0", color: "#8B857A", fontSize: 14 }}
         >
-          Aucune conversation pour le moment.
+          Aucun élève pour le moment.
         </p>
       )}
 
       <div className="flex flex-col gap-2">
-        {items.map(({ convId, studentId, name, avatarUrl, lastMsg, unreadCount }) => (
+        {items.map(({ studentId, name, avatarUrl, lastMsg, unreadCount }) => (
           <Link
-            key={convId}
+            key={studentId}
             href={`/teacher/messages/${studentId}`}
             className="flex items-center gap-3 rounded-[18px] p-4 transition-opacity hover:opacity-80"
             style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}

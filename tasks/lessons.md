@@ -1194,3 +1194,32 @@
   contient un champ (`error`) absent du type cible — TS n'accepte pas la
   narrowing dans ce sens. Fix : `.filter(...).map((s) => ({ path: s.path as
   string, signedUrl: s.signedUrl as string }))` plutôt qu'un type predicate.
+
+## Deux couches invisibles derrière deux bugs "visuels" (session 32, suite 6)
+
+- **Une policy Storage seule ne suffit pas si la ligne DB qui porte le
+  chemin est elle-même bloquée par RLS.** La migration 62 (lecture du bucket
+  `avatars`) était correcte mais insuffisante : l'embed PostgREST
+  `students → teachers → profiles` exécuté côté élève s'arrêtait à l'étage
+  `profiles` (aucune policy `SELECT` n'autorisait un élève à lire le profil
+  de son propre enseignant), donc `avatar_url` n'était jamais atteint —
+  `createSignedUrl` n'était même jamais appelé. Un embed imbriqué est
+  seulement aussi lisible que la policy RLS de CHAQUE table traversée, pas
+  seulement celle de la table de départ.
+- **Partir de la mauvaise table casse silencieusement les cas "pas encore
+  de données".** `teacher/messages/page.tsx` partait de `conversations`
+  (table de jonction, une ligne seulement une fois qu'une conversation a été
+  ouverte au moins une fois) au lieu de `students` (la vraie liste
+  d'entités). Résultat : un élève jamais contacté disparaissait de la liste
+  plutôt que d'apparaître avec "Démarrer la conversation →" — un bug de
+  "table de départ", pas de filtre RLS. Réflexe à généraliser : quand une
+  liste doit représenter TOUTES les entités d'un type (tous les élèves) avec
+  une relation optionnelle (conversation), toujours partir de la table des
+  entités et embedder la relation, jamais l'inverse.
+- **Vérifier un correctif avec la requête RÉELLE, pas une approximation.**
+  Les deux bugs ont été confirmés ET corrigés via des requêtes SQL
+  reproduisant exactement le chemin de données du code (même embed imbriqué,
+  même impersonation, même sens de jointure) — pas juste "la policy existe"
+  ou "la table contient les bonnes lignes". C'est ce niveau de fidélité qui a
+  permis de localiser le vrai point de blocage (`profiles`, pas `avatars`)
+  au lieu de re-corriger la mauvaise couche.

@@ -2484,3 +2484,48 @@ bucket privé `avatars`) à la place du rond avec l'initiale, dans :
 - Non touché (hors périmètre de la demande) : `teacher/students/[id]/page.tsx`
   (fiche élève détaillée) et `teacher/homework/page.tsx` (file de correction)
   ont le même rond-avec-initiale — à traiter si le propriétaire le demande.
+
+## Session 32 (suite 6) — 2 bugs remontés après test manuel des photos/messages
+
+1. **Photo du prof toujours absente côté élève** : cause racine trouvée par
+   test SQL direct (impersonation Hamza) — `SELECT ... FROM profiles WHERE
+   id = <jefferson>` renvoyait **0 ligne**. La migration 62 (policies sur le
+   bucket Storage `avatars`) était nécessaire mais pas suffisante : encore
+   fallait-il que la ligne `profiles` (portant `avatar_url`) elle-même soit
+   lisible par l'élève pour que l'embed PostgREST
+   `students→teachers→profiles` ne s'arrête pas en route. Aucune policy
+   n'autorisait un élève à lire le profil de son propre enseignant (seul le
+   sens inverse existait : `profiles_select_teacher_students`). Migration 63 :
+   policy symétrique `profiles_select_own_teacher`. Revérifié après coup :
+   Hamza voit le profil de Jefferson (son prof), toujours pas celui de
+   Khadija (pas la sienne).
+2. **Rayan absent de la liste "Messages" côté enseignant** : la page partait
+   de la table `conversations` (une ligne par paire déjà initiée) au lieu de
+   `students` — un élève jamais contacté (aucune ligne `conversations`
+   créée) disparaissait purement et simplement de la liste, au lieu
+   d'apparaître comme Anthony/Bilel avec "Démarrer la conversation →".
+   Confirmé en base : Rayan est le seul élève actif de Jefferson avec
+   `conv_count = 0`. `teacher/messages/page.tsx` réécrit pour partir de
+   `students` (RLS déjà scopée au teacher courant) avec un embed
+   `conversations(...)` — chaque élève apparaît désormais, avec ou sans
+   conversation déjà démarrée. Revérifié via MCP : les 4 élèves (dont Rayan)
+   sont bien retournés par la nouvelle requête.
+
+### Plan
+- [x] Migration 63 (`profiles_select_own_teacher`), testée avant/après via
+      MCP (positif : Hamza voit Jefferson ; négatif : pas Khadija)
+- [x] `teacher/messages/page.tsx` réécrit : source `students` + embed
+      `conversations`, tri par dernier message conservé, libellé "X élève(s)"
+      (plus précis que "X conversations" puisque ce n'en sont pas toutes)
+- [x] Testé via MCP : requête équivalente retourne bien les 4 élèves dont
+      Rayan
+- [x] `npm run build` + `npm run lint` : verts (seule erreur pré-existante,
+      sans rapport)
+- [ ] Commit + push preview
+
+### Review
+- Les deux bugs partagent une leçon commune : une correction "visible" (UI ou
+  policy Storage) peut être invalidée par une couche invisible en amont (RLS
+  table, ou source de la requête) — d'où l'importance de vérifier chaque
+  correctif via une requête SQL directe reproduisant exactement le chemin de
+  données réel (embed PostgREST inclus), pas seulement "la policy existe".
