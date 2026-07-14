@@ -9,7 +9,7 @@ import { updateSession } from "./actions";
 type SupportFile = { path: string; name: string };
 type Book = { id: string; title: string; subtitle: string | null };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
-type GrammarRow = { id: string; title: string; content: string };
+type GrammarRow = { id: string; title: string; content: string; photos: SupportFile[] };
 type FormulationRow = { id: string; arabic_text: string; french_text: string; audio_path: string | null };
 
 const inputStyle: React.CSSProperties = {
@@ -83,7 +83,7 @@ export function EditSessionForm({
     vocab.map((v) => ({ id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition }))
   );
   const [grammarRows, setGrammarRows] = useState(
-    grammar.map((g) => ({ id: g.id, title: g.title, content: g.content }))
+    grammar.map((g) => ({ id: g.id, title: g.title, content: g.content, photos: g.photos }))
   );
   const [formRows, setFormRows] = useState(
     formulations.map((f) => ({
@@ -258,29 +258,18 @@ export function EditSessionForm({
       {/* Grammaire */}
       <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
         <span style={sectionLabel}>Règles de grammaire</span>
-        {grammarRows.map((row) => (
-          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
-            <input name="grammar_title" placeholder="titre" defaultValue={row.title} style={inputStyle} />
-            <textarea
-              name="grammar_content"
-              placeholder="contenu"
-              rows={2}
-              defaultValue={row.content}
-              style={{ ...inputStyle, resize: "none" }}
-            />
-            <button
-              type="button"
-              onClick={() => setGrammarRows((rows) => rows.filter((r) => r.id !== row.id))}
-              style={{ color: "#A8A29E", fontSize: 12 }}
-            >
-              Retirer
-            </button>
-          </div>
+        {grammarRows.map((row, idx) => (
+          <GrammarRuleRow
+            key={row.id}
+            row={row}
+            idx={idx}
+            onRemove={() => setGrammarRows((rows) => rows.filter((r) => r.id !== row.id))}
+          />
         ))}
         <button
           type="button"
           onClick={() => {
-            setGrammarRows((rows) => [...rows, { id: String(nextId), title: "", content: "" }]);
+            setGrammarRows((rows) => [...rows, { id: String(nextId), title: "", content: "", photos: [] }]);
             setNextId((n) => n - 1);
           }}
           className="font-bold"
@@ -453,5 +442,89 @@ export function EditSessionForm({
         </div>
       </div>
     </form>
+  );
+}
+
+function GrammarRuleRow({
+  row,
+  idx,
+  onRemove,
+}: {
+  row: { id: string; title: string; content: string; photos: SupportFile[] };
+  idx: number;
+  onRemove: () => void;
+}) {
+  const [keptPhotos, setKeptPhotos] = useState<Set<string>>(new Set(row.photos.map((p) => p.path)));
+  const togglePhoto = (path: string) => {
+    setKeptPhotos((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+      <input name="grammar_title" placeholder="titre" defaultValue={row.title} style={inputStyle} />
+      <textarea
+        name="grammar_content"
+        placeholder="contenu"
+        rows={2}
+        defaultValue={row.content}
+        style={{ ...inputStyle, resize: "none" }}
+      />
+
+      {row.photos
+        .filter((p) => keptPhotos.has(p.path))
+        .map((p) => (
+          <input key={p.path} type="hidden" name={`grammar_photos_existing_${idx}`} value={JSON.stringify(p)} />
+        ))}
+
+      {row.photos.length > 0 && (
+        <div className="space-y-1">
+          <span style={{ fontSize: 11, color: "#8B857A" }}>Photos déjà attachées</span>
+          <div className="space-y-1">
+            {row.photos.map((p) => (
+              <label
+                key={p.path}
+                className="flex items-center gap-2 rounded-[10px] px-2.5 py-2 cursor-pointer"
+                style={{ background: "#fff", border: "1px solid #E9E3D8", fontSize: 12, color: "#4A463F" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={keptPhotos.has(p.path)}
+                  onChange={() => togglePhoto(p.path)}
+                />
+                <span className="flex-1 truncate">{p.name}</span>
+                <span style={{ color: keptPhotos.has(p.path) ? "#0F9D6E" : "#B4292E", fontSize: 10, fontWeight: 700 }}>
+                  {keptPhotos.has(p.path) ? "conservée" : "sera retirée"}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-1">
+        <span style={{ fontSize: 11, color: "#8B857A" }}>Ajouter des photos</span>
+        <input
+          name={`grammar_photos_${idx}`}
+          type="file"
+          accept="image/*"
+          multiple
+          className="block w-full text-xs file:mr-2 file:rounded-[8px] file:border-0 file:px-2.5 file:py-1 file:font-semibold file:cursor-pointer"
+          style={{ color: "#4A463F" }}
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={onRemove}
+        style={{ color: "#A8A29E", fontSize: 12 }}
+      >
+        Retirer
+      </button>
+    </div>
   );
 }

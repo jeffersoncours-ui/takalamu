@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
@@ -126,21 +127,23 @@ export function BookManager({ books }: { books: Book[] }) {
               className="flex items-center gap-3 rounded-[16px] p-3"
               style={{ background: "#fff", border: "1px solid #EFEAE0" }}
             >
-              {b.cover_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.cover_url} alt="" className="shrink-0 rounded-[8px] object-cover" style={{ width: 46, height: 62 }} />
-              ) : (
-                <div className="shrink-0 rounded-[8px]" style={{ width: 46, height: 62, background: "#EFEAE0" }} />
-              )}
-              <div className="flex-1 min-w-0">
-                <div dir="rtl" lang="ar" className="font-arabic font-bold truncate" style={{ fontSize: 16, color: "#1C1A17" }}>
-                  {b.title}
+              <Link href={`/teacher/books/${b.id}`} className="flex flex-1 min-w-0 items-center gap-3">
+                {b.cover_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={b.cover_url} alt="" className="shrink-0 rounded-[8px] object-cover" style={{ width: 46, height: 62 }} />
+                ) : (
+                  <div className="shrink-0 rounded-[8px]" style={{ width: 46, height: 62, background: "#EFEAE0" }} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div dir="rtl" lang="ar" className="font-arabic font-bold truncate" style={{ fontSize: 16, color: "#1C1A17" }}>
+                    {b.title}
+                  </div>
+                  {b.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</div>}
+                  <div className="mt-0.5" style={{ fontSize: 11, color: "#8B857A" }}>
+                    {b.kind === "grammar" ? "Grammaire" : `${b.courseCount} cours`}
+                  </div>
                 </div>
-                {b.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</div>}
-                <div className="mt-0.5" style={{ fontSize: 11, color: "#8B857A" }}>
-                  {b.kind === "grammar" ? "Grammaire (auto)" : `${b.courseCount} cours`}
-                </div>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => setEditing(b.id)}

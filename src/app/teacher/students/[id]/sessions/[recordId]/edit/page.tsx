@@ -45,7 +45,7 @@ export default async function EditSessionPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("grammar_rules")
-      .select("id, title, content")
+      .select("id, title, content, photos")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
@@ -101,7 +101,12 @@ export default async function EditSessionPage({
         homeworkInstructions={hwRes.data?.instructions ?? ""}
         homeworkTouched={!!hwRes.data && hwRes.data.status !== "a_rendre"}
         vocab={vocabRes.data ?? []}
-        grammar={grammarRes.data ?? []}
+        grammar={(grammarRes.data ?? []).map((g) => ({
+          id: g.id,
+          title: g.title,
+          content: g.content,
+          photos: (g.photos as SupportFile[] | null) ?? [],
+        }))}
         formulations={formRes.data ?? []}
         supportFiles={(record.support_files as SupportFile[] | null) ?? []}
       />

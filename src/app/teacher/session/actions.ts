@@ -61,7 +61,7 @@ export async function submitSession(
   for (const studentId of studentIds) {
     // Uploads indépendants (chemins distincts) : lancés en parallèle plutôt
     // qu'un par un — gain direct sur l'écran le plus critique du produit (<30s).
-    const [supportResults, formulations] = await Promise.all([
+    const [supportResults, formulations, grammarRules] = await Promise.all([
       Promise.all(
         rawFiles.map(async (raw) => {
           const ext = raw.name.split(".").pop() ?? "";
@@ -92,6 +92,25 @@ export async function submitSession(
           };
         })
       ),
+      // Photos de règle de grammaire : propres à chaque règle, uploadées dans
+      // le dossier de l'élève (bucket dédié grammar-photos).
+      Promise.all(
+        grammar.map(async (row) => {
+          const photos = (
+            await Promise.all(
+              row.newPhotos.map(async (raw) => {
+                const ext = raw.name.split(".").pop() ?? "jpg";
+                const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                const { error: photoError } = await supabase.storage
+                  .from("grammar-photos")
+                  .upload(path, raw, { contentType: raw.type || `image/${ext}` });
+                return photoError ? null : { path, name: raw.name };
+              })
+            )
+          ).filter((f): f is { path: string; name: string } => f !== null);
+          return { title: row.title, content: row.content, photos };
+        })
+      ),
     ]);
     const supportFiles = supportResults.filter(
       (f): f is { path: string; name: string } => f !== null
@@ -105,7 +124,7 @@ export async function submitSession(
       p_private_note: privateNote ?? undefined,
       p_homework_instructions: homework ?? undefined,
       p_vocab: vocab,
-      p_grammar: grammar,
+      p_grammar: grammarRules,
       p_formulations: formulations,
       p_support_files: supportFiles,
       p_course_group_id: courseGroupId,

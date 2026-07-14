@@ -1,5 +1,50 @@
 # Lessons
 
+## Session 32 (suite 3) — Bibliothèque → livres + règles de grammaire individuelles
+
+- **Reformuler à chaque itération, même quand on croit avoir compris.** Cette demande a
+  pris 4 allers-retours de reformulation avant validation — dont un où j'avais
+  complètement inversé l'intention du propriétaire (« rendre le livre grammaire
+  sélectionnable dans la fiche de cours », alors qu'il voulait l'inverse : garder le
+  routage automatique déjà en place et juste ajouter une vue pour le consulter). Le
+  propriétaire a corrigé immédiatement et sans friction parce que la reformulation était
+  écrite noir sur blanc *avant* le code — coûts de correction nuls. Ne jamais sauter la
+  reformulation sur une demande orale/vocale ambiguë, même sous pression de rapidité.
+- **Un CTE avec `MATERIALIZED` référencé plusieurs fois dans des sous-requêtes scalaires
+  corrélées, sur la MÊME requête top-level, peut encore ne pas voir les effets de bord
+  d'une fonction volatile insérée par une autre branche de cette requête.** Piège déjà
+  documenté (session 31 suite 6) pour l'agrégation de CTE non matérialisés ; ici,
+  `MATERIALIZED` seul n'a pas suffi à corriger un faux « 0 résultat » lors d'un test
+  combinant `submit_session_record(...)` et une lecture immédiate dans la même requête.
+  Solution fiable et désormais systématique pour ce genre de test MCP : une table
+  temporaire (`CREATE TEMP TABLE`) + une instruction `INSERT INTO ... SELECT` par appel
+  RPC, jamais combiné dans un seul `SELECT` avec sous-requêtes corrélées.
+- **Généraliser un composant existant (action pré-liée en prop) plutôt que le dupliquer
+  pour un besoin quasi identique.** `DuplicateForm` servait uniquement à dupliquer un
+  cours (action `duplicateSession` importée et liée en dur). Le besoin de dupliquer une
+  règle de grammaire (même UI : liste d'élèves à cocher, bouton d'envoi) a été couvert en
+  remplaçant l'import figé par une prop `dupAction` déjà liée par l'appelant — zéro
+  duplication de JSX, chaque route reste responsable de lier sa propre action serveur.
+- **Une case à cocher stricte par livre a une conséquence en cascade sur la
+  duplication.** Décider que « la grammaire ne se rattache jamais au livre de la séance »
+  impliquait mécaniquement que « dupliquer un cours ne doit plus copier sa règle de
+  grammaire » — une implication que le propriétaire a explicitement demandé de corriger
+  après coup, mais qui aurait dû être anticipée dès la reformulation initiale (les deux
+  points sont la même règle vue sous deux angles). À généraliser : quand une demande
+  change la relation entre deux entités (ici grammaire ↔ cours), vérifier systématiquement
+  tous les flux qui copient/dupliquent l'une des deux pour voir s'ils doivent suivre.
+- **Duplication d'un élément individuel (règle) vs duplication d'un groupe (séance) :
+  pas de garde « déjà existant ».** Contrairement à la duplication de cours (qui exclut
+  les élèves ayant déjà ce `course_group_id`), la duplication d'une règle de grammaire
+  n'a volontairement aucune déduplication — cohérent avec la demande explicite du
+  propriétaire (« chaque règle est individuelle, un élève peut en recevoir une isolée »)
+  et il n'existe de toute façon aucune clé naturelle pour définir un doublon de règle.
+- **Écrire `photos jsonb` en clé additive dans un jsonb existant (`p_grammar`) évite tout
+  changement de signature RPC.** Comme pour `audio_path` dans `p_formulations`
+  (session 31 suite), une nouvelle clé optionnelle dans un item jsonb déjà transporté par
+  la RPC est 100% rétrocompatible (`CREATE OR REPLACE`, pas de DROP) — le client encore
+  déployé qui omet la clé obtient simplement `COALESCE(..., '[]'::jsonb)`.
+
 ## Session 32 — Retrait de la fonctionnalité paiement in-app
 
 - **La « branche de prod Vercel » n'est pas forcément `main`.** Vérifié cette session

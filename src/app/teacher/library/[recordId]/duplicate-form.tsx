@@ -2,19 +2,23 @@
 
 import { useActionState, useState } from "react";
 
-import { duplicateSession } from "./actions";
-
+type ActionState = { error?: string };
 type Student = { id: string; name: string; status: string; alreadyHas: boolean };
 
+/** Réutilisable pour dupliquer un cours (par élève déjà représenté) ou une
+ *  règle de grammaire individuelle — l'action déjà liée est fournie en prop. */
 export function DuplicateForm({
-  recordId,
+  dupAction,
   students,
+  submitLabel = "Dupliquer",
+  submitLabelPlural,
 }: {
-  recordId: string;
+  dupAction: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
   students: Student[];
+  submitLabel?: string;
+  submitLabelPlural?: (count: number) => string;
 }) {
-  const boundAction = duplicateSession.bind(null, recordId);
-  const [state, formAction, pending] = useActionState(boundAction, {});
+  const [state, formAction, pending] = useActionState(dupAction, {});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const toggle = (id: string) =>
@@ -95,8 +99,8 @@ export function DuplicateForm({
             {pending
               ? "Duplication…"
               : selectedIds.length > 1
-              ? `Dupliquer vers ${selectedIds.length} élèves`
-              : "Dupliquer le cours"}
+              ? (submitLabelPlural ?? ((n) => `Dupliquer vers ${n} élèves`))(selectedIds.length)
+              : submitLabel}
           </button>
         </div>
       </div>

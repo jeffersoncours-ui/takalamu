@@ -151,6 +151,7 @@ export type Database = {
           created_at: string
           id: string
           lesson_record_id: string | null
+          photos: Json
           student_id: string
           title: string
           updated_at: string
@@ -160,6 +161,7 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_record_id?: string | null
+          photos?: Json
           student_id: string
           title: string
           updated_at?: string
@@ -169,6 +171,7 @@ export type Database = {
           created_at?: string
           id?: string
           lesson_record_id?: string | null
+          photos?: Json
           student_id?: string
           title?: string
           updated_at?: string

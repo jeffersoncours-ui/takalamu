@@ -243,10 +243,21 @@ export function SessionForm({
         style={{ background: "#fff", border: "1px solid #EFEAE0" }}
       >
         <span style={sectionLabel}>Règles de grammaire</span>
-        {grammarRows.map((id) => (
+        {grammarRows.map((id, idx) => (
           <div key={id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
             <input name="grammar_title" placeholder="titre" style={inputStyle} />
             <textarea name="grammar_content" placeholder="contenu" rows={2} style={{ ...inputStyle, resize: "none" }} />
+            <div className="space-y-1">
+              <span style={{ color: "#8B857A", fontSize: 12 }}>Photos de cette règle (optionnel)</span>
+              <input
+                name={`grammar_photos_${idx}`}
+                type="file"
+                accept="image/*"
+                multiple
+                className="block w-full text-xs file:mr-2 file:rounded-[8px] file:border-0 file:px-2.5 file:py-1 file:font-semibold file:cursor-pointer"
+                style={{ color: "#4A463F" }}
+              />
+            </div>
             <button
               type="button"
               onClick={() => removeRow(setGrammarRows, id)}

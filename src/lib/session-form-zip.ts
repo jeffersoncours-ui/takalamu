@@ -13,15 +13,43 @@ export function zipVocab(formData: FormData) {
   return rows;
 }
 
-export function zipGrammar(formData: FormData) {
+export type GrammarRowInput = {
+  title: string;
+  content: string;
+  /** Nouvelles photos ajoutées pour cette règle (fiche de création ET édition). */
+  newPhotos: File[];
+  /** Photos déjà en Storage conservées telles quelles (édition uniquement). */
+  existingPhotos: { path: string; name: string }[];
+};
+
+/**
+ * Chaque ligne de règle rend un champ `grammar_photos_{idx}` (multiple) indexé
+ * par sa position de rendu — la position peut se décaler quand une ligne
+ * précédente est retirée, mais React conserve le même noeud DOM (clé stable)
+ * pour chaque ligne, donc les fichiers déjà choisis restent attachés au bon
+ * champ même si son `name` est renommé entre deux rendus.
+ */
+export function zipGrammar(formData: FormData): GrammarRowInput[] {
   const title = formData.getAll("grammar_title").map((v) => String(v).trim());
   const content = formData.getAll("grammar_content").map((v) => String(v).trim());
 
-  const rows: { title: string; content: string }[] = [];
+  const rows: GrammarRowInput[] = [];
   for (let i = 0; i < title.length; i++) {
-    if (title[i] && content[i]) {
-      rows.push({ title: title[i], content: content[i] });
-    }
+    if (!title[i] || !content[i]) continue;
+    const newPhotos = formData
+      .getAll(`grammar_photos_${i}`)
+      .filter((f): f is File => f instanceof File && f.size > 0);
+    const existingPhotos = formData
+      .getAll(`grammar_photos_existing_${i}`)
+      .map((v) => {
+        try {
+          return JSON.parse(String(v)) as { path: string; name: string };
+        } catch {
+          return null;
+        }
+      })
+      .filter((f): f is { path: string; name: string } => f !== null);
+    rows.push({ title: title[i], content: content[i], newPhotos, existingPhotos });
   }
   return rows;
 }

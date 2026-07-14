@@ -6,6 +6,7 @@ import { fr } from "date-fns/locale";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { DuplicateForm } from "./duplicate-form";
+import { duplicateSession } from "./actions";
 
 type SupportFile = { path: string; name: string };
 
@@ -20,16 +21,15 @@ export default async function LibraryCoursePage({
 
   const { data: record, error: recordError } = await supabase
     .from("lesson_records")
-    .select("id, custom_title, session_date, support_files, student_id, course_group_id, students(profiles(full_name))")
+    .select("id, custom_title, session_date, support_files, student_id, course_group_id, book_id, students(profiles(full_name))")
     .eq("id", recordId)
     .maybeSingle();
 
   if (recordError) console.error("library/[recordId] record query failed:", recordError.message);
   if (!record) notFound();
 
-  const [vocabRes, grammarRes, formRes, studentsRes, groupRes] = await Promise.all([
+  const [vocabRes, formRes, studentsRes, groupRes] = await Promise.all([
     supabase.from("vocabulary").select("id, arabic_word, french_definition").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
-    supabase.from("grammar_rules").select("id, title").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("formulations").select("id, arabic_text, french_text, audio_path").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("students").select("id, status, profiles(full_name)"),
     supabase.from("lesson_records").select("student_id").eq("course_group_id", record.course_group_id),
@@ -48,7 +48,6 @@ export default async function LibraryCoursePage({
   const sourceName = sourceProfile?.full_name ?? "—";
 
   const vocab = vocabRes.data ?? [];
-  const grammar = grammarRes.data ?? [];
   const formulations = formRes.data ?? [];
   const audioCount = formulations.filter((f) => !!f.audio_path).length;
   const supportCount = ((record.support_files as SupportFile[] | null) ?? []).length;
@@ -65,11 +64,11 @@ export default async function LibraryCoursePage({
   return (
     <div className="space-y-5">
       <Link
-        href="/teacher/library"
+        href={record.book_id ? `/teacher/books/${record.book_id}` : "/teacher/books"}
         className="inline-flex items-center gap-1 font-semibold"
         style={{ color: "#8B857A", fontSize: 13 }}
       >
-        ← Bibliothèque
+        ← Mes livres
       </Link>
 
       <div className="px-0.5">
@@ -104,17 +103,6 @@ export default async function LibraryCoursePage({
           </div>
         )}
 
-        {grammar.length > 0 && (
-          <div>
-            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
-              Règles de grammaire ({grammar.length})
-            </p>
-            {grammar.map((g) => (
-              <p key={g.id} style={{ color: "#4A463F", fontSize: 13 }}>{g.title}</p>
-            ))}
-          </div>
-        )}
-
         {formulations.length > 0 && (
           <div>
             <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
@@ -145,11 +133,17 @@ export default async function LibraryCoursePage({
         )}
 
         <p style={{ color: "#A8A29E", fontSize: 11.5 }}>
-          Le devoir et la note privée du cours d&apos;origine ne sont pas copiés.
+          Le devoir, la note privée et la règle de grammaire du cours d&apos;origine ne
+          sont pas copiés (la grammaire se duplique séparément, depuis le livre de
+          grammaire).
         </p>
       </div>
 
-      <DuplicateForm recordId={recordId} students={students} />
+      <DuplicateForm
+        dupAction={duplicateSession.bind(null, recordId)}
+        students={students}
+        submitLabel="Dupliquer le cours"
+      />
     </div>
   );
 }

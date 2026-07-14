@@ -15,11 +15,12 @@ function randSuffix() {
 
 /**
  * Duplique un cours existant vers un ou plusieurs élèves (copie indépendante).
- * Copie le vocabulaire, la grammaire, les formulations ET leurs audios, ainsi
- * que les fichiers supports — chaque fichier est recopié dans le dossier
- * Storage de l'élève cible (via `.copy()`, côté serveur) pour que la RLS lui en
- * donne l'accès. Le devoir et la note privée (spécifiques à l'élève d'origine)
- * ne sont jamais copiés.
+ * Copie le vocabulaire, les formulations ET leurs audios, ainsi que les
+ * fichiers supports — chaque fichier est recopié dans le dossier Storage de
+ * l'élève cible (via `.copy()`, côté serveur) pour que la RLS lui en donne
+ * l'accès. Le devoir, la note privée et la règle de grammaire (spécifiques au
+ * cours/à l'élève d'origine — la grammaire vit dans son propre livre, jamais
+ * rattachée au cours) ne sont jamais copiés.
  */
 export async function duplicateSession(
   recordId: string,
@@ -55,9 +56,12 @@ export async function duplicateSession(
     return { error: "Les élèves sélectionnés ont déjà ce cours." };
   }
 
-  const [vocabRes, grammarRes, formRes] = await Promise.all([
+  // La règle de grammaire n'est jamais copiée : elle part automatiquement dans
+  // le livre de grammaire de l'élève d'origine, jamais rattachée au livre du
+  // cours — dupliquer un cours ne doit donc pas la dupliquer avec lui. Pour
+  // dupliquer une règle de grammaire, voir /teacher/library/grammar/[ruleId].
+  const [vocabRes, formRes] = await Promise.all([
     supabase.from("vocabulary").select("arabic_word, french_definition, root").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
-    supabase.from("grammar_rules").select("title, content").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
     supabase.from("formulations").select("arabic_text, french_text, audio_path").eq("lesson_record_id", recordId).order("created_at", { ascending: true }),
   ]);
 
@@ -66,7 +70,6 @@ export async function duplicateSession(
     french_definition: v.french_definition,
     root: v.root ?? undefined,
   }));
-  const grammar = (grammarRes.data ?? []).map((g) => ({ title: g.title, content: g.content }));
   const sourceForms = formRes.data ?? [];
   const sourceSupports = (record.support_files as SupportFile[] | null) ?? [];
 
@@ -113,11 +116,10 @@ export async function duplicateSession(
       p_custom_title: record.custom_title ?? "Cours",
       p_public_recap: record.public_recap ?? undefined,
       p_vocab: vocab,
-      p_grammar: grammar,
       p_formulations: formulations,
       p_support_files: supportFiles,
-      // Les cibles rejoignent le groupe du cours source → une seule carte en
-      // bibliothèque, « donné à » s'enrichit des nouveaux élèves.
+      // Les cibles rejoignent le groupe du cours source → une seule carte de
+      // cours, « donné à » s'enrichit des nouveaux élèves.
       p_course_group_id: record.course_group_id,
     });
 
@@ -131,6 +133,7 @@ export async function duplicateSession(
     }
   }
 
-  revalidatePath("/teacher/library");
-  redirect(`/teacher/library?dup=${targetIds.length}`);
+  const backTo = record.book_id ? `/teacher/books/${record.book_id}` : "/teacher/books";
+  revalidatePath(backTo);
+  redirect(`${backTo}?dup=${targetIds.length}`);
 }

@@ -1,6 +1,5 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { groupByLesson } from "@/lib/group-by-lesson";
 import GrammarSearch from "./grammar-search";
 
 export default async function GrammairePage() {
@@ -9,8 +8,8 @@ export default async function GrammairePage() {
 
   const { data: rules, error: rulesError } = await supabase
     .from("grammar_rules")
-    .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
-    .order("created_at", { ascending: true });
+    .select("id, title, created_at, lesson_records(session_date)")
+    .order("created_at", { ascending: false });
 
   if (rulesError) console.error("dashboard/grammar query failed:", rulesError.message);
 
@@ -19,25 +18,9 @@ export default async function GrammairePage() {
     return {
       id: r.id,
       title: r.title,
-      content: r.content,
-      lessonRecordId: r.lesson_record_id,
-      sessionDate: record?.session_date ?? null,
-      customTitle: record?.custom_title ?? null,
+      date: record?.session_date ?? r.created_at,
     };
   });
-
-  const groups = groupByLesson(items);
-  // La grammaire est affichée à plat : chaque règle porte son propre nom
-  // (indépendant du cours), avec juste une mention du cours d'origine.
-  const flatRules = groups.flatMap((g) =>
-    g.items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      content: item.content,
-      lessonRecordId: item.lessonRecordId,
-      courseLabel: g.key !== "none" ? g.label : null,
-    })),
-  );
 
   return (
     <div className="space-y-5">
@@ -53,7 +36,7 @@ export default async function GrammairePage() {
         </p>
       </div>
 
-      <GrammarSearch items={flatRules} />
+      <GrammarSearch items={items} />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { fr } from "date-fns/locale";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { groupByLesson } from "@/lib/group-by-lesson";
 import GrammarSearch from "../../grammar/grammar-search";
 
 export default async function LivrePage({ params }: { params: Promise<{ bookId: string }> }) {
@@ -108,8 +107,8 @@ async function GrammarBookContent() {
   const supabase = await createClient();
   const { data: rules, error } = await supabase
     .from("grammar_rules")
-    .select("id, title, content, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
-    .order("created_at", { ascending: true });
+    .select("id, title, created_at, lesson_records(session_date)")
+    .order("created_at", { ascending: false });
 
   if (error) console.error("livre grammaire query failed:", error.message);
 
@@ -118,27 +117,13 @@ async function GrammarBookContent() {
     return {
       id: r.id,
       title: r.title,
-      content: r.content,
-      lessonRecordId: r.lesson_record_id,
-      sessionDate: record?.session_date ?? null,
-      customTitle: record?.custom_title ?? null,
+      date: record?.session_date ?? r.created_at,
     };
   });
 
-  const groups = groupByLesson(items);
-  const flatRules = groups.flatMap((g) =>
-    g.items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      content: item.content,
-      lessonRecordId: item.lessonRecordId,
-      courseLabel: g.key !== "none" ? g.label : null,
-    })),
-  );
-
-  if (flatRules.length === 0) {
+  if (items.length === 0) {
     return <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle de grammaire pour le moment.</p>;
   }
 
-  return <GrammarSearch items={flatRules} />;
+  return <GrammarSearch items={items} />;
 }

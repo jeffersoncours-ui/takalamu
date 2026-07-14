@@ -56,8 +56,10 @@ export async function updateSession(
     (f): f is File => f instanceof File && f.size > 0
   );
 
+  const grammarRows = zipGrammar(formData);
+
   // Requêtes/uploads indépendants lancés en parallèle plutôt qu'un par un.
-  const [uploadResults, oldFormsRes, formulations, existingHomeworkRes] = await Promise.all([
+  const [uploadResults, oldFormsRes, formulations, oldGrammarRes, grammarRules, existingHomeworkRes] = await Promise.all([
     Promise.all(
       rawFiles.map(async (raw) => {
         const ext = raw.name.split(".").pop() ?? "";
@@ -90,6 +92,25 @@ export async function updateSession(
         };
       })
     ),
+    // Photos de règle de grammaire : existantes conservées, nouvelles uploadées
+    supabase.from("grammar_rules").select("photos").eq("lesson_record_id", recordId),
+    Promise.all(
+      grammarRows.map(async (row) => {
+        const uploaded = (
+          await Promise.all(
+            row.newPhotos.map(async (raw) => {
+              const ext = raw.name.split(".").pop() ?? "jpg";
+              const path = `${studentId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+              const { error: photoError } = await supabase.storage
+                .from("grammar-photos")
+                .upload(path, raw, { contentType: raw.type || `image/${ext}` });
+              return photoError ? null : { path, name: raw.name };
+            })
+          )
+        ).filter((f): f is { path: string; name: string } => f !== null);
+        return { title: row.title, content: row.content, photos: [...row.existingPhotos, ...uploaded] };
+      })
+    ),
     // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)
     supabase.from("homework").select("id").eq("lesson_record_id", recordId).maybeSingle(),
   ]);
@@ -115,6 +136,16 @@ export async function updateSession(
     await supabase.storage.from("formulation-audio").remove(orphanedAudio);
   }
 
+  // Nettoyage best-effort des photos de grammaire qui ne sont plus référencées
+  // (retirées côté formulaire, ou dont la règle a été supprimée).
+  const oldPhotoPaths = (oldGrammarRes.data ?? [])
+    .flatMap((g) => ((g.photos as SupportFile[] | null) ?? []).map((p) => p.path));
+  const keptPhotos = new Set(grammarRules.flatMap((g) => g.photos.map((p) => p.path)));
+  const orphanedPhotos = oldPhotoPaths.filter((p) => !keptPhotos.has(p));
+  if (orphanedPhotos.length > 0) {
+    await supabase.storage.from("grammar-photos").remove(orphanedPhotos);
+  }
+
   const existingHomework = existingHomeworkRes.data;
 
   const { error } = await supabase.rpc("update_session_record", {
@@ -125,7 +156,7 @@ export async function updateSession(
     p_private_note: privateNote ?? undefined,
     p_homework_instructions: homework ?? undefined,
     p_vocab: zipVocab(formData),
-    p_grammar: zipGrammar(formData),
+    p_grammar: grammarRules,
     p_formulations: formulations,
     p_support_files: supportFiles,
   });

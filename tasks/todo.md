@@ -2,6 +2,139 @@
 
 ---
 
+## Session 32 (suite 3) — Bibliothèque → livres + règles de grammaire individuelles
+
+> **Demande propriétaire (reformulée et validée en plusieurs allers-retours)** :
+> 1. Retirer l'onglet Bibliothèque. Chaque livre (cliquable depuis « Mes livres ») affiche
+>    désormais son propre contenu :
+>    - Livres de **cours** (Récits des prophètes, L'arabe entre tes mains) : liste des
+>      séances de CE livre (tags + Dupliquer), comme l'ancienne Bibliothèque mais filtrée.
+>    - Livre **grammaire** : liste des **règles individuelles** (pas de séances — la
+>      grammaire n'est jamais rattachée au livre de la séance, elle part automatiquement
+>      dans son propre livre). Chaque règle a son **propre bouton Dupliquer** indépendant
+>      (un élève peut recevoir une règle isolée sans suivre le même programme qu'un autre).
+> 2. **Duplication d'un cours** (livre de cours) : ne doit **plus** copier la règle de
+>    grammaire liée à ce cours (séparation stricte confirmée par le propriétaire).
+> 3. Carte de règle de grammaire (prof ET élève) : afficher la **date** à laquelle la
+>    règle a été dispensée (comme les cartes de cours), en plus du titre.
+> 4. Élève : la page du livre grammaire passe d'un affichage "tout le contenu en clair,
+>    à la suite" à des **cartes cliquables** (titre + date) → détail complet au clic,
+>    comme les cours des autres livres.
+> 5. Fiche de fin de cours (+ édition) : chaque règle de grammaire ajoutée peut recevoir
+>    **plusieurs photos qui lui sont propres** (comme chaque formulation a son propre
+>    audio) — distinctes des « Supports » génériques de séance. Affichées avec la règle
+>    dans le livre de grammaire.
+
+### Connexions vérifiées avant de coder (MCP)
+- `grammar_rules.lesson_record_id` est **nullable** → une règle dupliquée en standalone
+  (sans séance) est possible nativement, pas de migration de schéma nécessaire pour ça.
+  Date affichée = `lesson_records.session_date` si lié à une séance, sinon
+  `grammar_rules.created_at` (fallback).
+- RLS `grammar_rules` : policy `gr_teacher_all` (ALL commands) sur
+  `private.owns_student(student_id)` → un prof peut déjà insérer directement une ligne
+  `grammar_rules` pour n'importe lequel de ses élèves, sans RPC ni service role.
+- Bucket `formulation-audio` (policies `owns_student` sur le prof, lecture élève sur son
+  dossier) est le pattern à répliquer pour le nouveau bucket `grammar-photos`.
+- `p_grammar` (jsonb) dans `submit_session_record`/`update_session_record` accepte déjà
+  des clés arbitraires par item → ajouter `photos` est **additif**, `CREATE OR REPLACE`
+  sans DROP, signature inchangée, rétrocompatible base partagée.
+- Bibliothèque (`/teacher/library/page.tsx`) groupe par `course_group_id` — ce
+  regroupement ne s'applique PAS à la grammaire (pas de séance) : chaque règle reste un
+  élément individuel, jamais groupée avec d'autres élèves (cohérent avec la demande "un
+  élève peut recevoir une règle isolée").
+- Fiche de fin de cours = composant critique (<30s) : upload de photos par règle reste
+  en **server action classique** (comme les Supports actuels), pas de refactor vers
+  l'upload direct navigateur — cohérent avec la décision déjà actée (session 31 suite 7)
+  de ne pas toucher à ce composant au-delà du strict nécessaire. Pas de compression
+  d'image ajoutée sur ce composant précis pour la même raison.
+
+### Plan d'exécution
+- [x] Migration 59 : colonne `grammar_rules.photos jsonb default '[]'` ; bucket privé
+      `grammar-photos` (20 Mo, policies `owns_student` prof + lecture élève, calquées sur
+      `formulation-audio`) ; `submit_session_record`/`update_session_record` étendues pour
+      lire `photos` dans chaque item de `p_grammar` (additif, pas de DROP)
+- [x] `session-form-zip.ts` : `zipGrammar` retourne aussi les nouveaux fichiers photo par
+      ligne (champ indexé `grammar_photos_{idx}`, aligné par position de rendu React)
+- [x] `session-form.tsx` (fiche de création) : input fichier multiple par ligne de règle
+- [x] `session/actions.ts` : upload des photos par règle vers `grammar-photos`, injecte
+      `photos` dans le payload `p_grammar`
+- [x] `edit-session-form.tsx` : checklist des photos existantes (conserver/retirer) +
+      nouvel input par ligne, mêmes principes que les supports de séance existants
+- [x] `edit/actions.ts` : fusionne photos conservées + nouvelles, nettoie en Storage les
+      photos retirées (même pattern que le nettoyage d'audio de formulation orphelin)
+- [x] `library/[recordId]/actions.ts` (`duplicateSession`) : retire la copie de
+      `grammar_rules` (vocab + formulations + supports uniquement)
+- [x] `library/[recordId]/page.tsx` : retire le bloc « Règles de grammaire » de l'aperçu
+      dupliqué, met à jour la mention de ce qui n'est pas copié, lien retour vers le livre
+      (au lieu de Bibliothèque)
+- [x] `library/[recordId]/duplicate-form.tsx` : généralisé pour accepter une action déjà
+      liée en prop (réutilisable pour la duplication de règle de grammaire)
+- [x] Nouveau `teacher/books/[bookId]/page.tsx` : branche par `kind`
+      - `courses` : liste des séances de ce livre (repris de l'ancienne Bibliothèque,
+        filtré par `book_id`), carte → `/teacher/library/[recordId]`
+      - `grammar` : liste des règles individuelles (titre, date, élève), carte →
+        `/teacher/library/grammar/[ruleId]`
+- [x] Nouveau `teacher/library/grammar/[ruleId]/page.tsx` + `actions.ts`
+      (`duplicateGrammarRule`) : aperçu de la règle (titre/contenu/photos) + formulaire de
+      duplication vers un ou plusieurs élèves (hors élève source), copie des photos en
+      Storage vers le dossier de chaque cible, insertion directe `grammar_rules`
+      (`lesson_record_id: null`) via la policy `gr_teacher_all`
+- [x] `book-manager.tsx` : cartes de livre cliquables vers `/teacher/books/[bookId]`
+      (Modifier/Suppr. restent des actions locales, pas de navigation)
+- [x] Suppression `teacher/library/page.tsx` (liste globale) + entrée « Bibliothèque »
+      du `drawer-nav.tsx`
+- [x] Élève : `grammar-search.tsx` → cartes cliquables (titre + date) au lieu du contenu
+      complet affiché en continu ; nouveau `dashboard/grammar/[ruleId]/page.tsx` (détail
+      complet + photos en URLs signées) ; mise à jour des appelants
+      (`dashboard/livres/[bookId]/page.tsx` → `GrammarBookContent`, `dashboard/grammar/page.tsx`)
+      pour fournir le champ date à chaque règle
+- [x] `database.types.ts` régénéré (collé tel quel, pas retapé à la main)
+- [x] Build + lint + grep de connexions résiduelles (`teacher/library` global,
+      `Bibliothèque`, imports cassés)
+- [x] Tests empiriques MCP (impersonation + transactions rollback) : insertion d'une
+      règle avec photos, édition (ajout/retrait photo), duplication de cours (grammaire
+      NON copiée), duplication d'une règle seule (photos copiées dans le dossier cible,
+      RLS élève source vs cible, teacher cross-cases refusés)
+- [x] `tasks/todo.md` (Review) + `tasks/lessons.md` mis à jour en fin de tâche
+- [x] Commit + push preview (pas de déploiement prod sans nouvelle confirmation explicite)
+
+### Review
+- Bibliothèque globale retirée ; chaque livre porte désormais son propre contenu
+  cliquable depuis « Mes livres » : les 2 livres de cours listent leurs séances (tags +
+  Dupliquer, repris de l'ancienne Bibliothèque, filtré par `book_id`) ; le livre grammaire
+  liste ses règles individuelles (titre, date, élève), chacune avec son propre Dupliquer
+  indépendant vers un ou plusieurs élèves (nouvelle route `/teacher/library/grammar/[ruleId]`,
+  insertion directe RLS `gr_teacher_all`, pas de RPC).
+- Duplication d'un cours : ne copie plus la règle de grammaire (vérifié empiriquement —
+  `submit_session_record` sans `p_grammar` → 0 ligne créée) ; l'aperçu « contenu dupliqué »
+  et la mention finale mis à jour en conséquence.
+- Fiche de fin de cours (création + édition) : chaque règle de grammaire peut recevoir
+  plusieurs photos qui lui sont propres (bucket dédié `grammar-photos`, policies calquées
+  sur `formulation-audio`), affichées avec la règle dans le livre de grammaire (prof et
+  élève). Édition : ajout/retrait testé empiriquement (photo conservée + nouvelle +
+  orpheline nettoyée du Storage).
+- Élève : le livre de grammaire passe de « tout le contenu affiché en continu » à des
+  cartes cliquables (titre + date) → détail complet sur une page dédiée, alignée sur le
+  pattern des cours des autres livres.
+- `DuplicateForm` généralisé (action pré-liée en prop au lieu d'un import figé) pour être
+  réutilisé par la duplication de cours ET de règle de grammaire sans dupliquer le
+  composant.
+- Migration 59 appliquée directement (additive/rétrocompatible, sans risque pour le
+  client encore déployé) — contrairement aux migrations 55/56/58 de cette session
+  (destructives, différées jusqu'au prochain déploiement prod).
+- `database.types.ts` collé tel quel depuis l'outil (pas retapé), leçon de la session
+  précédente appliquée avec succès — aucune faute de frappe cette fois.
+- Piège méthodologique rencontré en testant via MCP : un CTE référencé plusieurs fois
+  (même avec `MATERIALIZED`) dans des sous-requêtes scalaires corrélées sur la MÊME
+  requête ne voit pas toujours les effets de bord d'une fonction volatile insérés par une
+  autre branche de la même requête — un premier test a semblé montrer « 0 vocabulaire »
+  après un appel RPC qui en créait pourtant un. Recours systématique au pattern fiable
+  déjà établi (table temporaire + `INSERT INTO ... SELECT` séquentiels, un appel RPC par
+  instruction) dès qu'un test combine appel de fonction avec effet de bord et lecture du
+  résultat dans la même requête.
+
+---
+
 ## Idée future (non spécifiée, à ne PAS implémenter sans reformulation validée)
 
 > **Quiz de grammaire auto-généré depuis les notes de grammaire de la fiche de fin de

@@ -1,22 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 type GrammarItem = {
   id: string;
   title: string;
-  content: string;
-  lessonRecordId: string | null;
-  courseLabel: string | null;
+  date: string;
 };
 
 export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
-  const filtered = q
-    ? items.filter((r) => r.title.toLowerCase().includes(q) || r.content.toLowerCase().includes(q))
-    : items;
+  const filtered = q ? items.filter((r) => r.title.toLowerCase().includes(q)) : items;
 
   return (
     <div className="space-y-4">
@@ -60,18 +59,24 @@ export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
         <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2.5">
         {filtered.map((r) => (
-          <div
+          <Link
             key={r.id}
-            className="rounded-[16px] px-4 py-3.5 space-y-1.5"
+            href={`/dashboard/grammar/${r.id}`}
+            className="flex items-center justify-between gap-3 rounded-[16px] px-4 py-3.5 transition-opacity hover:opacity-80"
             style={{ background: "#fff", border: "1px solid #EFEAE0" }}
           >
-            <p className="font-bold" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
-            <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#4A463F", fontSize: 14 }}>
-              {r.content}
-            </p>
-          </div>
+            <div className="min-w-0">
+              <p className="font-bold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
+              <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
+                {format(new Date(r.date), "d MMM yyyy", { locale: fr })}
+              </p>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
         ))}
       </div>
     </div>
