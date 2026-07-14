@@ -57,6 +57,10 @@ export async function submitSession(
   // Tous les élèves d'une même saisie partagent un `course_group_id` → la
   // bibliothèque n'affiche qu'une carte pour ce cours, pas une par élève.
   const courseGroupId = crypto.randomUUID();
+  // Une règle de grammaire donnée à plusieurs élèves dans cette même fiche
+  // partage un rule_group_id (une valeur par ligne de règle, indépendante du
+  // course_group_id) -> une seule carte groupée dans le livre de grammaire.
+  const grammarGroupIds = grammar.map(() => crypto.randomUUID());
 
   for (const studentId of studentIds) {
     // Uploads indépendants (chemins distincts) : lancés en parallèle plutôt
@@ -95,7 +99,7 @@ export async function submitSession(
       // Photos de règle de grammaire : propres à chaque règle, uploadées dans
       // le dossier de l'élève (bucket dédié grammar-photos).
       Promise.all(
-        grammar.map(async (row) => {
+        grammar.map(async (row, idx) => {
           const photos = (
             await Promise.all(
               row.newPhotos.map(async (raw) => {
@@ -108,7 +112,7 @@ export async function submitSession(
               })
             )
           ).filter((f): f is { path: string; name: string } => f !== null);
-          return { title: row.title, content: row.content, photos };
+          return { title: row.title, content: row.content, photos, rule_group_id: grammarGroupIds[idx] };
         })
       ),
     ]);

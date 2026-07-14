@@ -45,7 +45,7 @@ export default async function EditSessionPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("grammar_rules")
-      .select("id, title, content, photos")
+      .select("id, title, content, photos, rule_group_id")
       .eq("lesson_record_id", recordId)
       .order("created_at", { ascending: true }),
     supabase
@@ -106,6 +106,7 @@ export default async function EditSessionPage({
           title: g.title,
           content: g.content,
           photos: (g.photos as SupportFile[] | null) ?? [],
+          ruleGroupId: g.rule_group_id,
         }))}
         formulations={formRes.data ?? []}
         supportFiles={(record.support_files as SupportFile[] | null) ?? []}

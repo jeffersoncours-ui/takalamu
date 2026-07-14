@@ -20,6 +20,12 @@ export type GrammarRowInput = {
   newPhotos: File[];
   /** Photos déjà en Storage conservées telles quelles (édition uniquement). */
   existingPhotos: { path: string; name: string }[];
+  /**
+   * `rule_group_id` d'origine (édition d'une règle déjà existante uniquement) —
+   * conserve le regroupement avec les autres élèves de la même fiche d'origine.
+   * `null` pour une ligne nouvellement ajoutée (aucun groupe à préserver).
+   */
+  existingGroupId: string | null;
 };
 
 /**
@@ -49,7 +55,8 @@ export function zipGrammar(formData: FormData): GrammarRowInput[] {
         }
       })
       .filter((f): f is { path: string; name: string } => f !== null);
-    rows.push({ title: title[i], content: content[i], newPhotos, existingPhotos });
+    const existingGroupId = String(formData.get(`grammar_rule_group_existing_${i}`) ?? "").trim() || null;
+    rows.push({ title: title[i], content: content[i], newPhotos, existingPhotos, existingGroupId });
   }
   return rows;
 }

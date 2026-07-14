@@ -202,12 +202,46 @@ async function GrammarRulesContent() {
   const { data: rules, error } = await supabase
     .from("grammar_rules")
     .select(
-      "id, title, created_at, student_id, lesson_record_id, students(profiles(full_name)), lesson_records(session_date)"
+      "id, title, created_at, student_id, rule_group_id, students(profiles(full_name)), lesson_records(session_date)"
     )
     .order("created_at", { ascending: false });
 
   if (error) console.error("teacher/books/[bookId] grammar_rules query failed:", error.message);
-  const items = rules ?? [];
+
+  // Regroupe par rule_group_id : une même règle donnée à plusieurs élèves dans
+  // la même fiche de fin de cours = une seule carte (comme les cours).
+  // Représentante = ligne la plus récente du groupe.
+  const byGroup = new Map<
+    string,
+    { id: string; title: string; date: string; students: string[] }
+  >();
+
+  for (const r of rules ?? []) {
+    const student = Array.isArray(r.students) ? r.students[0] : r.students;
+    const profile = student
+      ? Array.isArray(student.profiles)
+        ? student.profiles[0]
+        : student.profiles
+      : null;
+    const name = profile?.full_name ?? "—";
+    const existing = byGroup.get(r.rule_group_id);
+
+    if (existing) {
+      if (!existing.students.includes(name)) existing.students.push(name);
+      continue;
+    }
+
+    const lessonRecord = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
+    const date = lessonRecord?.session_date ?? r.created_at;
+    byGroup.set(r.rule_group_id, {
+      id: r.id,
+      title: r.title,
+      date: format(new Date(date), "d MMM yyyy", { locale: fr }),
+      students: [name],
+    });
+  }
+
+  const items = [...byGroup.values()];
 
   if (items.length === 0) {
     return (
@@ -222,18 +256,7 @@ async function GrammarRulesContent() {
 
   return (
     <div className="space-y-2.5">
-      {items.map((r) => {
-        const student = Array.isArray(r.students) ? r.students[0] : r.students;
-        const profile = student
-          ? Array.isArray(student.profiles)
-            ? student.profiles[0]
-            : student.profiles
-          : null;
-        const name = profile?.full_name ?? "—";
-        const lessonRecord = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
-        const date = lessonRecord?.session_date ?? r.created_at;
-
-        return (
+      {items.map((r) => (
           <Link
             key={r.id}
             href={`/teacher/library/grammar/${r.id}`}
@@ -246,7 +269,7 @@ async function GrammarRulesContent() {
                   {r.title}
                 </p>
                 <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
-                  {name} · {format(new Date(date), "d MMM yyyy", { locale: fr })}
+                  {r.students.length > 1 ? `Donné à ${r.students.join(", ")}` : r.students[0]} · {r.date}
                 </p>
               </div>
               <span
@@ -260,8 +283,7 @@ async function GrammarRulesContent() {
               </span>
             </div>
           </Link>
-        );
-      })}
+      ))}
     </div>
   );
 }

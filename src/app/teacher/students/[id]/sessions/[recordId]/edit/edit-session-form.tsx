@@ -9,7 +9,7 @@ import { updateSession } from "./actions";
 type SupportFile = { path: string; name: string };
 type Book = { id: string; title: string; subtitle: string | null };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
-type GrammarRow = { id: string; title: string; content: string; photos: SupportFile[] };
+type GrammarRow = { id: string; title: string; content: string; photos: SupportFile[]; ruleGroupId: string };
 type FormulationRow = { id: string; arabic_text: string; french_text: string; audio_path: string | null };
 
 const inputStyle: React.CSSProperties = {
@@ -83,7 +83,7 @@ export function EditSessionForm({
     vocab.map((v) => ({ id: v.id, arabic_word: v.arabic_word, french_definition: v.french_definition }))
   );
   const [grammarRows, setGrammarRows] = useState(
-    grammar.map((g) => ({ id: g.id, title: g.title, content: g.content, photos: g.photos }))
+    grammar.map((g) => ({ id: g.id, title: g.title, content: g.content, photos: g.photos, ruleGroupId: g.ruleGroupId }))
   );
   const [formRows, setFormRows] = useState(
     formulations.map((f) => ({
@@ -269,7 +269,7 @@ export function EditSessionForm({
         <button
           type="button"
           onClick={() => {
-            setGrammarRows((rows) => [...rows, { id: String(nextId), title: "", content: "", photos: [] }]);
+            setGrammarRows((rows) => [...rows, { id: String(nextId), title: "", content: "", photos: [], ruleGroupId: "" }]);
             setNextId((n) => n - 1);
           }}
           className="font-bold"
@@ -450,7 +450,7 @@ function GrammarRuleRow({
   idx,
   onRemove,
 }: {
-  row: { id: string; title: string; content: string; photos: SupportFile[] };
+  row: { id: string; title: string; content: string; photos: SupportFile[]; ruleGroupId: string };
   idx: number;
   onRemove: () => void;
 }) {
@@ -474,6 +474,9 @@ function GrammarRuleRow({
         defaultValue={row.content}
         style={{ ...inputStyle, resize: "none" }}
       />
+      {row.ruleGroupId && (
+        <input type="hidden" name={`grammar_rule_group_existing_${idx}`} value={row.ruleGroupId} />
+      )}
 
       {row.photos
         .filter((p) => keptPhotos.has(p.path))

@@ -2265,4 +2265,83 @@ s'il le souhaite.
   apparaissait. Les anciennes séances gardent leur numérotation automatique
   (pas de backfill, renommage manuel possible via "Modifier").
 - **Déployé en production** avec la suite 6 (correctif grammaire) et la suite 4
+
+## Session 32 (suite 4) — 3 correctifs "Mes livres" / grammaire
+
+Reformulation validée (propriétaire : "quoi que ce soit, je valide") :
+1. **Retirer Modifier/Suppr sur "Mes livres"** : les fiches restent cliquables
+   (entrée dans le contenu du livre), seul "Ajouter un livre" reste. Suppression
+   complète du code mort associé (EditRow, updateBook, deleteBook) — plus
+   personne ne les appelle.
+2. **Bug groupement grammaire** : une règle donnée à 3 élèves dans une même
+   fiche de fin de cours apparaît comme 3 cartes séparées côté enseignant, au
+   lieu d'une carte groupée "Donné à X, Y, Z" comme pour les cours. Cause
+   racine : `grammar_rules` n'a pas d'équivalent à `course_group_id`. Le
+   `p_course_group_id` généré une fois par soumission (déjà envoyé à la RPC)
+   n'est actuellement appliqué qu'aux `lesson_records`. Correctif : nouvelle
+   colonne `grammar_rules.rule_group_id` (additive, `DEFAULT gen_random_uuid()`),
+   stampée avec `p_course_group_id` dans `submit_session_record`/
+   `update_session_record`, regroupement dans `GrammarRulesContent`. La
+   duplication d'une règle individuelle NE rejoint PAS le groupe d'origine
+   (nouvelle ligne indépendante, cohérent avec "je peux dispenser une règle
+   sans suivre le même programme" — pas de garde "a déjà cette règle").
+3. **Bug crash "Dupliquer" sur une règle de grammaire** : confirmé via les logs
+   runtime Vercel (`get_runtime_errors`, digest `4195018424` = celui remonté
+   par le propriétaire) : `/teacher/library/grammar/[ruleId]/page.tsx` passe
+   une fonction JS brute (`submitLabelPlural={(n) => ...}`) d'un Server
+   Component vers `DuplicateForm` (Client Component) — interdit par
+   React/Next (une fonction ne peut traverser cette frontière sans être une
+   Server Action). Le flux "cours" ne passe jamais cette prop (le défaut de
+   `DuplicateForm` produit déjà exactement le même texte). Correctif : retirer
+   la prop, garder le défaut.
+
+### Plan
+- [x] Retirer Modifier/Suppr de `book-manager.tsx` (+ `EditRow`, `editing`
+      state, `run` helper, imports `updateBook`/`deleteBook`)
+- [x] Supprimer `updateBook`/`deleteBook` de `teacher/books/actions.ts` (plus
+      aucun appelant)
+- [x] Migration `60_grammar_rule_group_id` (additive) : colonne
+      `grammar_rules.rule_group_id uuid NOT NULL DEFAULT gen_random_uuid()` ;
+      `submit_session_record`/`update_session_record` lisent une clé
+      `rule_group_id` optionnelle dans chaque item de `p_grammar` (portée par
+      le client, comme `p_course_group_id` — PAS générée côté RPC pour ne pas
+      fusionner à tort plusieurs règles distinctes d'une même fiche)
+- [x] Client : `session/actions.ts` génère un groupe par ligne de règle
+      (`grammarGroupIds`), partagé entre tous les élèves cochés ; formulaire
+      d'édition thread le `rule_group_id` existant via un hidden input
+      (`grammar_rule_group_existing_{idx}`, même pattern que les photos
+      existantes) pour le préserver après modification
+- [x] `GrammarRulesContent` (`teacher/books/[bookId]/page.tsx`) : regroupe par
+      `rule_group_id`, une carte par groupe, "Donné à X, Y, Z" comme les cours
+- [x] Root cause du crash "Dupliquer" trouvée via les logs runtime Vercel
+      (`get_runtime_errors`, digest `4195018424` = celui du propriétaire) :
+      `submitLabelPlural={(n) => ...}` passait une fonction JS brute d'un
+      Server Component vers `DuplicateForm` (Client Component) — interdit.
+      Prop supprimée entièrement de `DuplicateForm` (plus aucun appelant ne
+      l'utilisait, le défaut produisait déjà le même texte)
+- [x] `database.types.ts` régénéré et collé verbatim
+- [x] Testé via MCP (impersonation Jefferson, transactions ROLLBACK) :
+      soumission 3 élèves (Anthony/Bilel/Hamza) avec le même `rule_group_id`
+      → un seul groupe confirmé ; ancien client sans la clé → groupes
+      distincts par ligne (rétrocompatible) ; duplication (insert sans
+      `rule_group_id`) → nouveau groupe indépendant via le DEFAULT ; édition
+      avec `rule_group_id` renvoyé → conservé après le DELETE+INSERT ;
+      Khadija ne peut lire aucune règle d'un élève de Jefferson (0 ligne)
+- [x] `npm run build` + `npm run lint` : verts (seule erreur = `drawer-nav.tsx`,
+      pré-existante, déjà documentée, sans rapport)
+- [ ] Commit + push preview (pas de déploiement prod demandé)
+
+### Review
+- Les 3 correctifs demandés sont en place : plus de Modifier/Suppr sur "Mes
+  livres" (fiches purement cliquables) ; une règle de grammaire donnée à
+  plusieurs élèves dans une même fiche s'affiche désormais comme une seule
+  carte groupée côté enseignant ; la page de duplication d'une règle de
+  grammaire ne crashe plus (cause racine confirmée par les logs Vercel, pas
+  une supposition).
+- Le regroupement des règles est porté par le client (une valeur générée par
+  ligne de règle, jamais côté RPC) car une même fiche peut contenir plusieurs
+  règles distinctes pour un même élève — les regrouper par soumission entière
+  aurait fusionné à tort des règles différentes. Une duplication individuelle
+  ne rejoint jamais le groupe d'origine (nouveau groupe via le DEFAULT de la
+  colonne), cohérent avec la demande du propriétaire.
   (Formulations), après validation manuelle du propriétaire sur la preview.

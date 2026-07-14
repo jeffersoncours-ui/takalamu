@@ -108,7 +108,12 @@ export async function updateSession(
             })
           )
         ).filter((f): f is { path: string; name: string } => f !== null);
-        return { title: row.title, content: row.content, photos: [...row.existingPhotos, ...uploaded] };
+        return {
+          title: row.title,
+          content: row.content,
+          photos: [...row.existingPhotos, ...uploaded],
+          rule_group_id: row.existingGroupId ?? undefined,
+        };
       })
     ),
     // Notifie l'élève uniquement si un devoir apparaît (n'existait pas avant l'édition)

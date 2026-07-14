@@ -1043,3 +1043,46 @@
   système), mais un simple appel `list_tables` a prouvé que la connexion
   fonctionnait en réalité — toujours vérifier avec un appel léger avant de
   bloquer une tâche sur un message d'indisponibilité présumée.
+
+## 3 correctifs "Mes livres" / grammaire (session 32, suite 4)
+
+- **Diagnostiquer avant de deviner, même sous pression.** Le propriétaire
+  rapportait une page d'erreur générique Vercel ("ERROR 4195018424") sans
+  autre détail. Plutôt que de fouiller le code à l'aveugle, `get_runtime_errors`
+  (Vercel MCP) a donné le vrai stack trace en un appel : digest identique à
+  celui du propriétaire, cause exacte = une fonction JS brute
+  (`submitLabelPlural={(n) => ...}`) passée d'un Server Component vers un
+  Client Component (`DuplicateForm`), interdit par React/Next (seules les
+  Server Actions traversent cette frontière). Le flux "cours" ne plantait
+  jamais car il ne passait simplement pas cette prop optionnelle — son défaut
+  produisait déjà exactement le même texte. Correctif root-cause : supprimer
+  la prop entièrement (plus aucun appelant réel), pas juste corriger l'appel
+  fautif — élimine toute la classe de bug plutôt que ce seul symptôme.
+- **Regroupement de lignes multi-élèves = un ID par ligne, jamais par
+  soumission.** `course_group_id` (une valeur par soumission entière) convient
+  aux cours car une fiche = une seule séance par élève. Mais une fiche peut
+  contenir *plusieurs* règles de grammaire distinctes pour un même élève :
+  réutiliser un seul `p_course_group_id` partagé pour toutes les règles de la
+  soumission aurait fusionné à tort des règles différentes en une seule carte.
+  Solution : `rule_group_id`, une valeur générée **par ligne de règle**
+  (`grammarGroupIds[idx]`), partagée uniquement entre les élèves cochés pour
+  cette ligne précise — portée par le client dans le jsonb `p_grammar`, jamais
+  générée côté RPC.
+- **Préserver un groupe à travers une édition = thread explicite, pas
+  heuristique.** `update_session_record` fait un `DELETE` + ré-`INSERT` complet
+  des `grammar_rules` d'une fiche. Pour qu'une règle éditée reste dans son
+  groupe d'origine (et donc groupée avec les autres élèves de la fiche
+  d'origine), le `rule_group_id` existant est renvoyé explicitement par le
+  formulaire d'édition via un hidden input indexé
+  (`grammar_rule_group_existing_{idx}`) — exactement le même mécanisme déjà en
+  place pour les photos existantes conservées. Envisagé un temps une
+  heuristique par position (`WITH ORDINALITY`) côté SQL pour ré-associer les
+  anciens groupes après le DELETE, écarté : plus fragile qu'un identifiant
+  explicite déjà connu du client au chargement de la page, et le codebase a
+  déjà cette convention (photos, champs `_existing_{idx}`).
+- **Duplication individuelle = toujours un nouveau groupe, jamais une
+  fusion.** `duplicateGrammarRule` n'envoie jamais `rule_group_id` à l'insert
+  → le `DEFAULT gen_random_uuid()` de la colonne s'applique, donnant à la
+  copie son propre groupe d'un seul élève. Aucun code à écrire pour ce
+  comportement : le design de la colonne le garantit nativement, testé
+  empiriquement pour confirmer (pas supposé).

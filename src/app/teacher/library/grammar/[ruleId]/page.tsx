@@ -120,7 +120,6 @@ export default async function LibraryGrammarRulePage({
         dupAction={duplicateGrammarRule.bind(null, ruleId)}
         students={students}
         submitLabel="Dupliquer la règle"
-        submitLabelPlural={(n) => `Dupliquer vers ${n} élèves`}
       />
     </div>
   );

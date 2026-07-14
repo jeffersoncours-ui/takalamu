@@ -152,6 +152,7 @@ export type Database = {
           id: string
           lesson_record_id: string | null
           photos: Json
+          rule_group_id: string
           student_id: string
           title: string
           updated_at: string
@@ -162,6 +163,7 @@ export type Database = {
           id?: string
           lesson_record_id?: string | null
           photos?: Json
+          rule_group_id?: string
           student_id: string
           title: string
           updated_at?: string
@@ -172,6 +174,7 @@ export type Database = {
           id?: string
           lesson_record_id?: string | null
           photos?: Json
+          rule_group_id?: string
           student_id?: string
           title?: string
           updated_at?: string

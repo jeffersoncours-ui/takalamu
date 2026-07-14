@@ -11,12 +11,10 @@ export function DuplicateForm({
   dupAction,
   students,
   submitLabel = "Dupliquer",
-  submitLabelPlural,
 }: {
   dupAction: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
   students: Student[];
   submitLabel?: string;
-  submitLabelPlural?: (count: number) => string;
 }) {
   const [state, formAction, pending] = useActionState(dupAction, {});
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -99,7 +97,7 @@ export function DuplicateForm({
             {pending
               ? "Duplication…"
               : selectedIds.length > 1
-              ? (submitLabelPlural ?? ((n) => `Dupliquer vers ${n} élèves`))(selectedIds.length)
+              ? `Dupliquer vers ${selectedIds.length} élèves`
               : submitLabel}
           </button>
         </div>
