@@ -93,6 +93,8 @@ export type QuizLabels = {
   allScopeLabel: string;
   arToFrQuestion: string;
   frToArQuestion: string;
+  /** Question de compréhension orale AR→FR (formulation avec audio). */
+  arToFrAudioQuestion?: string;
   /** Mode « FR → écoute des 4 audios » (formulation seulement). */
   frToArAudioQuestion?: string;
 };
@@ -145,6 +147,7 @@ export default function QuizPlayer({
     const newAnswers: QuizAnswer[] = [
       ...answers,
       {
+        source: q.source,
         item_id: q.item_id,
         direction: q.direction,
         chosen,
@@ -287,10 +290,12 @@ export default function QuizPlayer({
           style={{ background: "#fff", border: "1px solid #EFEAE0" }}
         >
           <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#8B857A" }}>
-            {q.direction === "ar_to_fr"
-              ? labels.arToFrQuestion
-              : q.direction === "fr_to_ar_audio"
+            {q.direction === "fr_to_ar_audio"
               ? labels.frToArAudioQuestion ?? labels.frToArQuestion
+              : q.audio_url
+              ? labels.arToFrAudioQuestion ?? labels.arToFrQuestion
+              : q.direction === "ar_to_fr"
+              ? labels.arToFrQuestion
               : labels.frToArQuestion}
           </p>
           {q.audio_url ? (

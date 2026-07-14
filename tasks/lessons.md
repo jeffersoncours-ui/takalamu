@@ -1253,3 +1253,29 @@
   que forcer un contournement risqué (création manuelle d'un faux compte) —
   le risque de laisser des données de test orphelines dépasse la valeur du
   test dans ce cas précis.
+
+## Fusion de deux quiz : unifier la correction, pas la génération (session 32, suite 8)
+
+- **Fusionner au point le plus simple, pas au plus "logique".** Vocab et
+  formulation avaient chacun une paire génération/correction. La tentation
+  était d'écrire une grosse RPC de génération unifiée — mais la génération
+  concentre toute la complexité (distracteurs par type, direction aléatoire,
+  signature d'audio, mode audio-choix). J'ai gardé les 2 RPC de génération
+  INTACTES et fusionné uniquement la correction (simples lookups + un INSERT
+  quiz_attempts). Concaténation + mélange se font côté serveur (action). Bien
+  moins de surface de bug qu'une réécriture.
+- **Un tableau de réponses hétérogène s'aiguille par la présence d'une clé**,
+  pas par un champ "type" ajouté : `v_item ? 'vocab_id'` distingue un mot d'une
+  formulation, et `direction = 'fr_to_ar_audio'` le sous-cas audio. Zéro
+  ambiguïté, zéro champ supplémentaire à faire transiter depuis le client
+  au-delà du `source` déjà porté par la question.
+- **Recalculer plutôt que stocker** : `quiz_attempts.score` ne stocke qu'un
+  ratio (0..1), pas le brut. La demande "afficher 7/7" se satisfait en
+  recomptant `answers[].is_correct` (déjà stocké par TOUTES les RPC de
+  correction, anciennes comprises) — donc pas de migration, et ça marche
+  rétroactivement sur les quiz déjà passés. Toujours regarder si la donnée
+  voulue est dérivable de l'existant avant d'ajouter une colonne.
+- **Header de question dépendant du média, pas seulement de la direction** :
+  dans un quiz mixte, un `ar_to_fr` peut être du texte (vocab) OU de l'audio
+  (formulation). Le libellé se choisit sur `(direction + présence audio_url)`,
+  pas sur la direction seule — sinon un mot afficherait "Écoute l'audio…".

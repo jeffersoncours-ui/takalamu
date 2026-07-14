@@ -1,43 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import QuizRunner from "./quiz-runner";
-import FormulationQuizRunner from "./formulation-quiz-runner";
+import QuizPlayer from "./quiz-player";
+import { generateLanguageQuiz, submitLanguageQuiz } from "./actions";
 
 type Course = { id: string; label: string; count: number };
-type ActiveQuiz = "vocab" | "formulation" | null;
-
-const sectionLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 700,
-  color: "#8B857A",
-  textTransform: "uppercase",
-  letterSpacing: ".06em",
-};
 
 /**
- * Orchestre les 3 quiz (vocabulaire, formulation, grammaire) : un seul état
- * "actif" partagé, remonté par chaque lanceur via `onActiveChange`. Dès qu'un
- * quiz démarre, le reste de la page (titre + autres sections) disparaît — plus
- * moyen de lancer deux quiz en même temps ni de garder du contenu résiduel
- * affiché autour du quiz en cours.
+ * Quiz de langue unique : vocabulaire ET formulation fusionnés dans un même
+ * quiz (mêmes fonctionnalités — texte, compréhension orale, audio-choix). Un
+ * seul lanceur, un seul score. Dès qu'il démarre, le titre disparaît.
  */
 export function EvaluationsClient({
-  vocabCount,
+  count,
   courseOptions,
-  formCount,
-  formCourseOptions,
 }: {
-  vocabCount: number;
+  count: number;
   courseOptions: Course[];
-  formCount: number;
-  formCourseOptions: Course[];
 }) {
-  const [active, setActive] = useState<ActiveQuiz>(null);
+  const [active, setActive] = useState(false);
 
   return (
     <div className="space-y-8">
-      {active === null && (
+      {!active && (
         <h1
           className="px-0.5 leading-tight"
           style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
@@ -46,27 +31,30 @@ export function EvaluationsClient({
         </h1>
       )}
 
-      {(active === null || active === "vocab") && (
-        <section className="space-y-3">
-          {active === null && <p className="px-0.5" style={sectionLabel}>Quiz vocabulaire</p>}
-          <QuizRunner
-            vocabCount={vocabCount}
-            courses={courseOptions}
-            onActiveChange={(a) => setActive(a ? "vocab" : null)}
-          />
-        </section>
-      )}
-
-      {(active === null || active === "formulation") && (
-        <section className="space-y-3">
-          {active === null && <p className="px-0.5" style={sectionLabel}>Quiz formulation</p>}
-          <FormulationQuizRunner
-            formCount={formCount}
-            courses={formCourseOptions}
-            onActiveChange={(a) => setActive(a ? "formulation" : null)}
-          />
-        </section>
-      )}
+      <section className="space-y-3">
+        <QuizPlayer
+          count={count}
+          courses={courseOptions}
+          generate={generateLanguageQuiz}
+          submit={submitLanguageQuiz}
+          onActiveChange={setActive}
+          labels={{
+            title: "Quiz de langue",
+            unit: "élément",
+            unitPlural: "éléments",
+            intro:
+              "Vocabulaire et expressions mélangés, générés depuis ton contenu personnel : questions FR ↔ AR, compréhension orale (écoute la voix de ton prof) et audio-choix. Chaque quiz est différent. Le score s'affiche à la fin.",
+            emptyTitle: "Pas encore assez de contenu",
+            emptyBody:
+              "Il faut au moins 4 mots ou expressions au total. Reviens après quelques séances !",
+            allScopeLabel: "Tout mon contenu",
+            arToFrQuestion: "Que signifie ce mot arabe ?",
+            frToArQuestion: "Comment dit-on en arabe ?",
+            arToFrAudioQuestion: "Écoute l'audio et choisis la bonne traduction",
+            frToArAudioQuestion: "Écoute les réponses et choisis l'audio qui traduit cette phrase",
+          }}
+        />
+      </section>
     </div>
   );
 }

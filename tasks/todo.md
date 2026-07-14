@@ -2587,3 +2587,55 @@ Reformulation validée (2 questions tranchées : notification envoyée aussi aux
   même timestamp) et testé en négatif (un enseignant ne peut pas l'appeler).
 - Testé via MCP avant tout code UI : backfill confirmé sur les 4 élèves
   actuels, idempotence RPC confirmée, garde-fou "réservé à un élève" confirmé.
+
+## Session 32 (suite 8) — Fusion quiz vocab+formulation + tuile dernière note
+
+Reformulation validée (tuile = score brut X/Y non cliquable ; aucune liste
+d'historique de quiz nulle part ; quiz déjà aléatoires, à confirmer) :
+
+### Plan
+- [ ] Migration 66 : `ALTER TYPE quiz_source ADD VALUE 'language'` (seule, tx à part)
+- [ ] Migration 67 : RPC `submit_language_quiz(p_student_id, p_answers)` —
+      correction unifiée d'un tableau hétérogène (vocab si clé `vocab_id`,
+      sinon formulation), une seule ligne `quiz_attempts`. Réutilise à
+      l'identique la logique de scoring des 2 RPC existantes. Les 2 RPC de
+      GÉNÉRATION restent inchangées (éprouvées, audio signé).
+- [ ] `evaluations/actions.ts` : `generateLanguageQuiz` (appelle les 2 generate
+      RPC, tague `source`, concatène + mélange Fisher-Yates) + `submitLanguageQuiz`
+      (route chaque réponse vers la bonne clé selon `source`). Retire les 4
+      anciens exports.
+- [ ] `QuizPlayer` : ajoute `source` sur question+réponse ; header par question
+      choisi sur (direction + présence audio) pour couvrir vocab-texte ET
+      formulation-audio dans le même quiz ; unités "élément(s)".
+- [ ] `evaluations-client.tsx` : une seule section "Quiz de langue" (count =
+      vocab+form, options de cours fusionnées par lesson_record_id).
+- [ ] `evaluations/page.tsx` : fusionne les options de cours des deux types.
+- [ ] Supprime `quiz-runner.tsx` + `formulation-quiz-runner.tsx` (remplacés).
+- [ ] `revision/page.tsx` : "Quiz vocabulaire auto-généré" → "Quiz de langue
+      auto-généré".
+- [ ] `dashboard/page.tsx` : tuile "Dernière note" = dernier `quiz_attempts`
+      (X/Y recalculé depuis `answers` jsonb), NON cliquable (plus de href).
+      Retire la lecture `homework.grade`.
+- [ ] `database.types.ts` régénéré (nouvelle RPC + enum).
+- [ ] Tests MCP : quiz mixte scoré correctement (vocab+formulation+audio dans
+      une même soumission), aléatoire confirmé (2 générations ≠), isolation
+      (élève ne score que ses propres items), tuile lit bien le dernier attempt.
+- [ ] build + lint, commit + push preview.
+
+### Review
+- Fusion réalisée en gardant les 2 RPC de génération intactes (aléatoire +
+  audio + distracteurs par type éprouvés) et en unifiant SEULEMENT la
+  correction : plus faible risque qu'une méga-RPC réécrite. Concaténation +
+  mélange Fisher-Yates côté serveur.
+- Les 2 particularités respectées : distracteurs jamais mélangés entre types
+  (générés par les RPC d'origine), audio des formulations préservé (compréhension
+  orale + audio-choix) au sein du même quiz.
+- Tuile "Dernière note" : X/Y recalculé depuis `quiz_attempts.answers[].is_correct`
+  → aucune migration nécessaire pour la tuile, et fonctionne sur les anciens
+  quiz déjà passés (vérifié : Hamza 7/7, Anthony 23/25). Non cliquable.
+- Aléatoire confirmé via MCP (3 générations successives toutes différentes) —
+  répond à la demande "jamais les mêmes".
+- Aucune liste d'historique de quiz nulle part (il n'en existait aucune ; rien
+  ajouté).
+- Testé via MCP avant l'UI : quiz mixte scoré 2/4 correctement, isolation
+  (item d'un autre élève → 0), tuile lit le dernier attempt.

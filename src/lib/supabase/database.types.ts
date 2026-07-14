@@ -855,6 +855,10 @@ export type Database = {
         Args: { p_answers: Json; p_student_id: string }
         Returns: Json
       }
+      submit_language_quiz: {
+        Args: { p_answers: Json; p_student_id: string }
+        Returns: Json
+      }
       submit_session_record: {
         Args: {
           p_attendance?: Database["public"]["Enums"]["attendance_status"]
@@ -917,7 +921,7 @@ export type Database = {
         | "session_reminder"
         | "house_rules"
       quiz_scope: "individual"
-      quiz_source: "glossary" | "grammar" | "formulation"
+      quiz_source: "glossary" | "grammar" | "formulation" | "language"
       student_status: "active" | "suspended_absences"
       trial_status:
         | "pending"
@@ -1072,7 +1076,7 @@ export const Constants = {
         "house_rules",
       ],
       quiz_scope: ["individual"],
-      quiz_source: ["glossary", "grammar", "formulation"],
+      quiz_source: ["glossary", "grammar", "formulation", "language"],
       student_status: ["active", "suspended_absences"],
       trial_status: [
         "pending",

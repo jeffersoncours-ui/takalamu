@@ -3,6 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { groupByLesson } from "@/lib/group-by-lesson";
 import { EvaluationsClient } from "./evaluations-client";
 
+type LessonRow = {
+  lesson_record_id: string | null;
+  lesson_records:
+    | { session_date: string; custom_title: string | null }[]
+    | { session_date: string; custom_title: string | null }
+    | null;
+};
+
 export default async function EvaluationsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
@@ -24,41 +32,26 @@ export default async function EvaluationsPage() {
   const { data: vocab } = vocabRes;
   const { data: forms } = formsRes;
 
-  const vocabCount = vocab?.length ?? 0;
-  const formCount = forms?.length ?? 0;
+  // Contenu total (vocabulaire + formulations) : seuil et taille du quiz.
+  const count = (vocab?.length ?? 0) + (forms?.length ?? 0);
 
-  // Cours (séances) ayant du vocabulaire / des formulations, numérotés « Cours 1, 2… »
-  const toCourseOptions = (
-    rows: {
-      lesson_record_id: string | null;
-      lesson_records:
-        | { session_date: string; custom_title: string | null }[]
-        | { session_date: string; custom_title: string | null }
-        | null;
-    }[],
-  ) =>
-    groupByLesson(
-      rows.map((r) => {
-        const record = Array.isArray(r.lesson_records) ? r.lesson_records[0] : r.lesson_records;
-        return {
-          lessonRecordId: r.lesson_record_id,
-          sessionDate: record?.session_date ?? null,
-          customTitle: record?.custom_title ?? null,
-        };
-      }),
-    )
-      .filter((g) => g.key !== "none")
-      .map((g) => ({ id: g.key, label: g.label, count: g.items.length }));
+  // Options de cours fusionnées : un cours (lesson_record) qui a du vocabulaire
+  // ET/OU des formulations apparaît une seule fois, avec le total des deux.
+  // groupByLesson est appelé UNE fois sur la liste combinée pour que la
+  // numérotation "Cours N" (et le libellé custom_title) reste cohérente.
+  const combined = [...(vocab ?? []), ...(forms ?? [])].map((r) => {
+    const row = r as LessonRow;
+    const record = Array.isArray(row.lesson_records) ? row.lesson_records[0] : row.lesson_records;
+    return {
+      lessonRecordId: row.lesson_record_id,
+      sessionDate: record?.session_date ?? null,
+      customTitle: record?.custom_title ?? null,
+    };
+  });
 
-  const courseOptions = toCourseOptions(vocab ?? []);
-  const formCourseOptions = toCourseOptions(forms ?? []);
+  const courseOptions = groupByLesson(combined)
+    .filter((g) => g.key !== "none")
+    .map((g) => ({ id: g.key, label: g.label, count: g.items.length }));
 
-  return (
-    <EvaluationsClient
-      vocabCount={vocabCount}
-      courseOptions={courseOptions}
-      formCount={formCount}
-      formCourseOptions={formCourseOptions}
-    />
-  );
+  return <EvaluationsClient count={count} courseOptions={courseOptions} />;
 }

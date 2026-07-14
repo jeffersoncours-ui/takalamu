@@ -14,7 +14,7 @@ export default async function CoursPage() {
     { count: vocabCount },
     { count: formCount },
     { count: grammarCount },
-    { data: lastGraded },
+    { data: lastAttempt },
     { data: books, error: booksError },
   ] = await Promise.all([
     supabase.from("lesson_records").select("id, session_date, book_id, course_group_id"),
@@ -22,10 +22,9 @@ export default async function CoursPage() {
     supabase.from("formulations").select("id", { count: "exact", head: true }),
     supabase.from("grammar_rules").select("id", { count: "exact", head: true }),
     supabase
-      .from("homework")
-      .select("grade, corrected_at")
-      .not("grade", "is", null)
-      .order("corrected_at", { ascending: false })
+      .from("quiz_attempts")
+      .select("answers, taken_at")
+      .order("taken_at", { ascending: false })
       .limit(1),
     supabase.from("course_books").select("id, title, subtitle, cover_url, kind, order_index").order("order_index"),
   ]);
@@ -45,7 +44,14 @@ export default async function CoursPage() {
         )
       : null;
 
-  const lastGrade = lastGraded?.[0]?.grade ?? null;
+  // Dernière note = score du tout dernier quiz passé, affiché en brut "X/Y"
+  // (bonnes réponses / total) recalculé depuis le détail des réponses — aucun
+  // historique de quiz n'est exposé, seule cette dernière note l'est.
+  const lastAnswers = (lastAttempt?.[0]?.answers as { is_correct?: boolean }[] | null) ?? null;
+  const lastGrade =
+    lastAnswers && lastAnswers.length > 0
+      ? `${lastAnswers.filter((a) => a.is_correct).length}/${lastAnswers.length}`
+      : null;
 
   // Nombre de cours distincts (course_group) par livre, pour cet élève.
   const courseGroupsByBook = new Map<string, Set<string>>();
@@ -91,7 +97,7 @@ export default async function CoursPage() {
       <div className="flex gap-2.5 pt-3">
         <StatTile value={String(vocabCount ?? 0)} label="Mots" href="/dashboard/vocabulary" />
         <StatTile value={String(formCount ?? 0)} label="Expressions" href="/dashboard/formulations" />
-        <StatTile value={lastGrade ?? "—"} label="Dernière note" href="/dashboard/homework?filter=corrige" accent />
+        <StatTile value={lastGrade ?? "—"} label="Dernière note" accent />
       </div>
 
       {/* Reprendre mes cours */}
@@ -160,19 +166,32 @@ export default async function CoursPage() {
   );
 }
 
-function StatTile({ value, label, href, accent }: { value: string; label: string; href: string; accent?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className="flex-1 rounded-[16px] p-3.5 transition-opacity hover:opacity-85"
-      style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
-    >
+function StatTile({ value, label, href, accent }: { value: string; label: string; href?: string; accent?: boolean }) {
+  const className = "flex-1 rounded-[16px] p-3.5";
+  const style = { background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" };
+  const inner = (
+    <>
       <div className="leading-none" style={{ fontWeight: 800, fontSize: 22, color: accent ? "#0F9D6E" : "#1C1A17" }}>
         {value}
       </div>
       <div className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>
         {label}
       </div>
+    </>
+  );
+
+  // Tuile "Dernière note" : simple encart d'information, non cliquable.
+  if (!href) {
+    return (
+      <div className={className} style={style}>
+        {inner}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={href} className={`${className} transition-opacity hover:opacity-85`} style={style}>
+      {inner}
     </Link>
   );
 }

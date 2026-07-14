@@ -3,13 +3,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireStudent } from "@/lib/auth";
 
-// ── Quiz individuel auto-généré (vocabulaire OU formulation) ─────────────────
-// Contrat client générique : `item_id` masque la clé réelle (vocab_id / form_id)
-// des RPC, ce qui permet à un seul composant QuizPlayer de servir les deux.
+// ── Quiz de langue auto-généré (vocabulaire + formulation fusionnés) ─────────
+// Génération : on appelle les deux RPC éprouvées (generate_individual_quiz,
+// generate_formulation_quiz) — distracteurs par type, jamais mélangés — puis on
+// concatène et on mélange les questions côté serveur. Chaque question porte sa
+// `source` pour que la correction sache l'aiguiller. Correction : une seule RPC
+// (submit_language_quiz) → un seul score, une seule tentative.
 
 export type QuizDirection = "fr_to_ar" | "ar_to_fr" | "fr_to_ar_audio";
+export type QuizSource = "vocab" | "formulation";
 
 export type QuizQuestion = {
+  source: QuizSource;
   item_id: string;
   direction: QuizDirection;
   prompt: string;
@@ -18,12 +23,12 @@ export type QuizQuestion = {
    *  de la voix du prof — le texte arabe n'est jamais transmis au client. */
   audio_url?: string;
   /** Mode « FR → écoute des 4 audios » (formulation) : question en texte français,
-   *  réponses en audio arabe. `token` = id opaque de la formulation choisie (aucun
-   *  texte arabe ni id-source dans le payload — l'élève doit écouter). */
+   *  réponses en audio arabe. `token` = id opaque de la formulation choisie. */
   audio_choices?: { token: string; audio_url: string }[];
 };
 
 export type QuizAnswer = {
+  source: QuizSource;
   item_id: string;
   direction: QuizDirection;
   chosen: string;
@@ -53,61 +58,52 @@ type RawFormQuestion = {
   prompt?: string;
   audio_path?: string;
   choices?: string[];
-  /** Mode audio-choix : 4 formulations {id, audio_path} mélangées (pas de texte). */
   audio_choices?: { id: string; audio_path: string }[];
 };
 
-export async function generateVocabQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
+/** Mélange Fisher-Yates (copie) — quiz mixte dans un ordre imprévisible. */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export async function generateLanguageQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("generate_individual_quiz", {
-    p_student_id: studentId,
-    ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
-  });
+  const [vocabRes, formRes] = await Promise.all([
+    supabase.rpc("generate_individual_quiz", {
+      p_student_id: studentId,
+      ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
+    }),
+    supabase.rpc("generate_formulation_quiz", {
+      p_student_id: studentId,
+      // Opt-in explicite au mode audio-choix (base partagée preview/prod).
+      p_allow_audio_choices: true,
+      ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
+    }),
+  ]);
 
-  if (error) throw new Error(error.message);
-  return ((data as RawVocabQuestion[]) ?? []).map((q) => ({
+  if (vocabRes.error) throw new Error(vocabRes.error.message);
+  if (formRes.error) throw new Error(formRes.error.message);
+
+  // ── Vocabulaire (texte pur, aucun audio) ──────────────────────────────────
+  const vocabQuestions: QuizQuestion[] = ((vocabRes.data as RawVocabQuestion[]) ?? []).map((q) => ({
+    source: "vocab" as const,
     item_id: q.vocab_id,
     direction: q.direction,
     prompt: q.prompt,
     choices: q.choices,
   }));
-}
 
-export async function submitVocabQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
-  const { studentId } = await requireStudent();
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.rpc("submit_individual_quiz", {
-    p_student_id: studentId,
-    p_answers: answers.map((a) => ({ vocab_id: a.item_id, direction: a.direction, chosen: a.chosen })),
-  });
-
-  if (error) throw new Error(error.message);
-  return data as QuizResult;
-}
-
-export async function generateFormulationQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
-  const { studentId } = await requireStudent();
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.rpc("generate_formulation_quiz", {
-    p_student_id: studentId,
-    // Opt-in explicite au mode audio-choix (base partagée preview/prod : l'ancien
-    // client prod n'envoie pas ce flag et ne reçoit donc jamais le nouveau mode).
-    p_allow_audio_choices: true,
-    ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
-  });
-
-  if (error) throw new Error(error.message);
-  const raw = (data as RawFormQuestion[]) ?? [];
-
-  // URLs signées courtes pour TOUS les audios (question AR→FR + chaque choix du
-  // mode audio-choix). La RLS Storage limite l'élève à son propre dossier — la
-  // signature échoue sinon.
+  // ── Formulation : URLs signées courtes pour tous les audios ───────────────
+  const rawForms = (formRes.data as RawFormQuestion[]) ?? [];
   const audioPaths = new Set<string>();
-  for (const q of raw) {
+  for (const q of rawForms) {
     if (q.audio_path) audioPaths.add(q.audio_path);
     for (const c of q.audio_choices ?? []) audioPaths.add(c.audio_path);
   }
@@ -121,18 +117,17 @@ export async function generateFormulationQuiz(lessonRecordId?: string): Promise<
     }
   }
 
-  const questions: QuizQuestion[] = [];
-  for (const q of raw) {
+  const formQuestions: QuizQuestion[] = [];
+  for (const q of rawForms) {
     if (q.direction === "fr_to_ar_audio") {
-      // Chaque choix doit avoir une URL signée valide — sinon la QCM est cassée,
-      // on écarte toute la question plutôt que d'afficher un choix muet.
       const choices = (q.audio_choices ?? []).map((c) => ({
         token: c.id,
         audio_url: urlByPath.get(c.audio_path),
       }));
       if (choices.length < 4 || choices.some((c) => !c.audio_url)) continue;
-      questions.push({
-        item_id: "", // non utilisé : le scoring passe par le prompt round-trip
+      formQuestions.push({
+        source: "formulation",
+        item_id: "", // scoring via prompt round-trip
         direction: "fr_to_ar_audio",
         prompt: q.prompt ?? "",
         choices: [],
@@ -142,10 +137,9 @@ export async function generateFormulationQuiz(lessonRecordId?: string): Promise<
     }
 
     const audioUrl = q.audio_path ? urlByPath.get(q.audio_path) : undefined;
-    // Une question AR→FR est inécoutable sans URL signée (le texte arabe n'est
-    // volontairement pas transmis) — on l'écarte plutôt que d'afficher un vide.
     if (q.direction === "ar_to_fr" && !audioUrl) continue;
-    questions.push({
+    formQuestions.push({
+      source: "formulation",
       item_id: q.form_id ?? "",
       direction: q.direction,
       prompt: q.prompt ?? "",
@@ -153,20 +147,27 @@ export async function generateFormulationQuiz(lessonRecordId?: string): Promise<
       ...(audioUrl ? { audio_url: audioUrl } : {}),
     });
   }
-  return questions;
+
+  return shuffle([...vocabQuestions, ...formQuestions]);
 }
 
-export async function submitFormulationQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
+export async function submitLanguageQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("submit_formulation_quiz", {
+  const payload = answers.map((a) => {
+    if (a.source === "vocab") {
+      return { vocab_id: a.item_id, direction: a.direction, chosen: a.chosen };
+    }
+    if (a.direction === "fr_to_ar_audio") {
+      return { direction: a.direction, chosen: a.chosen, prompt: a.prompt ?? "" };
+    }
+    return { form_id: a.item_id, direction: a.direction, chosen: a.chosen };
+  });
+
+  const { data, error } = await supabase.rpc("submit_language_quiz", {
     p_student_id: studentId,
-    p_answers: answers.map((a) =>
-      a.direction === "fr_to_ar_audio"
-        ? { direction: a.direction, chosen: a.chosen, prompt: a.prompt ?? "" }
-        : { form_id: a.item_id, direction: a.direction, chosen: a.chosen }
-    ),
+    p_answers: payload,
   });
 
   if (error) throw new Error(error.message);
