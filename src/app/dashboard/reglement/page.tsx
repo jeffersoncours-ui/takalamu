@@ -8,7 +8,6 @@ import { AcceptForm } from "./accept-form";
 export const RULES = [
   "Caméra obligatoire",
   "Être en position de cours (assis, concentré…)",
-  "Nom et prénom obligatoire",
   "Retard non toléré",
   "Interdiction d'enregistrer",
   "Réaliser et rendre les devoirs avant le prochain cours",
