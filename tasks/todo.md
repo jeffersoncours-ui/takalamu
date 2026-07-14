@@ -2416,3 +2416,20 @@ Reformulation validée à partir des captures d'écran et retours du propriétai
   premier test manuel du propriétaire. Bien noter pour la suite : toute
   nouvelle notion de "groupe" doit immédiatement s'accompagner de sa garde
   "déjà membre", pas seulement de l'affichage groupé.
+
+## Session 32 (suite 4 quinquies) — Hamza absent de la liste de duplication
+
+- **Bug** : sur `/teacher/library/grammar/[ruleId]`, la représentante du
+  groupe (Hamza, dont la ligne `grammar_rules` sert de source à cette page)
+  était filtrée hors de la liste `students` (`.filter((s) => s.id !==
+  rule.student_id)`), donc absente au lieu d'être grisée avec "a déjà cette
+  règle". Le même code pour les cours (`library/[recordId]/page.tsx`) ne
+  filtre jamais le représentant — il apparaît toujours dans la liste, disabled
+  via `alreadyHas`. Incohérence héritée du filtre pré-groupement (avant
+  `rule_group_id`, exclure la source évitait juste un item inutile ; depuis le
+  groupement, cette exclusion cache un membre légitime du groupe).
+- **Correctif** : retrait du `.filter(...)` — la liste `students` inclut
+  maintenant tous les élèves, `alreadyHas` (déjà basé sur `rule_group_id`)
+  s'occupe seul de griser qui a déjà la règle, source comprise. Aligné avec le
+  pattern des cours à l'identique.
+- `npm run build` : vert.

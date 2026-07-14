@@ -54,14 +54,16 @@ export default async function LibraryGrammarRulePage({
       .filter((f): f is { name: string; url: string } => f !== null);
   }
 
-  const students = (studentsRes ?? [])
-    .filter((s) => s.id !== rule.student_id)
-    .map((s) => ({
-      id: s.id,
-      name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) ?? "Élève",
-      status: s.status,
-      alreadyHas: alreadyHasIds.has(s.id),
-    }));
+  // Pas de filtre sur rule.student_id : le représentant du groupe (ici Hamza)
+  // doit rester visible dans la liste, grisé via alreadyHas — comme pour les
+  // cours (library/[recordId]/page.tsx), qui ne filtrent jamais le source non
+  // plus.
+  const students = (studentsRes ?? []).map((s) => ({
+    id: s.id,
+    name: (Array.isArray(s.profiles) ? s.profiles[0]?.full_name : s.profiles?.full_name) ?? "Élève",
+    status: s.status,
+    alreadyHas: alreadyHasIds.has(s.id),
+  }));
 
   return (
     <div className="space-y-5">
