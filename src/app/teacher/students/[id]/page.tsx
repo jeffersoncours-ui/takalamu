@@ -146,13 +146,7 @@ export default async function StudentCardPage({
         >
           Chat
         </Link>
-        <StatusForm
-          studentId={id}
-          // Cast temporaire : suspended_payment retiré côté UI, encore présent
-          // dans l'enum DB tant que la migration de retrait n'est pas appliquée
-          // (aucune ligne réelle ne le porte).
-          currentStatus={student.status as "active" | "suspended_absences"}
-        />
+        <StatusForm studentId={id} currentStatus={student.status} />
       </div>
 
       {/* Stats — cliquables, ancrent vers la section correspondante */}

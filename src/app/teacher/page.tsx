@@ -86,7 +86,7 @@ export default async function TeacherHome({
               {suspended.length} élève{suspended.length > 1 ? "s" : ""} suspendu{suspended.length > 1 ? "s" : ""}
             </span>
             <span className="block" style={{ color: "#B5862E", fontSize: 12 }}>
-              {STATUS_LABEL[suspended[0].status as "active" | "suspended_absences"]}
+              {STATUS_LABEL[suspended[0].status]}
             </span>
           </span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99A3A" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">

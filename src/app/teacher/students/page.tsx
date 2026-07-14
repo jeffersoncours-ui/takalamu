@@ -27,10 +27,7 @@ export default async function StudentsPage() {
     const profile = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles;
     return {
       id: s.id,
-      // Cast temporaire : le statut suspended_payment est retiré côté UI mais
-      // encore présent dans l'enum DB tant que la migration de retrait n'est pas
-      // appliquée (aucune ligne réelle ne le porte).
-      status: s.status as "active" | "suspended_absences",
+      status: s.status,
       name: profile?.full_name ?? profile?.email ?? "—",
       absCount: s.unjustified_absences_count,
     };

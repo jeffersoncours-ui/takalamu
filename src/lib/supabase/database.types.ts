@@ -53,6 +53,50 @@ export type Database = {
           },
         ]
       }
+      course_books: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          kind: string
+          order_index: number
+          subtitle: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          order_index?: number
+          subtitle?: string | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          order_index?: number
+          subtitle?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_books_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       formulations: {
         Row: {
           arabic_text: string
@@ -218,50 +262,6 @@ export type Database = {
           },
         ]
       }
-      course_books: {
-        Row: {
-          cover_url: string | null
-          created_at: string
-          id: string
-          kind: string
-          order_index: number
-          subtitle: string | null
-          teacher_id: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          cover_url?: string | null
-          created_at?: string
-          id?: string
-          kind?: string
-          order_index?: number
-          subtitle?: string | null
-          teacher_id: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          cover_url?: string | null
-          created_at?: string
-          id?: string
-          kind?: string
-          order_index?: number
-          subtitle?: string | null
-          teacher_id?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "course_books_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "teachers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lesson_records: {
         Row: {
           attendance: Database["public"]["Enums"]["attendance_status"]
@@ -411,53 +411,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments: {
-        Row: {
-          amount_cents: number | null
-          created_at: string
-          id: string
-          label: string | null
-          plan: Database["public"]["Enums"]["payment_plan"] | null
-          product: Database["public"]["Enums"]["payment_product"]
-          revolut_reference: string | null
-          status: Database["public"]["Enums"]["payment_status"]
-          student_id: string
-          updated_at: string
-        }
-        Insert: {
-          amount_cents?: number | null
-          created_at?: string
-          id?: string
-          label?: string | null
-          plan?: Database["public"]["Enums"]["payment_plan"] | null
-          product: Database["public"]["Enums"]["payment_product"]
-          revolut_reference?: string | null
-          status?: Database["public"]["Enums"]["payment_status"]
-          student_id: string
-          updated_at?: string
-        }
-        Update: {
-          amount_cents?: number | null
-          created_at?: string
-          id?: string
-          label?: string | null
-          plan?: Database["public"]["Enums"]["payment_plan"] | null
-          product?: Database["public"]["Enums"]["payment_product"]
-          revolut_reference?: string | null
-          status?: Database["public"]["Enums"]["payment_status"]
-          student_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
@@ -848,8 +801,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cancel_payment: { Args: { p_payment_id: string }; Returns: undefined }
-      confirm_payment: { Args: { p_payment_id: string }; Returns: undefined }
       delete_session_record: {
         Args: { p_record_id: string }
         Returns: undefined
@@ -884,12 +835,12 @@ export type Database = {
         Args: { p_answers: Json; p_quiz_id: string; p_student_id: string }
         Returns: Json
       }
-      submit_homework: {
-        Args:
-          | { p_homework_id: string; p_submission_file: string }
-          | { p_files: Json; p_homework_id: string }
-        Returns: undefined
-      }
+      submit_homework:
+        | { Args: { p_files: Json; p_homework_id: string }; Returns: undefined }
+        | {
+            Args: { p_homework_id: string; p_submission_file: string }
+            Returns: undefined
+          }
       submit_individual_quiz: {
         Args: { p_answers: Json; p_student_id: string }
         Returns: Json
@@ -951,17 +902,12 @@ export type Database = {
         | "homework_due"
         | "eval_due"
         | "homework_corrected"
-        | "payment_requested"
-        | "payment_confirmed"
         | "homework_submitted"
         | "trial_request"
         | "session_reminder"
-      payment_plan: "1x" | "2x" | "3x" | "12x" | "single" | "monthly" | "hourly"
-      payment_product: "individual_sub" | "individual_hour"
-      payment_status: "pending" | "paid" | "failed" | "cancelled"
       quiz_scope: "individual"
       quiz_source: "glossary" | "grammar" | "formulation"
-      student_status: "active" | "suspended_payment" | "suspended_absences"
+      student_status: "active" | "suspended_absences"
       trial_status:
         | "pending"
         | "contacted"
@@ -1109,18 +1055,13 @@ export const Constants = {
         "homework_due",
         "eval_due",
         "homework_corrected",
-        "payment_requested",
-        "payment_confirmed",
         "homework_submitted",
         "trial_request",
         "session_reminder",
       ],
-      payment_plan: ["1x", "2x", "3x", "12x", "single", "monthly", "hourly"],
-      payment_product: ["individual_sub", "individual_hour"],
-      payment_status: ["pending", "paid", "failed", "cancelled"],
       quiz_scope: ["individual"],
       quiz_source: ["glossary", "grammar", "formulation"],
-      student_status: ["active", "suspended_payment", "suspended_absences"],
+      student_status: ["active", "suspended_absences"],
       trial_status: [
         "pending",
         "contacted",
