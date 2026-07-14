@@ -31,24 +31,56 @@
       (options + couleurs, type local découplé de `Database`), `teacher/students/actions.ts`
       (`VALID_STATUSES`), `students-list.tsx` (type + `STATUS_META`), `teacher/page.tsx`
       (`STATUS_LABEL` + requête `.eq` au lieu de `.in`), `teacher/students/page.tsx` +
-      `[id]/page.tsx` (cast temporaire au point de lecture — l'enum DB garde encore
-      `suspended_payment` tant que la migration n'est pas appliquée)
+      `[id]/page.tsx` (cast temporaire au point de lecture, retiré une fois la migration
+      appliquée)
 - [x] `package.json` : dépendance `resend` retirée, lockfile régénéré (`npm install`)
 - [x] `.env.example` : blocs Resend + PayPal.Me retirés
 - [x] Build (27 routes, les 2 routes paiement ont disparu) + lint verts (seule l'erreur
       pré-existante `drawer-nav.tsx` subsiste) ; grep final : 0 référence résiduelle à
       payment/paypal/resend dans `src/` (hors `database.types.ts`, généré)
-- [x] Migration 55 **rédigée** (`DROP TABLE payments`, `DROP FUNCTION confirm_payment/
+- [x] Migration 55 rédigée (`DROP TABLE payments`, `DROP FUNCTION confirm_payment/
       cancel_payment`, `DROP TYPE payment_plan/payment_product/payment_status`, retrait
       des valeurs `payment_requested`/`payment_confirmed` de `notification_type` et
       `suspended_payment` de `student_status` — pattern rename→create→alter→drop,
-      cohérent avec migration 47) — **PAS encore appliquée** (attend le déploiement prod
-      du code ci-dessus, base partagée)
-- [ ] Push branche de session (preview) — validation propriétaire avant merge prod
-- [ ] Merge prod (fast-forward `main` + branche Vercel prod)
-- [ ] Une fois le déploiement prod confirmé : appliquer la migration 55 via MCP +
-      régénérer `database.types.ts` + vérification empirique (table absente, `students`/
-      `notifications` intacts, advisor sécurité)
+      cohérent avec migration 47)
+- [x] Propriétaire confirme (« vazi envoie en prod ») après clarification du séquencement
+      base partagée (« tu testes bien » = flux normal respecté) : push preview → merge
+      `main` **et** branche de prod Vercel réelle (`claude/new-project-setup-1jcgwf` —
+      identifiée via MCP Vercel, PAS `main` seule) → déploiement prod confirmé `READY`
+      sur `www.tatakalamu.fr` (MCP `get_deployment`) → migration 55 appliquée
+- [x] Vérification empirique post-migration (MCP) : table `payments`/fonctions
+      `confirm_payment`/`cancel_payment`/enums `payment_plan`/`payment_product`/
+      `payment_status` tous absents ; 4 élèves réels intacts (statuts/genres/enseignant
+      inchangés) ; advisor sécurité — mêmes WARN pré-existants acceptés, 0 nouveau
+- [x] `database.types.ts` régénéré (MCP `generate_typescript_types`) ; 2 fautes de
+      frappe corrigées lors de la retranscription manuelle (FK `vocabulary_lesson_
+      record_id_fkey` pointait à tort vers `students` au lieu de `lesson_records` ;
+      `CompositeTypes` helper référençait `CompositeTypeName` au lieu de
+      `PublicCompositeTypeNameOrOptions` — attrapée par le build TS) ; casts temporaires
+      retirés (enum DB déjà à jour) ; build + lint re-vérifiés verts après coup
+- [x] Second cycle push preview → main → branche prod Vercel → déploiement `READY`
+      confirmé sur `www.tatakalamu.fr`
+
+### Review
+- Fonctionnalité paiement in-app retirée intégralement : écrans (`/teacher/payments`,
+  `/dashboard/payments`), formulaires, email PayPal.Me/Resend, statut manuel
+  « Suspendu (paiement) », et en base la table `payments` + RPC `confirm_payment`/
+  `cancel_payment` + 3 enums `payment_*` + 2 valeurs d'enum orphelines
+  (`notification_type`, `student_status`). Le propriétaire gère désormais le paiement
+  100% en externe, directement avec l'élève.
+- **Découverte en cours de route** : la « branche de prod Vercel » n'est **pas** `main`
+  mais `claude/new-project-setup-1jcgwf` (confirmé via l'historique des déploiements
+  `target: "production"` du MCP Vercel) — les deux ont toujours été poussées ensemble
+  jusqu'ici sans que ce soit vérifié explicitement cette session-ci. À retenir pour
+  toute session future : ne pas supposer que `main` seule déclenche la prod, vérifier
+  via `list_deployments`/`target` si le doute existe.
+- Séquencement base partagée respecté à la lettre : code déployé et confirmé `READY`
+  en prod (MCP `get_deployment`) **avant** l'exécution de la migration destructive —
+  aucune fenêtre de casse.
+- Deux petites fautes de frappe introduites en retranscrivant manuellement le fichier
+  `database.types.ts` généré (au lieu d'un diff exact) — toutes deux attrapées par le
+  build TypeScript avant tout commit/push, donc sans impact, mais confirme qu'un
+  générateur devrait idéalement être appliqué tel quel plutôt que retapé.
 
 ---
 

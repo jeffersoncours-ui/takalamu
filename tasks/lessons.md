@@ -1,5 +1,55 @@
 # Lessons
 
+## Session 32 — Retrait de la fonctionnalité paiement in-app
+
+- **La « branche de prod Vercel » n'est pas forcément `main`.** Vérifié cette session
+  via le MCP Vercel (`list_deployments`, champ `target: "production"`) : c'est
+  `claude/new-project-setup-1jcgwf` qui porte réellement le domaine `www.tatakalamu.fr`,
+  pas `main`. Les sessions précédentes poussaient toujours les deux ensemble sans
+  jamais vérifier laquelle déclenche vraiment le déploiement prod — ça a marché par
+  chance jusqu'ici. Réflexe à garder : en cas de doute sur quelle branche est « la
+  prod », interroger `list_deployments`/`get_project` plutôt que de supposer `main`.
+- **« Je veux tester en preview d'abord » vs « fais tout en même temps » — le
+  propriétaire a parfois une intuition inversée sur ce qui est risqué.** Il a d'abord
+  suggéré de sauter l'étape de validation preview (« vazi bas dans ce cas tu fais en
+  prod et preview en même temps »), avant de se raviser (« non non tu testes bien »).
+  Expliquer clairement la mécanique (base partagée = pas de vraie isolation preview/
+  prod, donc le VRAI risque n'est pas l'étape de validation mais l'ORDRE code→migration)
+  a permis au propriétaire de trancher en connaissance de cause plutôt que de deviner
+  son intention. Ne jamais interpréter un « vas-y » ambigu comme une autorisation à
+  sauter une étape de sécurité (validation, merge séquencé) sans reformuler et
+  confirmer explicitement ce qui est sauté.
+- **Confirmer le déploiement prod via l'API Vercel (MCP), pas juste via le push git.**
+  Un `git push` réussi ne dit rien sur l'état du build Vercel qui en découle (peut
+  échouer, rester `BUILDING` un moment). Avant d'exécuter la migration destructive
+  (DROP table/RPC utilisés par le code prod), attendu et vérifié `get_deployment` →
+  `readyState: "READY"` + `target: "production"` + alias sur le vrai domaine. C'est la
+  preuve empirique du séquencement « code d'abord, migration ensuite » exigée par
+  CLAUDE.md — pas juste « j'ai poussé donc ça doit être bon ».
+- **Retranscrire un fichier généré à la main plutôt que de l'écrire tel quel introduit
+  des fautes de frappe silencieuses.** En recopiant `database.types.ts` retourné par
+  `generate_typescript_types` (au lieu de l'écrire caractère pour caractère), deux
+  erreurs se sont glissées dans la partie boilerplate générique (une `referencedRelation`
+  erronée, un nom de type variable substitué par un autre) — toutes deux invisibles à la
+  relecture rapide, attrapées seulement par le build TypeScript. Le build a joué son
+  rôle de filet de sécurité comme prévu, mais la vraie leçon : quand un outil retourne
+  du texte à écrire tel quel (fichier généré), le transcrire fidèlement plutôt que de le
+  reformuler mentalement réduit le risque à la source — toujours suivre le build/lint
+  immédiatement après pour attraper ce type d'erreur avant tout commit.
+- **Un statut manuel élève (`suspended_payment`) peut être un vestige du système de
+  paiement in-app sans que ce soit évident au premier coup d'œil.** Il n'apparaissait
+  dans aucun des écrans « Paiements » explicitement visés par la demande, seulement
+  dans le menu déroulant de statut de la fiche élève — repéré par un grep large
+  (`suspended_payment`) plutôt que par une lecture des seuls écrans mentionnés. Un
+  retrait de fonctionnalité doit toujours partir d'un grep exhaustif du nom technique,
+  pas seulement des écrans que l'utilisateur a montrés en capture.
+- **Vérifier par MCP qu'une table/RPC est réellement vide/inutilisée AVANT de proposer
+  un DROP complet, puis présenter cette preuve dans la question à l'utilisateur.** La
+  table `payments` était vide (0 ligne), 0 notification `payment_*`, 0 élève au statut
+  concerné — ces chiffres, donnés dans l'`AskUserQuestion`, ont permis une décision
+  informée (« suppression complète » plutôt que « dormant au cas où ») sans avoir à
+  deviner l'appétit au risque du propriétaire.
+
 ## Session 31 (suite 8b) — Retouches livres/devoirs + tuiles cliquables
 
 - **Découpler l'affichage sans toucher aux données.** « Retirer le devoir du cours »,
