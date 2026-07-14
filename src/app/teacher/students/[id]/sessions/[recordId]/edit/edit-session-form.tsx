@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
-import { ATTENDANCE_STATUSES, type AttendanceStatus } from "@/lib/attendance";
 import { AudioRecorderInput } from "@/components/audio-recorder-input";
 import { updateSession } from "./actions";
 
@@ -12,13 +11,6 @@ type Book = { id: string; title: string; subtitle: string | null };
 type VocabRow = { id: string; arabic_word: string; french_definition: string };
 type GrammarRow = { id: string; title: string; content: string };
 type FormulationRow = { id: string; arabic_text: string; french_text: string; audio_path: string | null };
-
-const PRESENCE_COLOR: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  present: { border: "#9FE3C8", bg: "#ECFAF4", text: "#0A6B4E", dot: "#0F9D6E" },
-  late: { border: "#F4D193", bg: "#FDF4E3", text: "#9A6206", dot: "#F59E0B" },
-  absent_justified: { border: "#C7C0B4", bg: "#F4F1EB", text: "#6B6459", dot: "#A8A29E" },
-  absent_unjustified: { border: "#F3B0B2", bg: "#FDECEC", text: "#B4292E", dot: "#E5484D" },
-};
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -54,7 +46,6 @@ export function EditSessionForm({
   customTitle,
   books,
   currentBookId,
-  attendance: initialAttendance,
   publicRecap,
   privateNote,
   homeworkInstructions,
@@ -71,7 +62,6 @@ export function EditSessionForm({
   customTitle: string;
   books: Book[];
   currentBookId: string;
-  attendance: AttendanceStatus;
   publicRecap: string;
   privateNote: string;
   homeworkInstructions: string;
@@ -85,7 +75,6 @@ export function EditSessionForm({
   const [state, formAction, pending] = useActionState(boundAction, {});
 
   const [dateLocal, setDateLocal] = useState(toLocalValue(sessionDateIso));
-  const [presence, setPresence] = useState<AttendanceStatus>(initialAttendance);
   const [bookId, setBookId] = useState<string>(
     currentBookId || (books.length === 1 ? books[0].id : ""),
   );
@@ -132,38 +121,6 @@ export function EditSessionForm({
       <div className="space-y-1.5">
         <span style={sectionLabel}>Élève</span>
         <div style={{ ...inputStyle, background: "#F7F4EE", color: "#4A463F" }}>{studentName}</div>
-      </div>
-
-      {/* Présence */}
-      <div className="space-y-2">
-        <span style={sectionLabel}>Présence</span>
-        <input type="hidden" name="attendance" value={presence} />
-        <div className="grid grid-cols-2 gap-2">
-          {ATTENDANCE_STATUSES.map((a) => {
-            const active = presence === a.value;
-            const c = PRESENCE_COLOR[a.value];
-            return (
-              <button
-                key={a.value}
-                type="button"
-                onClick={() => setPresence(a.value)}
-                className="flex items-center gap-2 rounded-[13px] px-3 py-3 text-left font-semibold transition-colors"
-                style={{
-                  border: `1.5px solid ${active ? c.border : "#E9E3D8"}`,
-                  background: active ? c.bg : "#fff",
-                  color: active ? c.text : "#6B6459",
-                  fontSize: 13,
-                }}
-              >
-                <span
-                  className="rounded-full shrink-0"
-                  style={{ width: 9, height: 9, background: active ? c.dot : "#D8D2C6" }}
-                />
-                {a.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Date de séance */}

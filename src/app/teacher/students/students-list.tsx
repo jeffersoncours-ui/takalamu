@@ -10,7 +10,6 @@ type Student = {
   id: string;
   status: StudentStatus;
   name: string;
-  absCount: number;
 };
 
 const STATUS_META: Record<StudentStatus, { hue: BadgeHue; label: string }> = {
@@ -103,9 +102,6 @@ export function StudentsList({ students }: { students: Student[] }) {
                 </span>
                 <span className="flex-1 min-w-0">
                   <span className="block font-bold truncate" style={{ color: "#1C1A17", fontSize: 16 }}>{s.name}</span>
-                  <span className="block font-medium" style={{ color: "#8B857A", fontSize: 12 }}>
-                    {s.absCount} absence{s.absCount !== 1 ? "s" : ""} injustifiée{s.absCount !== 1 ? "s" : ""}
-                  </span>
                 </span>
                 <StatusBadge hue={meta.hue} label={meta.label} />
               </Link>

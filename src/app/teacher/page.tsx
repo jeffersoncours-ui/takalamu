@@ -5,11 +5,6 @@ import { fr } from "date-fns/locale";
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-const STATUS_LABEL: Record<"active" | "suspended_absences", string> = {
-  active: "Actif",
-  suspended_absences: "Trop d'absences",
-};
-
 export default async function TeacherHome({
   searchParams,
 }: {
@@ -84,9 +79,6 @@ export default async function TeacherHome({
           <span className="flex-1">
             <span className="block font-bold" style={{ color: "#9A6206", fontSize: 14 }}>
               {suspended.length} élève{suspended.length > 1 ? "s" : ""} suspendu{suspended.length > 1 ? "s" : ""}
-            </span>
-            <span className="block" style={{ color: "#B5862E", fontSize: 12 }}>
-              {STATUS_LABEL[suspended[0].status]}
             </span>
           </span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99A3A" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">

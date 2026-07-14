@@ -40,21 +40,6 @@ export function StatusBadge({
   );
 }
 
-/** Mapping statut de présence → hue + label affiché. */
-export function attendanceBadge(value: string): { hue: BadgeHue; label: string } {
-  switch (value) {
-    case "present":
-      return { hue: "green", label: "Présent" };
-    case "late":
-      return { hue: "amber", label: "En retard" };
-    case "absent_unjustified":
-      return { hue: "red", label: "Absent" };
-    case "absent_justified":
-    default:
-      return { hue: "slate", label: "Absent justifié" };
-  }
-}
-
 /** Mapping statut de devoir → hue + label affiché. */
 export function homeworkBadge(value: string): { hue: BadgeHue; label: string } {
   switch (value) {

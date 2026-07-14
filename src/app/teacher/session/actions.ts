@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAttendanceStatus } from "@/lib/attendance";
 import { zipVocab, zipGrammar, zipFormulation } from "@/lib/session-form-zip";
 
 type ActionState = { error?: string };
@@ -17,11 +16,9 @@ export async function submitSession(
   await requireTeacher();
 
   const studentIds = formData.getAll("student_ids").map((v) => String(v)).filter(Boolean);
-  const attendance = String(formData.get("attendance") ?? "").trim();
   const sessionDateIso = String(formData.get("session_date_iso") ?? "").trim();
 
   if (studentIds.length === 0) return { error: "Sélectionne au moins un élève." };
-  if (!isAttendanceStatus(attendance)) return { error: "Présence invalide." };
 
   const sessionDate = sessionDateIso || new Date().toISOString();
   if (Number.isNaN(Date.parse(sessionDate))) {
@@ -103,7 +100,6 @@ export async function submitSession(
     const { data: recordId, error } = await supabase.rpc("submit_session_record", {
       p_student_id: studentId,
       p_session_date: sessionDate,
-      p_attendance: attendance,
       p_custom_title: customTitle,
       p_public_recap: publicRecap ?? undefined,
       p_private_note: privateNote ?? undefined,

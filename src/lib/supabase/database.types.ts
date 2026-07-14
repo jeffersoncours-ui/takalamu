@@ -847,7 +847,7 @@ export type Database = {
       }
       submit_session_record: {
         Args: {
-          p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_attendance?: Database["public"]["Enums"]["attendance_status"]
           p_course_group_id?: string
           p_custom_title?: string
           p_formulations?: Json
@@ -874,7 +874,7 @@ export type Database = {
       }
       update_session_record: {
         Args: {
-          p_attendance: Database["public"]["Enums"]["attendance_status"]
+          p_attendance?: Database["public"]["Enums"]["attendance_status"]
           p_custom_title?: string
           p_formulations?: Json
           p_grammar?: Json

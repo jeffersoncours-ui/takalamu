@@ -18,7 +18,7 @@ export default async function EditSessionPage({
 
   const { data: record } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, support_files, custom_title, book_id, students(profiles(full_name))")
+    .select("id, session_date, public_recap, support_files, custom_title, book_id, students(profiles(full_name))")
     .eq("id", recordId)
     .eq("student_id", id)
     .maybeSingle();
@@ -96,7 +96,6 @@ export default async function EditSessionPage({
         customTitle={record.custom_title ?? ""}
         books={books}
         currentBookId={record.book_id ?? ""}
-        attendance={record.attendance}
         publicRecap={record.public_recap ?? ""}
         privateNote={noteRes.data?.content ?? ""}
         homeworkInstructions={hwRes.data?.instructions ?? ""}

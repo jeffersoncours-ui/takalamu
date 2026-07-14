@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAttendanceStatus } from "@/lib/attendance";
 import { zipVocab, zipGrammar, zipFormulation } from "@/lib/session-form-zip";
 
 type ActionState = { error?: string };
@@ -19,10 +18,7 @@ export async function updateSession(
 ): Promise<ActionState> {
   await requireTeacher();
 
-  const attendance = String(formData.get("attendance") ?? "").trim();
   const sessionDateIso = String(formData.get("session_date_iso") ?? "").trim();
-
-  if (!isAttendanceStatus(attendance)) return { error: "Présence invalide." };
 
   const sessionDate = sessionDateIso || new Date().toISOString();
   if (Number.isNaN(Date.parse(sessionDate))) {
@@ -124,7 +120,6 @@ export async function updateSession(
   const { error } = await supabase.rpc("update_session_record", {
     p_record_id: recordId,
     p_session_date: sessionDate,
-    p_attendance: attendance,
     p_custom_title: customTitle,
     p_public_recap: publicRecap ?? undefined,
     p_private_note: privateNote ?? undefined,

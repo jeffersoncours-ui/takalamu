@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
-import { ATTENDANCE_STATUSES } from "@/lib/attendance";
 import { AudioRecorderInput } from "@/components/audio-recorder-input";
 import { submitSession } from "./actions";
 
@@ -14,14 +13,6 @@ type Student = {
 };
 
 type Book = { id: string; title: string; subtitle: string | null };
-
-/** Couleur de sélection par statut de présence. */
-const PRESENCE_COLOR: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  present: { border: "#9FE3C8", bg: "#ECFAF4", text: "#0A6B4E", dot: "#0F9D6E" },
-  late: { border: "#F4D193", bg: "#FDF4E3", text: "#9A6206", dot: "#F59E0B" },
-  absent_justified: { border: "#C7C0B4", bg: "#F4F1EB", text: "#6B6459", dot: "#A8A29E" },
-  absent_unjustified: { border: "#F3B0B2", bg: "#FDECEC", text: "#B4292E", dot: "#E5484D" },
-};
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -70,7 +61,6 @@ export function SessionForm({
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const [dateLocal, setDateLocal] = useState(nowLocalValue());
-  const [presence, setPresence] = useState(ATTENDANCE_STATUSES[0].value);
 
   // Lignes dynamiques (compteurs d'identité React, valeurs lues côté serveur).
   const [vocabRows, setVocabRows] = useState<number[]>([]);
@@ -132,38 +122,6 @@ export function SessionForm({
         <p style={{ color: "#A8A29E", fontSize: 11 }}>
           Coche plusieurs élèves pour créer la même séance (vocabulaire, grammaire, devoir, récap, supports) pour chacun en une seule saisie.
         </p>
-      </div>
-
-      {/* Présence : grille 2×2 colorée */}
-      <div className="space-y-2">
-        <span style={sectionLabel}>Présence</span>
-        <input type="hidden" name="attendance" value={presence} />
-        <div className="grid grid-cols-2 gap-2">
-          {ATTENDANCE_STATUSES.map((a) => {
-            const active = presence === a.value;
-            const c = PRESENCE_COLOR[a.value];
-            return (
-              <button
-                key={a.value}
-                type="button"
-                onClick={() => setPresence(a.value)}
-                className="flex items-center gap-2 rounded-[13px] px-3 py-3 text-left font-semibold transition-colors"
-                style={{
-                  border: `1.5px solid ${active ? c.border : "#E9E3D8"}`,
-                  background: active ? c.bg : "#fff",
-                  color: active ? c.text : "#6B6459",
-                  fontSize: 13,
-                }}
-              >
-                <span
-                  className="rounded-full shrink-0"
-                  style={{ width: 9, height: 9, background: active ? c.dot : "#D8D2C6" }}
-                />
-                {a.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Date de séance */}

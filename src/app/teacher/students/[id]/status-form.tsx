@@ -7,7 +7,7 @@ type StudentStatus = "active" | "suspended_absences";
 
 const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
   { value: "active", label: "Actif" },
-  { value: "suspended_absences", label: "Suspendu (absences)" },
+  { value: "suspended_absences", label: "Suspendu" },
 ];
 
 const STATUS_COLOR: Record<StudentStatus, string> = {

@@ -110,7 +110,6 @@ export async function duplicateSession(
     const { data: newRecordId, error } = await supabase.rpc("submit_session_record", {
       p_student_id: targetId,
       p_session_date: record.session_date,
-      p_attendance: "present",
       p_custom_title: record.custom_title ?? "Cours",
       p_public_recap: record.public_recap ?? undefined,
       p_vocab: vocab,

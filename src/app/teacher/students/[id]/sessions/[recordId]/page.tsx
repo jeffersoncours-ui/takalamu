@@ -5,7 +5,7 @@ import { fr } from "date-fns/locale";
 
 import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { StatusBadge, attendanceBadge, homeworkBadge } from "@/components/status-badge";
+import { StatusBadge, homeworkBadge } from "@/components/status-badge";
 import { deleteSession } from "./actions";
 import { DeleteSessionButton } from "./delete-session-button";
 
@@ -22,7 +22,7 @@ export default async function SessionDetailPage({
 
   const { data: record } = await supabase
     .from("lesson_records")
-    .select("id, session_date, attendance, public_recap, support_files, custom_title, students(profiles(full_name))")
+    .select("id, session_date, public_recap, support_files, custom_title, students(profiles(full_name))")
     .eq("id", recordId)
     .eq("student_id", id)
     .maybeSingle();
@@ -63,7 +63,6 @@ export default async function SessionDetailPage({
     : null;
   const studentName = profile?.full_name ?? "—";
 
-  const badge = attendanceBadge(record.attendance);
   const vocab = vocabRes.data ?? [];
   const grammar = grammarRes.data ?? [];
   const formulations = formRes.data ?? [];
@@ -97,21 +96,18 @@ export default async function SessionDetailPage({
       </Link>
 
       {/* En-tête */}
-      <div className="flex items-center justify-between gap-3 px-0.5">
-        <div>
-          <h1
-            className="leading-tight"
-            style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
-          >
-            {record.custom_title || format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
-          </h1>
-          {record.custom_title && (
-            <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
-              {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
-            </p>
-          )}
-        </div>
-        <StatusBadge hue={badge.hue} label={badge.label} />
+      <div className="px-0.5">
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+        >
+          {record.custom_title || format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+        </h1>
+        {record.custom_title && (
+          <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+            {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
+          </p>
+        )}
       </div>
 
       {/* Actions */}

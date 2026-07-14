@@ -2,6 +2,69 @@
 
 ---
 
+## Session 32 (suite) — Retrait du suivi de présence
+
+> **Demande propriétaire** : ne plus marquer la présence des élèves (captures fournies :
+> badge « Présent » sur la liste des cours d'un livre et le détail d'un cours, côté
+> élève). Vérifié en base (MCP) avant de coder : **9/9 séances existantes à `present`**,
+> 0 absence jamais comptée, 0 élève jamais suspendu pour absence — confirme que la
+> fonctionnalité n'est plus utilisée. Décisions validées par le propriétaire
+> (AskUserQuestion) : (1) garder un statut manuel générique « Suspendu » (renommé, plus
+> lié à un comptage) pour pouvoir suspendre un élève à la main plus tard, (2) nettoyage
+> base de données complet (DROP colonne/enum/compteur, pas juste dormant).
+>
+> **Séquencement en 2 phases** (RPC critique <30s, base partagée) : phase 1 (rétrocompatible
+> — `p_attendance` devient optionnel avec défaut `'present'`, comptage d'absences retiré du
+> corps des RPC, aucun risque de casse pour l'ancien client) appliquée immédiatement ;
+> phase 2 (destructive — DROP colonne/enum/compteur, signature RPC finalement simplifiée)
+> **différée** jusqu'à confirmation du déploiement prod de cette session.
+
+### Plan
+- [x] Migration 56 (phase 1, rétrocompatible) : `p_attendance` devient optionnel
+      (`DEFAULT 'present'`) sur `submit_session_record`/`update_session_record`
+      (`CREATE OR REPLACE`, pas de DROP — Postgres autorise l'ajout d'un défaut à un
+      paramètre existant, même non terminal) ; logique de comptage d'absences/
+      auto-suspension retirée du corps des deux RPC. Testé MCP (impersonation Jefferson,
+      transactions auto-rollback via `BEGIN`/`ROLLBACK` + table temporaire — le
+      combo CTE+jointure directe ne voyait pas les lignes insérées par la fonction
+      dans la même requête, contourné par des `INSERT INTO temp ... SELECT` séquentiels) :
+      appel sans `p_attendance` → `present` par défaut ✔ ; appel avec `p_attendance=
+      'absent_unjustified'` (ancien client) → toujours accepté, stocké, mais compteur
+      et statut inchangés (0/active avant et après) ✔ ; `update_session_record` sans
+      `p_attendance` → fonctionne, défaut appliqué ✔
+- [x] Fiche de fin de cours (`session-form.tsx`) + édition (`edit-session-form.tsx`) :
+      section « Présence » (grille 2×2) retirée, `attendance`/`presence` state retirés
+- [x] Actions (`session/actions.ts`, `edit/actions.ts`, `library/[recordId]/actions.ts`) :
+      lecture/validation de `attendance` retirée, `p_attendance` retiré des appels RPC
+      (repose sur le défaut)
+- [x] Affichage du badge « Présent » retiré sur 4 écrans (élève : liste des cours d'un
+      livre, détail d'un cours ; prof : historique des séances, détail d'une séance) +
+      `attendance` retiré des `.select()` correspondants
+- [x] `status-badge.tsx` : `attendanceBadge` retiré ; `src/lib/attendance.ts` supprimé
+      (ATTENDANCE_STATUSES/AttendanceStatus/isAttendanceStatus)
+- [x] Compteur d'absences retiré : tuile « abs. injust. » (fiche élève prof, grille
+      passée à 3 colonnes), ligne "X absences injustifiées" (liste des élèves),
+      `unjustified_absences_count` retiré des `.select()`
+- [x] Statut « Suspendu (absences) » → libellé générique « Suspendu » (`status-form.tsx`) ;
+      widget cockpit (`teacher/page.tsx`) simplifié — plus de sous-ligne « raison »
+      (n'avait plus de sens avec un seul statut non-actif restant) ; valeur d'enum
+      interne `suspended_absences` **gardée telle quelle** (identifiant technique,
+      pattern déjà établi pour `revolut_reference` — seul le libellé affiché change)
+- [x] `database.types.ts` régénéré (collé tel quel depuis l'outil, pas retapé à la main
+      — leçon de la session précédente) ; build (27 routes) + lint verts (seule l'erreur
+      pré-existante `drawer-nav.tsx`) ; grep final 0 référence résiduelle
+- [x] Migration 57 (phase 2, destructive) **rédigée** : DROP+CREATE des deux RPC sans
+      `p_attendance`, `DROP COLUMN lesson_records.attendance`, `DROP TYPE
+      attendance_status`, `DROP COLUMN students.unjustified_absences_count` —
+      **PAS encore appliquée** (attend confirmation du déploiement prod)
+- [ ] Push branche de session (preview) — validation propriétaire avant merge prod
+- [ ] Merge prod (fast-forward `main` **et** branche de prod Vercel réelle
+      `claude/new-project-setup-1jcgwf`) + confirmation `READY` via MCP Vercel
+- [ ] Une fois confirmé : appliquer la migration 57 + régénérer `database.types.ts` +
+      vérification empirique (advisor, colonnes/enum absents, données réelles intactes)
+
+---
+
 ## Session 32 — Retrait de la fonctionnalité paiement in-app
 
 > **Demande propriétaire** : retirer entièrement le paiement in-app (écrans « Mes
