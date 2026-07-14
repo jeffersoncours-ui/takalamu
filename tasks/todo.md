@@ -2,6 +2,49 @@
 
 ---
 
+## Session 32 (suite 2) — Retrait du quiz de grammaire rédigé à la main
+
+> **Demande propriétaire** : retirer l'onglet « Évaluations » côté enseignant (capture
+> fournie) — jugé inutile, les élèves pratiquent déjà via les quiz auto-générés
+> (vocabulaire/formulation) et les notes viennent des devoirs rendus. Demande explicite
+> de tracer toutes les connexions et implications avant d'agir.
+>
+> **Connexion identifiée avant d'agir** : `/teacher/evaluations` sert à rédiger à la main
+> des quiz de grammaire (question + bonne réponse + distracteurs), notifiés aux élèves.
+> Le bloc élève correspondant (`GrammarQuizRunner`, section « Exercices de grammaire »)
+> en dépend **entièrement** — pas de génération automatique côté grammaire (contrairement
+> au vocabulaire/formulation). Vérifié MCP avant toute décision : **0 quiz de grammaire
+> jamais créé, 0 question écrite, 0 notification `eval_due` envoyée** — jamais utilisé,
+> le bloc élève est déjà invisible aujourd'hui. Décision validée par le propriétaire
+> (AskUserQuestion) : retirer les deux bouts (écran prof + bloc élève + RPC + table),
+> pas seulement l'écran prof visé par la capture.
+
+### Plan
+- [x] Suppression `src/app/teacher/evaluations/` (page, actions, `[quizId]/page.tsx`,
+      `[quizId]/question-form.tsx`, `new/page.tsx`) — dossier entier
+- [x] `drawer-nav.tsx` : retrait de l'entrée « Évaluations »
+- [x] Suppression `src/app/dashboard/evaluations/grammar-quiz-runner.tsx` ;
+      `evaluations-client.tsx` : retrait de `GrammarQuizRunner`/`grammarQuizzes`/
+      variante `"grammar"` du type `ActiveQuiz` ; `page.tsx` : retrait de la requête
+      des quiz de grammaire (+ le fetch `teacher_id` qui ne servait qu'à ça) ;
+      `actions.ts` : retrait de `fetchGrammarQuizQuestions`/`submitGrammarQuiz` et
+      des 4 types associés
+- [x] `notif-bell.tsx` : retrait du libellé `eval_due`
+- [x] Build (24 routes, les 3 routes `teacher/evaluations` ont disparu) + lint verts
+      (9 problèmes au lieu de 12 — les 3 warnings `_formData` de l'ancien
+      `teacher/evaluations/actions.ts` ont disparu avec le fichier ; seule l'erreur
+      pré-existante `drawer-nav.tsx` subsiste) ; grep final 0 référence résiduelle
+- [x] Migration 58 **rédigée** (`DROP FUNCTION get_grammar_quiz_questions/
+      submit_grammar_quiz`, `DROP TABLE quiz_questions`, retrait des valeurs
+      `grammar` de `quiz_source` et `eval_due` de `notification_type` — pattern
+      rename→create→alter→drop) — **PAS appliquée** : pas de déploiement prod prévu
+      cette session (accumulation de correctifs sur la preview), gardée pour le
+      prochain lot de déploiement
+- [ ] Push branche de session (preview) — pas de déploiement prod cette session
+      (accumulation de correctifs demandée par le propriétaire)
+
+---
+
 ## Session 32 (suite) — Retrait du suivi de présence
 
 > **Demande propriétaire** : ne plus marquer la présence des élèves (captures fournies :

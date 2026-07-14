@@ -3,10 +3,9 @@
 import { useState } from "react";
 import QuizRunner from "./quiz-runner";
 import FormulationQuizRunner from "./formulation-quiz-runner";
-import { GrammarQuizRunner } from "./grammar-quiz-runner";
 
 type Course = { id: string; label: string; count: number };
-type ActiveQuiz = "vocab" | "formulation" | "grammar" | null;
+type ActiveQuiz = "vocab" | "formulation" | null;
 
 const sectionLabel: React.CSSProperties = {
   fontSize: 11,
@@ -28,13 +27,11 @@ export function EvaluationsClient({
   courseOptions,
   formCount,
   formCourseOptions,
-  grammarQuizzes,
 }: {
   vocabCount: number;
   courseOptions: Course[];
   formCount: number;
   formCourseOptions: Course[];
-  grammarQuizzes: { id: string; title: string | null }[];
 }) {
   const [active, setActive] = useState<ActiveQuiz>(null);
 
@@ -67,16 +64,6 @@ export function EvaluationsClient({
             formCount={formCount}
             courses={formCourseOptions}
             onActiveChange={(a) => setActive(a ? "formulation" : null)}
-          />
-        </section>
-      )}
-
-      {(active === null || active === "grammar") && grammarQuizzes.length > 0 && (
-        <section className="space-y-3">
-          {active === null && <p className="px-0.5" style={sectionLabel}>Exercices de grammaire</p>}
-          <GrammarQuizRunner
-            quizzes={grammarQuizzes}
-            onActiveChange={(a) => setActive(a ? "grammar" : null)}
           />
         </section>
       )}

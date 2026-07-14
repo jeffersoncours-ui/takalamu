@@ -7,14 +7,7 @@ export default async function EvaluationsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  // Fetch student's teacher for grammar quiz filtering
-  const { data: student } = await supabase
-    .from("students")
-    .select("teacher_id")
-    .eq("id", studentId)
-    .maybeSingle();
-
-  const [vocabRes, formsRes, grammarQuizzesRes] = await Promise.all([
+  const [vocabRes, formsRes] = await Promise.all([
     supabase
       .from("vocabulary")
       .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
@@ -25,21 +18,11 @@ export default async function EvaluationsPage() {
       .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
       .eq("student_id", studentId)
       .order("created_at", { ascending: true }),
-    student?.teacher_id
-      ? supabase
-          .from("quizzes")
-          .select("id, title")
-          .eq("source_type", "grammar")
-          .eq("teacher_id", student.teacher_id)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [], error: null }),
   ]);
   if (vocabRes.error) console.error("evaluations vocab query failed:", vocabRes.error.message);
   if (formsRes.error) console.error("evaluations formulations query failed:", formsRes.error.message);
-  if (grammarQuizzesRes.error) console.error("evaluations quizzes query failed:", grammarQuizzesRes.error.message);
   const { data: vocab } = vocabRes;
   const { data: forms } = formsRes;
-  const { data: grammarQuizzes } = grammarQuizzesRes;
 
   const vocabCount = vocab?.length ?? 0;
   const formCount = forms?.length ?? 0;
@@ -76,7 +59,6 @@ export default async function EvaluationsPage() {
       courseOptions={courseOptions}
       formCount={formCount}
       formCourseOptions={formCourseOptions}
-      grammarQuizzes={grammarQuizzes ?? []}
     />
   );
 }

@@ -18,7 +18,6 @@ const TYPE_LABEL: Record<string, string> = {
   homework_due: "Devoir à rendre",
   homework_submitted: "Devoir soumis",
   homework_corrected: "Devoir corrigé",
-  eval_due: "Évaluation disponible",
 };
 
 async function markAllRead(userId: string) {
