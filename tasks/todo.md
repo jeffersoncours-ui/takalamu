@@ -2639,3 +2639,23 @@ d'historique de quiz nulle part ; quiz déjà aléatoires, à confirmer) :
   ajouté).
 - Testé via MCP avant l'UI : quiz mixte scoré 2/4 correctement, isolation
   (item d'un autre élève → 0), tuile lit le dernier attempt.
+
+## Déploiement production — session 32 (suites 3 à 8)
+
+- **Déployé en production** : fast-forward de `main` ET de la branche de prod
+  Vercel (`claude/new-project-setup-1jcgwf`) depuis la branche de session,
+  après validation manuelle du propriétaire sur la preview.
+- Contenu déployé : correctifs "Mes livres"/grammaire (groupement, duplication,
+  retrait Modifier/Suppr, retrait des noms d'élèves sur les cartes), photos de
+  profil dans messages/listes (+ RLS avatars/profiles), correctif élève absent
+  des messages, règlement intérieur élève (5 règles + notification auto),
+  fusion des quiz vocab+formulation en quiz de langue, tuile "Dernière note" en
+  X/Y non cliquable.
+- **Base partagée** : toutes les migrations nécessaires (59→67) étaient déjà
+  appliquées via MCP au fil de la session — aucune action DB au moment du
+  déploiement.
+- **Migrations 57/58 toujours différées** (attendance phase 2 + drop ancien
+  quiz grammaire) : destructives, elles suppriment des colonnes/types encore
+  référencés par les RPC courantes (`submit_session_record` insère toujours
+  `attendance`). À traiter dans un lot dédié « nettoyage schéma » avec la mise
+  à jour simultanée des RPC, jamais isolément.
