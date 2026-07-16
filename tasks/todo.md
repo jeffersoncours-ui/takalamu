@@ -2,6 +2,107 @@
 
 ---
 
+## Session 33 — Correctifs quiz de langue (correction ciblée, navigation, audio)
+
+> **Demande propriétaire (reformulée et validée)** : 3 correctifs sur le quiz de langue
+> (`/dashboard/evaluations`, composant `QuizPlayer` partagé vocab+formulation, seul
+> consommateur du fichier) :
+> 1. Écran de correction final : n'afficher que les **mauvaises réponses** (plus la liste
+>    complète bonnes+mauvaises).
+> 2. Navigation arrière — **les deux confirmées par le propriétaire** :
+>    a) Sur l'écran de correction final : naviguer les mauvaises réponses **une par une**
+>       (Précédent/Suivant) au lieu d'une liste empilée.
+>    b) Pendant le quiz (avant validation) : pouvoir revenir sur une question précédente et
+>       **changer sa réponse** avant la fin.
+> 3. Audio : quand l'élève lance un nouvel audio (mode 4 propositions audio, formulation
+>    FR→AR), l'audio précédemment en lecture doit s'arrêter — actuellement ils se
+>    superposent.
+
+### Connexions vérifiées avant de coder
+- `QuizPlayer`/`AudioPrompt` (`src/app/dashboard/evaluations/quiz-player.tsx`) : un seul
+  consommateur, `evaluations-client.tsx` (quiz de langue fusionné vocab+formulation,
+  session 32 suite 3). Aucune autre page/composant ne les importe.
+- Purement client (`"use client"`) : aucun changement de RPC, de payload `submit`, ni de
+  migration nécessaire. `submit(answers: QuizAnswer[])` attend déjà un tableau dans
+  l'ordre des questions — inchangé, seule la construction locale de ce tableau change
+  (remplacement en place au lieu d'un append).
+- Le point 2b change le flux actuel « cliquer une réponse = validée + avance immédiatement »
+  vers « cliquer une réponse = sélectionne, boutons Précédent/Suivant pour naviguer,
+  Terminer sur la dernière question pour soumettre ». Impact : la structure `Phase`
+  (`playing`) passe de `answers: QuizAnswer[]` (append-only) à
+  `answers: (QuizAnswer | null)[]` (taille fixe = nb questions, indexé par position) pour
+  permettre la modification d'une réponse déjà donnée sans perdre les autres.
+- Le mode audio-choix (4 propositions) : bouton « Choisir » devient un état de sélection
+  (surbrillance) au lieu d'un envoi immédiat — cohérent avec le nouveau flux point 2b.
+- Fix audio (point 3) : un seul `<audio>` doit jouer à la fois sur tout l'écran quiz.
+  Solution : variable module-scope `activeAudioEl` dans `quiz-player.tsx` (seul fichier
+  consommateur d'`AudioPrompt`) — au clic play, on coupe l'audio précédemment actif (s'il
+  diffère) avant de lancer le nouveau ; `onPause` sur chaque `<audio>` remet son propre
+  état "en lecture" à faux (couvre le cas où c'est un AUTRE composant qui le coupe).
+
+### Plan d'exécution (`src/app/dashboard/evaluations/quiz-player.tsx` uniquement)
+- [x] `AudioPrompt` : coordination via variable module-scope `activeAudioEl` — lancer un
+      audio coupe le précédent s'il diffère ; `onPause` synchronise l'état local de chaque
+      instance (couvre coupure externe)
+- [x] Type `Phase` (`playing`) : `answers` devient `(QuizAnswer | null)[]` taille fixe =
+      `questions.length`, initialisé à `null` au démarrage
+- [x] `select(chosen)` (remplace `choose`) : met à jour `answers[current]` en place
+      (immutable), ne change plus `current` automatiquement, pas de soumission automatique
+- [x] Choix (texte ET audio-choix) : bouton en surbrillance si `answers[current]?.chosen`
+      correspond déjà (visualise la sélection courante)
+- [x] Nouveaux boutons de navigation sous les choix : « Précédent » (visible si
+      `current > 0`, ne touche pas `answers`), « Suivant » (si `current < length-1`,
+      désactivé tant qu'aucune réponse sélectionnée pour la question courante), « Terminer
+      le quiz » (sur la dernière question, désactivé tant qu'aucune réponse sélectionnée,
+      déclenche `submit()`)
+- [x] Barre de progression : reste `current+1 / length` (position, pas nombre de réponses
+      données — cohérent avec la nature "on peut naviguer librement" du nouveau flux)
+- [x] Écran « Done » : nouvel état local `reviewIndex`, filtre `result.answers`/`questions`
+      sur `!is_correct` uniquement ; si 0 erreur → message « Aucune erreur, bravo ! » sans
+      pagination ; sinon carte unique (reprend le contenu actuel : direction, prompt/audio,
+      ta réponse, bonne réponse) + Précédent/Suivant + compteur « Erreur X/Y »
+- [x] Bouton « Refaire un quiz » inchangé
+- [x] Build (27 routes) + lint verts (seule l'erreur pré-existante `drawer-nav.tsx` subsiste)
+- [x] Test navigateur réel (Playwright headless, `npm run dev` + harnais temporaire
+      `src/app/quiz-test-harness` monté avec des `generate`/`submit` fixtures — contourne
+      le besoin d'une session Supabase réelle puisque `QuizPlayer` est purement client ;
+      env Supabase factices en `.env.local` local uniquement pour satisfaire le middleware
+      d'auth, aucune vraie donnée touchée) : (1) retour arrière pendant le quiz jusqu'à la
+      1ʳᵉ question, changement de réponse, ré-avance jusqu'à la fin → **score final reflète
+      bien la réponse corrigée** (4/4 au lieu de 3/4) ; (2) sélections des autres questions
+      préservées pendant l'aller-retour ; (3) écran de correction : seules les mauvaises
+      réponses affichées, navigation « Erreur 1/2 » ↔ « Erreur 2/2 » fonctionnelle, message
+      dédié si 0 erreur ; (4) audio 4-propositions : lancer la lecture d'un 2ᵉ audio met
+      bien le 1ᵉʳ en pause (`audio.paused` vérifié programmatiquement) et son bouton revient
+      à « Écouter ». Harnais + `.env.local` supprimés après test (non commités).
+- [x] `tasks/todo.md` (Review) + `tasks/lessons.md` mis à jour
+- [x] Commit + push branche de session (preview) — pas de déploiement prod sans
+      confirmation explicite
+
+### Review
+- 3 correctifs livrés dans un seul fichier (`quiz-player.tsx`), aucune migration/RPC
+  touchée : (1) l'écran de correction final n'affiche plus que les mauvaises réponses ;
+  (2) navigation Précédent/Suivant ajoutée à deux endroits — dans la correction (entre les
+  erreurs, une par une) ET pendant le quiz lui-même (revenir sur une question déjà répondue
+  et changer sa réponse avant validation finale) ; (3) un seul audio joue à la fois sur tout
+  l'écran quiz (texte, audio unique, 4 propositions) — démarrer une lecture coupe la
+  précédente.
+- Le flux de jeu change de nature : avant, cliquer une réponse la validait et faisait
+  avancer immédiatement (voire soumettait si dernière question) ; maintenant, cliquer une
+  réponse la **sélectionne** (surbrillance), et des boutons explicites Précédent/Suivant/
+  Terminer pilotent la navigation — nécessaire pour permettre la correction d'une réponse
+  déjà donnée sans perdre les autres. `answers` est passé d'un tableau append-only à un
+  tableau de taille fixe indexé par position (`(QuizAnswer | null)[]`).
+- Testé empiriquement en conditions réelles de clic (Playwright, pas seulement build/lint) :
+  seul moyen fiable de vérifier qu'un aller-retour arrière + changement de réponse se
+  reflète bien dans le score final envoyé au serveur, et que l'audio coupe correctement —
+  deux comportements impossibles à garantir par la seule lecture du code. Harnais de test
+  jetable (fixtures locales, pas de vraie session élève) supprimé avant le commit.
+- Aucun impact sur les autres écrans : `QuizPlayer`/`AudioPrompt` n'ont qu'un seul
+  consommateur (`evaluations-client.tsx`, le quiz de langue fusionné vocab+formulation).
+
+---
+
 ## Session 32 (suite 3) — Bibliothèque → livres + règles de grammaire individuelles
 
 > **Demande propriétaire (reformulée et validée en plusieurs allers-retours)** :

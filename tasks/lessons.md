@@ -1,5 +1,52 @@
 # Lessons
 
+## Session 33 — Correctifs quiz de langue (correction ciblée, navigation, audio)
+
+- **Un composant purement client (`"use client"`, aucune dépendance runtime à des server
+  actions) peut être testé en navigateur réel SANS session Supabase**, via un harnais
+  temporaire qui lui injecte des `generate`/`submit` fixtures locales à la place des vraies
+  server actions. `QuizPlayer` n'importe `actions.ts` que pour ses **types** (`import type`,
+  erasé à la compilation) — le composant lui-même ne touche jamais Supabase, seul son
+  appelant (`evaluations-client.tsx`) lui passe les vraies fonctions. Ce découplage,
+  préexistant dans le code, a permis un test Playwright complet (clics réels, navigation,
+  lecture audio) sans MCP Supabase disponible dans cette session (non autorisé). Réflexe à
+  généraliser : avant de conclure « pas testable sans backend réel », vérifier si le
+  composant visé dépend RÉELLEMENT du backend ou seulement d'une prop-fonction remplaçable.
+- **Même dans ce cas, le serveur dev Next.js entier reste bloqué sans variables Supabase** :
+  un `proxy.ts`/middleware racine (`updateSession`) appelle `createServerClient` sur
+  **toutes** les requêtes, y compris une route qui n'utilise pas Supabase — `next dev`
+  plante (500) sans `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` définies, même juste pour charger
+  une page 100% cliente. Contournement sans risque : `.env.local` **local et temporaire**
+  avec la vraie URL du projet (publique, sans risque — c'est juste un hostname) + une clé
+  anonyme **factice** (`getUser()` échoue proprement côté Supabase — 401 — sans faire planter
+  le middleware, aucune session/donnée réelle touchée). Fichier supprimé après le test, code
+  jamais committé.
+- **Prouver empiriquement un changement de flux d'état (pas juste lire le code) coûte peu
+  avec un harnais jetable.** Le point le plus risqué de ce correctif — « revenir en arrière,
+  changer une réponse, revenir en avant, terminer → le score reflète la DERNIÈRE réponse et
+  pas la première » — est un bug de fermeture/état classique (stale closure, mauvais index)
+  qui aurait pu passer inaperçu à la seule relecture. Un test Playwright de 15 lignes
+  (aller-retour complet + vérification du score final) l'a confirmé sans ambiguïté (3/4 →
+  4/4 après correction de la 1ʳᵉ question). Généralisable à toute future demande touchant à
+  la navigation/l'état d'un composant multi-étapes.
+- **Couper un audio "où qu'il joue" = variable module-scope, pas un contexte React.** Un
+  seul fichier (`quiz-player.tsx`) est l'unique consommateur d'`AudioPrompt` (plusieurs
+  instances simultanées : 4 propositions audio + question audio + revue). Une variable
+  `let activeAudioEl` au niveau module (hors composant) suffit à coordonner "un seul audio
+  actif à la fois" sans lever un contexte ou remonter un state au parent — chaque instance
+  vérifie/écrit cette variable partagée, et `onPause` sur le `<audio>` (qui se déclenche
+  aussi quand c'est un AUTRE composant qui appelle `.pause()` sur cet élément) resynchronise
+  l'état local `playing` de l'instance coupée. Solution minimale, pas de refactor de state
+  management pour un besoin aussi local.
+- **Changer "cliquer = valide et avance" en "cliquer = sélectionne, bouton dédié pour
+  avancer" a une conséquence structurelle sur le type d'état.** Le tableau `answers` doit
+  passer d'append-only (`QuizAnswer[]`, indexé implicitement par `current` au moment de
+  l'ajout) à taille fixe indexée par position (`(QuizAnswer | null)[]`) dès qu'on permet de
+  revisiter une question déjà répondue — sinon revenir en arrière et re-sélectionner
+  dupliquerait une entrée au lieu de la remplacer. Généralisable : toute demande de
+  "navigation arrière avec modification" sur un flux séquentiel implique ce changement de
+  forme de données, pas juste l'ajout d'un bouton.
+
 ## Session 32 (suite 3) — Bibliothèque → livres + règles de grammaire individuelles
 
 - **Reformuler à chaque itération, même quand on croit avoir compris.** Cette demande a

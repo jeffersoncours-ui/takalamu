@@ -5,11 +5,15 @@ import type { QuizQuestion, QuizAnswer, QuizResult } from "./actions";
 
 type Phase =
   | { name: "idle" }
-  | { name: "playing"; questions: QuizQuestion[]; current: number; answers: QuizAnswer[] }
+  | { name: "playing"; questions: QuizQuestion[]; current: number; answers: (QuizAnswer | null)[] }
   | { name: "done"; result: QuizResult; questions: QuizQuestion[] };
 
 const GREEN = "#0F9D6E";
 const RED = "#B4292E";
+
+/** Un seul audio à la fois sur tout l'écran quiz : lancer une lecture coupe
+ *  celle en cours, où qu'elle soit (question, propositions, correction). */
+let activeAudioEl: HTMLAudioElement | null = null;
 
 /** Lecteur de question audio (compréhension orale) : gros bouton Écouter,
  *  réécoutable à volonté — aucun texte arabe affiché. Variante `neutral`
@@ -35,6 +39,11 @@ function AudioPrompt({
       el.currentTime = 0;
       setPlaying(false);
     } else {
+      if (activeAudioEl && activeAudioEl !== el) {
+        activeAudioEl.pause();
+        activeAudioEl.currentTime = 0;
+      }
+      activeAudioEl = el;
       void el.play();
       setPlaying(true);
     }
@@ -58,7 +67,13 @@ function AudioPrompt({
 
   return (
     <span className="inline-flex">
-      <audio ref={audioRef} src={url} preload="auto" onEnded={() => setPlaying(false)} />
+      <audio
+        ref={audioRef}
+        src={url}
+        preload="auto"
+        onEnded={() => setPlaying(false)}
+        onPause={() => setPlaying(false)}
+      />
       <button
         type="button"
         onClick={toggle}
@@ -120,6 +135,7 @@ export default function QuizPlayer({
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [loading, setLoading] = useState(false);
   const [scope, setScope] = useState<string>("all");
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   const start = async () => {
     setLoading(true);
@@ -128,7 +144,7 @@ export default function QuizPlayer({
       const lessonRecordId = scope === "all" ? undefined : scope;
       const questions = await generate(lessonRecordId);
       if (questions.length > 0) {
-        setPhase({ name: "playing", questions, current: 0, answers: [] });
+        setPhase({ name: "playing", questions, current: 0, answers: questions.map(() => null) });
       } else {
         onActiveChange?.(false);
       }
@@ -140,31 +156,44 @@ export default function QuizPlayer({
     }
   };
 
-  const choose = async (chosen: string) => {
+  // Sélectionne (ou change) la réponse de la question courante — n'avance
+  // plus automatiquement, pour permettre d'y revenir et de la modifier.
+  const select = (chosen: string) => {
     if (phase.name !== "playing") return;
     const { questions, current, answers } = phase;
     const q = questions[current];
-    const newAnswers: QuizAnswer[] = [
-      ...answers,
-      {
-        source: q.source,
-        item_id: q.item_id,
-        direction: q.direction,
-        chosen,
-        // fr_to_ar_audio : `chosen` = token de la formulation écoutée, le prompt
-        // français round-trip pour le scoring serveur (pas d'id-source échangé).
-        ...(q.direction === "fr_to_ar_audio" ? { prompt: q.prompt } : {}),
-      },
-    ];
+    const answer: QuizAnswer = {
+      source: q.source,
+      item_id: q.item_id,
+      direction: q.direction,
+      chosen,
+      // fr_to_ar_audio : `chosen` = token de la formulation écoutée, le prompt
+      // français round-trip pour le scoring serveur (pas d'id-source échangé).
+      ...(q.direction === "fr_to_ar_audio" ? { prompt: q.prompt } : {}),
+    };
+    const newAnswers = [...answers];
+    newAnswers[current] = answer;
+    setPhase({ name: "playing", questions, current, answers: newAnswers });
+  };
 
-    if (current + 1 < questions.length) {
-      setPhase({ name: "playing", questions, current: current + 1, answers: newAnswers });
-      return;
-    }
+  const goPrev = () => {
+    if (phase.name !== "playing" || phase.current === 0) return;
+    setPhase({ ...phase, current: phase.current - 1 });
+  };
 
+  const goNext = () => {
+    if (phase.name !== "playing" || phase.current + 1 >= phase.questions.length) return;
+    setPhase({ ...phase, current: phase.current + 1 });
+  };
+
+  const finish = async () => {
+    if (phase.name !== "playing") return;
+    const { questions, answers } = phase;
+    if (answers.some((a) => a === null)) return;
     setLoading(true);
     try {
-      const result = await submit(newAnswers);
+      const result = await submit(answers as QuizAnswer[]);
+      setReviewIndex(0);
       setPhase({ name: "done", result, questions });
     } catch {
       // silent
@@ -175,6 +204,7 @@ export default function QuizPlayer({
 
   const restart = () => {
     setPhase({ name: "idle" });
+    setReviewIndex(0);
     onActiveChange?.(false);
   };
 
@@ -261,10 +291,13 @@ export default function QuizPlayer({
 
   // ── Playing ───────────────────────────────────────────────────────────────
   if (phase.name === "playing") {
-    const { questions, current } = phase;
+    const { questions, current, answers } = phase;
     const q = questions[current];
+    const currentAnswer = answers[current];
+    const hasAnswer = currentAnswer !== null;
     const progress = ((current) / questions.length) * 100;
     const isArabicAnswer = q.direction === "fr_to_ar";
+    const isLast = current + 1 >= questions.length;
 
     return (
       <div className="flex flex-col gap-4">
@@ -323,60 +356,102 @@ export default function QuizPlayer({
         {/* Choices : audio (mode audio-choix) ou texte */}
         {q.audio_choices ? (
           <div className="flex flex-col gap-2.5">
-            {q.audio_choices.map((c, idx) => (
-              <div
-                key={`${current}-${c.token}`}
-                className="w-full rounded-[14px] px-3.5 py-3 flex items-center gap-3"
-                style={{ background: "#fff", border: "1.5px solid #EFEAE0" }}
-              >
-                <span
-                  className="shrink-0 inline-flex items-center justify-center rounded-full text-xs font-bold"
-                  style={{ width: 24, height: 24, background: "#F7F4EE", color: "#8B857A" }}
+            {q.audio_choices.map((c, idx) => {
+              const isSelected = currentAnswer?.chosen === c.token;
+              return (
+                <div
+                  key={`${current}-${c.token}`}
+                  className="w-full rounded-[14px] px-3.5 py-3 flex items-center gap-3"
+                  style={{
+                    background: isSelected ? "#ECFAF4" : "#fff",
+                    border: `1.5px solid ${isSelected ? GREEN : "#EFEAE0"}`,
+                  }}
                 >
-                  {idx + 1}
-                </span>
-                <AudioPrompt url={c.audio_url} neutral compact />
-                <button
-                  onClick={() => choose(c.token)}
-                  disabled={loading}
-                  className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-                  style={{ background: GREEN }}
-                >
-                  Choisir
-                </button>
-              </div>
-            ))}
+                  <span
+                    className="shrink-0 inline-flex items-center justify-center rounded-full text-xs font-bold"
+                    style={{ width: 24, height: 24, background: "#F7F4EE", color: "#8B857A" }}
+                  >
+                    {idx + 1}
+                  </span>
+                  <AudioPrompt url={c.audio_url} neutral compact />
+                  <button
+                    onClick={() => select(c.token)}
+                    disabled={loading}
+                    className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
+                    style={
+                      isSelected
+                        ? { background: GREEN, color: "#fff" }
+                        : { background: "#fff", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
+                    }
+                  >
+                    {isSelected ? "Sélectionné ✓" : "Choisir"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
-            {q.choices.map((choice, idx) => (
-              <button
-                key={idx}
-                onClick={() => choose(choice)}
-                disabled={loading}
-                className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
-                style={{
-                  background: "#fff",
-                  border: "1.5px solid #EFEAE0",
-                  color: "#1C1A17",
-                  textAlign: isArabicAnswer ? "right" : "left",
-                }}
-                dir={isArabicAnswer ? "rtl" : undefined}
-                lang={isArabicAnswer ? "ar" : undefined}
-              >
-                <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
-                  {choice}
-                </span>
-              </button>
-            ))}
+            {q.choices.map((choice, idx) => {
+              const isSelected = currentAnswer?.chosen === choice;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => select(choice)}
+                  disabled={loading}
+                  className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
+                  style={{
+                    background: isSelected ? "#ECFAF4" : "#fff",
+                    border: `1.5px solid ${isSelected ? GREEN : "#EFEAE0"}`,
+                    color: "#1C1A17",
+                    textAlign: isArabicAnswer ? "right" : "left",
+                  }}
+                  dir={isArabicAnswer ? "rtl" : undefined}
+                  lang={isArabicAnswer ? "ar" : undefined}
+                >
+                  <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
+                    {choice}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {loading && (
-          <p className="text-center text-sm" style={{ color: "#8B857A" }}>
-            Calcul du score…
-          </p>
-        )}
+        {/* Navigation : retour possible sur une question déjà vue pour changer
+            sa réponse ; "Suivant"/"Terminer" désactivé tant que rien n'est
+            choisi pour la question affichée. */}
+        <div className="flex items-center gap-3">
+          {current > 0 && (
+            <button
+              onClick={goPrev}
+              disabled={loading}
+              className="shrink-0 rounded-[14px] px-5 py-3.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+              style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+            >
+              Précédent
+            </button>
+          )}
+          {isLast ? (
+            <button
+              onClick={finish}
+              disabled={loading || !hasAnswer}
+              className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              style={{ background: GREEN }}
+            >
+              {loading ? "Calcul du score…" : "Terminer le quiz"}
+            </button>
+          ) : (
+            <button
+              onClick={goNext}
+              disabled={loading || !hasAnswer}
+              className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              style={{ background: GREEN }}
+            >
+              Suivant
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -386,6 +461,17 @@ export default function QuizPlayer({
     const { result, questions } = phase;
     const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
     const isGood = pct >= 70;
+
+    const wrongIndices = result.answers
+      .map((_, idx) => idx)
+      .filter((idx) => !result.answers[idx].is_correct);
+    const hasWrong = wrongIndices.length > 0;
+    const clampedReviewIndex = Math.min(reviewIndex, Math.max(0, wrongIndices.length - 1));
+    const idx = hasWrong ? wrongIndices[clampedReviewIndex] : -1;
+    const a = hasWrong ? result.answers[idx] : undefined;
+    const q = hasWrong ? questions[idx] : undefined;
+    // Réponses en arabe pour les deux sens FR→AR (texte et audio-choix).
+    const isAr = a ? a.direction !== "ar_to_fr" : false;
 
     return (
       <div className="flex flex-col gap-4">
@@ -412,70 +498,91 @@ export default function QuizPlayer({
           </p>
         </div>
 
-        {/* Detailed review */}
-        <div className="flex flex-col gap-2">
-          {result.answers.map((a, idx) => {
-            const q = questions[idx];
-            // Réponses en arabe pour les deux sens FR→AR (texte et audio-choix).
-            const isAr = a.direction !== "ar_to_fr";
-            return (
-              <div
-                key={idx}
-                className="rounded-[14px] p-3.5"
-                style={{
-                  background: a.is_correct ? "#ECFAF4" : "#FFF8F8",
-                  border: `1px solid ${a.is_correct ? "#C8EBDB" : "#F3B0B2"}`,
-                }}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="mt-0.5 shrink-0" style={{ color: a.is_correct ? GREEN : RED, fontSize: 14 }}>
-                    {a.is_correct ? "✓" : "✗"}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
-                      {q?.direction === "ar_to_fr" ? "Arabe → Français" : "Français → Arabe"}
+        {/* Correction : uniquement les mauvaises réponses, une par une */}
+        {!hasWrong ? (
+          <div
+            className="rounded-[18px] p-5 text-center"
+            style={{ background: "#ECFAF4", border: "1px solid #C8EBDB" }}
+          >
+            <p className="text-sm font-semibold" style={{ color: "#0A6B4E" }}>
+              Aucune erreur, bravo !
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+              Erreur {clampedReviewIndex + 1} / {wrongIndices.length}
+            </p>
+
+            <div
+              className="rounded-[14px] p-3.5"
+              style={{ background: "#FFF8F8", border: "1px solid #F3B0B2" }}
+            >
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 shrink-0" style={{ color: RED, fontSize: 14 }}>
+                  ✗
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
+                    {q?.direction === "ar_to_fr" ? "Arabe → Français" : "Français → Arabe"}
+                  </p>
+                  {q?.audio_url ? (
+                    <div className="mt-1">
+                      <AudioPrompt url={q.audio_url} compact />
+                    </div>
+                  ) : (
+                    <p
+                      className="text-sm font-medium mt-0.5"
+                      style={{ color: "#1C1A17" }}
+                      dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
+                    >
+                      {q?.prompt}
                     </p>
-                    {q?.audio_url ? (
-                      <div className="mt-1">
-                        <AudioPrompt url={q.audio_url} compact />
-                      </div>
-                    ) : (
-                      <p
-                        className="text-sm font-medium mt-0.5"
-                        style={{ color: "#1C1A17" }}
-                        dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
+                  )}
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className="text-xs" style={{ color: RED }}>
+                      Ta réponse :{" "}
+                      <span
+                        dir={isAr ? "rtl" : undefined}
+                        style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
                       >
-                        {q?.prompt}
-                      </p>
-                    )}
-                    {!a.is_correct && (
-                      <div className="mt-1.5 space-y-0.5">
-                        <p className="text-xs" style={{ color: RED }}>
-                          Ta réponse :{" "}
-                          <span
-                            dir={isAr ? "rtl" : undefined}
-                            style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
-                          >
-                            {a.chosen}
-                          </span>
-                        </p>
-                        <p className="text-xs font-semibold" style={{ color: "#0A6B4E" }}>
-                          Bonne réponse :{" "}
-                          <span
-                            dir={isAr ? "rtl" : undefined}
-                            style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
-                          >
-                            {a.correct}
-                          </span>
-                        </p>
-                      </div>
-                    )}
+                        {a?.chosen}
+                      </span>
+                    </p>
+                    <p className="text-xs font-semibold" style={{ color: "#0A6B4E" }}>
+                      Bonne réponse :{" "}
+                      <span
+                        dir={isAr ? "rtl" : undefined}
+                        style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
+                      >
+                        {a?.correct}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setReviewIndex((i) => Math.max(0, i - 1))}
+                disabled={clampedReviewIndex === 0}
+                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+              >
+                Précédent
+              </button>
+              <button
+                onClick={() => setReviewIndex((i) => Math.min(wrongIndices.length - 1, i + 1))}
+                disabled={clampedReviewIndex === wrongIndices.length - 1}
+                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+              >
+                Suivant
+              </button>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={restart}
