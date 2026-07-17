@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Spectral, Inter, Amiri, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -27,9 +27,19 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
-  title: "Takalamu — cours d'arabe & étude de texte",
+  title: "تكلّموا — cours d'arabe & étude de texte",
   description:
     "Plateforme de cours d'arabe individuels et d'étude de texte islamique en groupe.",
+  // Nom affiché sous l'icône quand le site est ajouté à l'écran d'accueil iOS.
+  appleWebApp: {
+    capable: true,
+    title: "تكلّموا",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FBF9F5",
 };
 
 export default function RootLayout({
