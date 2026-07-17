@@ -2,6 +2,35 @@
 
 ---
 
+## Session 33 (suite) — Retrait des boutons Suivant/Terminer (clic = valide + avance)
+
+> **Demande propriétaire (reformulée et validée)** : retour sur la suite précédente — lors
+> du quiz, cliquer une option doit **valider directement et passer à la question suivante**,
+> sans bouton « Suivant »/« Terminer » à cliquer en plus. Le retour arrière (« Précédent »)
+> est **conservé** pour permettre à l'élève de se corriger (main glissée, erreur) : cliquer
+> une option sur une question déjà répondue met à jour la réponse et avance directement,
+> comme en avançant normalement — aucune validation séparée nulle part, y compris sur la
+> dernière question (soumission immédiate au clic).
+
+### Plan d'exécution (`quiz-player.tsx` uniquement, aucune migration)
+- [x] Fusion de `select`/`goNext`/`finish` en une seule fonction `choose(chosen)` : met à
+      jour `answers[current]`, avance à `current+1` si pas la dernière question, sinon
+      soumet directement (plus de garde `hasAnswer`/bouton à part — le clic EST l'action)
+- [x] Boutons de choix (texte + audio-choix) : `onClick={() => select(...)}` → `choose(...)`
+- [x] Retrait du bloc de boutons « Suivant »/« Terminer le quiz » ; seul « Précédent »
+      reste (visible si `current > 0`), plus `isLast`/`hasAnswer` devenus inutiles
+- [x] Build (27 routes) + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
+- [x] Test navigateur réel (Playwright, même harnais jetable que la suite précédente,
+      supprimé après test) : 0 bouton Suivant/Terminer nulle part ; clic sur une réponse
+      (même fausse) avance directement (progress 1/4 → 2/4 en un clic) ; Précédent invisible
+      sur Q1, visible dès Q2 ; retour + clic sur la bonne réponse avance aussi directement
+      (pas de validation séparée) ; dernière question : clic soumet directement sans bouton
+      Terminer, score final reflète bien la correction (4/4 après avoir corrigé Q1)
+- [ ] `tasks/lessons.md` mis à jour
+- [ ] Commit + push branche de session (preview) — déploiement prod sur confirmation
+
+---
+
 ## Session 33 — Correctifs quiz de langue (correction ciblée, navigation, audio)
 
 > **Demande propriétaire (reformulée et validée)** : 3 correctifs sur le quiz de langue

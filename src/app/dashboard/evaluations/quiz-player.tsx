@@ -156,9 +156,12 @@ export default function QuizPlayer({
     }
   };
 
-  // Sélectionne (ou change) la réponse de la question courante — n'avance
-  // plus automatiquement, pour permettre d'y revenir et de la modifier.
-  const select = (chosen: string) => {
+  // Choisir une réponse la valide et avance directement à la question
+  // suivante (un seul clic, pas de bouton "Suivant"/"Terminer" à part) —
+  // sur la dernière question, soumet directement. "Précédent" permet d'y
+  // revenir et de la changer (le clic ré-écrit alors la réponse et
+  // ré-avance), sans jamais bloquer sur une validation à part.
+  const choose = async (chosen: string) => {
     if (phase.name !== "playing") return;
     const { questions, current, answers } = phase;
     const q = questions[current];
@@ -173,26 +176,15 @@ export default function QuizPlayer({
     };
     const newAnswers = [...answers];
     newAnswers[current] = answer;
-    setPhase({ name: "playing", questions, current, answers: newAnswers });
-  };
 
-  const goPrev = () => {
-    if (phase.name !== "playing" || phase.current === 0) return;
-    setPhase({ ...phase, current: phase.current - 1 });
-  };
+    if (current + 1 < questions.length) {
+      setPhase({ name: "playing", questions, current: current + 1, answers: newAnswers });
+      return;
+    }
 
-  const goNext = () => {
-    if (phase.name !== "playing" || phase.current + 1 >= phase.questions.length) return;
-    setPhase({ ...phase, current: phase.current + 1 });
-  };
-
-  const finish = async () => {
-    if (phase.name !== "playing") return;
-    const { questions, answers } = phase;
-    if (answers.some((a) => a === null)) return;
     setLoading(true);
     try {
-      const result = await submit(answers as QuizAnswer[]);
+      const result = await submit(newAnswers as QuizAnswer[]);
       setReviewIndex(0);
       setPhase({ name: "done", result, questions });
     } catch {
@@ -200,6 +192,11 @@ export default function QuizPlayer({
     } finally {
       setLoading(false);
     }
+  };
+
+  const goPrev = () => {
+    if (phase.name !== "playing" || phase.current === 0) return;
+    setPhase({ ...phase, current: phase.current - 1 });
   };
 
   const restart = () => {
@@ -294,10 +291,8 @@ export default function QuizPlayer({
     const { questions, current, answers } = phase;
     const q = questions[current];
     const currentAnswer = answers[current];
-    const hasAnswer = currentAnswer !== null;
     const progress = ((current) / questions.length) * 100;
     const isArabicAnswer = q.direction === "fr_to_ar";
-    const isLast = current + 1 >= questions.length;
 
     return (
       <div className="flex flex-col gap-4">
@@ -375,7 +370,7 @@ export default function QuizPlayer({
                   </span>
                   <AudioPrompt url={c.audio_url} neutral compact />
                   <button
-                    onClick={() => select(c.token)}
+                    onClick={() => choose(c.token)}
                     disabled={loading}
                     className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
                     style={
@@ -397,7 +392,7 @@ export default function QuizPlayer({
               return (
                 <button
                   key={idx}
-                  onClick={() => select(choice)}
+                  onClick={() => choose(choice)}
                   disabled={loading}
                   className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
                   style={{
@@ -418,40 +413,25 @@ export default function QuizPlayer({
           </div>
         )}
 
-        {/* Navigation : retour possible sur une question déjà vue pour changer
-            sa réponse ; "Suivant"/"Terminer" désactivé tant que rien n'est
-            choisi pour la question affichée. */}
-        <div className="flex items-center gap-3">
-          {current > 0 && (
-            <button
-              onClick={goPrev}
-              disabled={loading}
-              className="shrink-0 rounded-[14px] px-5 py-3.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-              style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-            >
-              Précédent
-            </button>
-          )}
-          {isLast ? (
-            <button
-              onClick={finish}
-              disabled={loading || !hasAnswer}
-              className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-              style={{ background: GREEN }}
-            >
-              {loading ? "Calcul du score…" : "Terminer le quiz"}
-            </button>
-          ) : (
-            <button
-              onClick={goNext}
-              disabled={loading || !hasAnswer}
-              className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-              style={{ background: GREEN }}
-            >
-              Suivant
-            </button>
-          )}
-        </div>
+        {/* Retour possible sur une question déjà vue pour changer sa réponse
+            (main glissée, erreur) — cliquer une option valide toujours et
+            avance directement, aucun bouton de validation séparé. */}
+        {current > 0 && (
+          <button
+            onClick={goPrev}
+            disabled={loading}
+            className="self-start rounded-[14px] px-5 py-3.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+            style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+          >
+            Précédent
+          </button>
+        )}
+
+        {loading && (
+          <p className="text-center text-sm" style={{ color: "#8B857A" }}>
+            Calcul du score…
+          </p>
+        )}
       </div>
     );
   }

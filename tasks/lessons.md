@@ -1,5 +1,32 @@
 # Lessons
 
+## Session 33 (suite) — Retrait des boutons Suivant/Terminer (clic = valide + avance)
+
+- **Une reformulation validée n'est pas gravée dans le marbre — le retour terrain peut la
+  faire évoluer, et c'est normal.** Le flux « cliquer = sélectionne, bouton dédié pour
+  avancer » de la suite précédente avait été explicitement demandé (option 2b, « retour
+  arrière avec changement de réponse ») et testé/validé/déployé. Le propriétaire est revenu
+  dessus après usage réel : il voulait le retour arrière, pas la revalidation à chaque
+  question. Les deux demandes n'étaient pas contradictoires — la bonne synthèse était
+  « clic = valide + avance (comme avant), ET Précédent reste possible pour corriger » —
+  mais elle n'était pas évidente à anticiper avant l'usage réel. Toujours accueillir un
+  "retour en arrière sur une fonctionnalité" sans discuter le bien-fondé de la demande
+  initiale : le propriétaire a le dernier mot sur l'UX, l'usage réel prime sur l'anticipation.
+- **"Cliquer une option = valider ET avancer" reste compatible avec "pouvoir revenir
+  corriger" sans bouton de validation séparé, à condition que revisiter une question
+  déjà répondue déclenche la MÊME action (avancer) qu'une première réponse.** Pas besoin
+  d'un mode spécial "édition" avec un bouton "Valider la correction" — cliquer une option
+  sur une question déjà vue écrase simplement l'ancienne réponse dans le tableau indexé par
+  position (déjà en place depuis la suite précédente) et avance comme d'habitude. La seule
+  fonction restée nécessaire est `goPrev()` (aucune contrepartie "goNext" séparée requise,
+  le clic sur une réponse fait déjà ce travail).
+- **Fusionner 3 handlers (`select`/`goNext`/`finish`) en 1 seul (`choose`) a supprimé toute
+  la logique de garde devenue inutile** (`hasAnswer`, `isLast` pour désactiver un bouton) —
+  un signe que la complexité ajoutée à la suite précédente (état de sélection distinct de
+  la validation) était bien liée à l'exigence "bouton Suivant/Terminer explicite", pas
+  intrinsèque à la fonctionnalité "retour arrière + correction". Revenir dessus a simplifié
+  le code plutôt que de le complexifier davantage.
+
 ## Session 33 — Correctifs quiz de langue (correction ciblée, navigation, audio)
 
 - **Un composant purement client (`"use client"`, aucune dépendance runtime à des server
