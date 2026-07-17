@@ -7,8 +7,8 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "تتكلموا — cours d'arabe & étude de texte",
-    short_name: "تتكلموا",
+    name: "Tatakalamu — cours d'arabe & étude de texte",
+    short_name: "Tatakalamu",
     description:
       "Plateforme de cours d'arabe individuels et d'étude de texte islamique en groupe.",
     start_url: "/",
