@@ -27,13 +27,13 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
-  title: "تكلّموا — cours d'arabe & étude de texte",
+  title: "تتكلموا — cours d'arabe & étude de texte",
   description:
     "Plateforme de cours d'arabe individuels et d'étude de texte islamique en groupe.",
   // Nom affiché sous l'icône quand le site est ajouté à l'écran d'accueil iOS.
   appleWebApp: {
     capable: true,
-    title: "تكلّموا",
+    title: "تتكلموا",
     statusBarStyle: "default",
   },
 };
