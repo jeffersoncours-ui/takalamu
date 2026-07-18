@@ -52,8 +52,35 @@
 - `database.types.ts` : régénération MCP impossible → édits ciblés (précédent assumé,
   session 31 suite 7), à régénérer verbatim dès le retour du MCP.
 
-### Plan d'exécution
-- [ ] Migration 68 (NON appliquée) : `ALTER TYPE quiz_source ADD VALUE 'conjugation'` seule
+### Review (suite 2 — livrée sur preview)
+- **MCP Supabase revenu en cours de session** → chantier fait proprement et testé
+  empiriquement (méthode §4), pas seulement écrit. Migrations 68 + 69 APPLIQUÉES (base
+  partagée, mais 100% additives : nouvelle table + nouvelles RPC, aucun client déployé n'y
+  touche → zéro risque prod).
+- **Moteur `src/lib/conjugation.ts`** : 13 personnes, 3 temps, pré-remplissage mécanique.
+  Une vraie erreur linguistique attrapée par le test (préfixe أنا du présent = hamza أَ, pas
+  alif nu اَ) — d'où l'intérêt de tester avant de présenter. Validé par rendu visuel des
+  tables complètes de 3 verbes-types (damma/kasra/fatha).
+- **DB testée via MCP** (impersonation JWT + ROLLBACK/cleanup) : génération (structure,
+  aucune bonne réponse leakée, 2 types, temps mélangés), correction (3/5 dont **ambiguïté
+  du présent** تَكْتُبُ = أنتَ/هي acceptée), isolation (Bilel bloqué 42501 en gen+submit pour
+  Anthony, lit 0 ligne). Données de test nettoyées (0 résidu).
+- **UI testée au navigateur (Playwright, harnais jetable supprimé)** : formulaire prof
+  (33 champs pré-remplis, hamza correcte), player élève (2 types de questions, 1-clic,
+  ambiguïté acceptée en bout de chaîne, correction erreurs-seules).
+- **Écrans** : formulaire prof `/teacher/students/[id]/vocabulary/[vocabId]` (sources passé
+  هو + présent هو → pré-remplit les 3 temps, chaque case éditable) ; lien « Conjuguer ce
+  verbe » par mot sur la fiche élève (indicateur ✓ si déjà saisi) ; 2ᵉ lanceur « Quiz de
+  conjugaison » côté élève (visible seulement si ≥1 conjugaison, un seul quiz actif à la fois).
+- **DIFFÉRÉ assumé** : la duplication d'un cours ne copie PAS encore les `verb_conjugations`
+  (elles sont liées au `vocab_id`, et la duplication crée de nouveaux vocab). Cas limite
+  (dupliquer un cours dont les verbes ont déjà une conjugaison) — à ajouter en suite si le
+  besoin se présente (copie par correspondance arabic_word après la RPC).
+- `database.types.ts` : édits ciblés (table + 2 RPC + valeur d'enum) copiés depuis la sortie
+  MCP `generate_typescript_types` — build vert.
+
+### Plan d'exécution (fait)
+- [x] Migration 68 APPLIQUÉE : `ALTER TYPE quiz_source ADD VALUE 'conjugation'` seule
 - [ ] Migration 69 (NON appliquée) : table `verb_conjugations` (vocab_id FK cascade,
       student_id FK, tense text check madi|mudari|amr, base_form text, forms jsonb,
       unique(vocab_id,tense)) + RLS (teacher ALL owns_student, student SELECT) + trigger

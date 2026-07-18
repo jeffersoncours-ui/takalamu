@@ -151,6 +151,79 @@ export async function generateLanguageQuiz(lessonRecordId?: string): Promise<Qui
   return shuffle([...vocabQuestions, ...formQuestions]);
 }
 
+// ── Quiz de conjugaison (verbe → formes, ou forme → personne) ────────────────
+export type ConjQuestion =
+  | {
+      qtype: "conjugate";
+      vocab_id: string;
+      tense: string;
+      person_code: string;
+      verb_ar: string;
+      verb_fr: string;
+      choices: string[];
+    }
+  | {
+      qtype: "which_person";
+      vocab_id: string;
+      tense: string;
+      shown_form: string;
+      choices: string[]; // person_codes
+    };
+
+export type ConjAnswer =
+  | { qtype: "conjugate"; vocab_id: string; tense: string; person_code: string; chosen: string }
+  | { qtype: "which_person"; vocab_id: string; tense: string; shown_form: string; chosen: string };
+
+export type ConjAnswerDetail =
+  | {
+      qtype: "conjugate";
+      tense: string;
+      person_code: string;
+      verb_ar: string;
+      verb_fr: string;
+      chosen: string;
+      correct: string;
+      is_correct: boolean;
+    }
+  | {
+      qtype: "which_person";
+      tense: string;
+      shown_form: string;
+      chosen: string;
+      chosen_form: string | null;
+      correct_person: string | null;
+      is_correct: boolean;
+    };
+
+export type ConjResult = {
+  score: number;
+  total: number;
+  quiz_attempt_id: string;
+  answers: ConjAnswerDetail[];
+};
+
+export async function generateConjugationQuiz(tense?: string): Promise<ConjQuestion[]> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("generate_conjugation_quiz", {
+    p_student_id: studentId,
+    ...(tense ? { p_tense: tense } : {}),
+  });
+  if (error) throw new Error(error.message);
+  return (data as ConjQuestion[]) ?? [];
+}
+
+export async function submitConjugationQuiz(answers: ConjAnswer[]): Promise<ConjResult> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("submit_conjugation_quiz", {
+    p_student_id: studentId,
+    p_answers: answers,
+  });
+  if (error) throw new Error(error.message);
+  return data as ConjResult;
+}
+
 export async function submitLanguageQuiz(answers: QuizAnswer[]): Promise<QuizResult> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();

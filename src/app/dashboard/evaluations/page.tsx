@@ -15,7 +15,7 @@ export default async function EvaluationsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
-  const [vocabRes, formsRes] = await Promise.all([
+  const [vocabRes, formsRes, conjRes] = await Promise.all([
     supabase
       .from("vocabulary")
       .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
@@ -26,7 +26,12 @@ export default async function EvaluationsPage() {
       .select("id, created_at, lesson_record_id, lesson_records(session_date, custom_title)")
       .eq("student_id", studentId)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("verb_conjugations")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", studentId),
   ]);
+  const hasConjugations = (conjRes.count ?? 0) > 0;
   if (vocabRes.error) console.error("evaluations vocab query failed:", vocabRes.error.message);
   if (formsRes.error) console.error("evaluations formulations query failed:", formsRes.error.message);
   const { data: vocab } = vocabRes;
@@ -53,5 +58,5 @@ export default async function EvaluationsPage() {
     .filter((g) => g.key !== "none")
     .map((g) => ({ id: g.key, label: g.label, count: g.items.length }));
 
-  return <EvaluationsClient count={count} courseOptions={courseOptions} />;
+  return <EvaluationsClient count={count} courseOptions={courseOptions} hasConjugations={hasConjugations} />;
 }

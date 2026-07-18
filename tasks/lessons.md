@@ -1,5 +1,48 @@
 # Lessons
 
+## Session 33 (suite 2) — Quiz de conjugaison (moteur arabe + table + RPC)
+
+- **Tester le moteur AVANT de bâtir dessus a payé immédiatement.** Le rendu visuel des
+  tables générées a révélé une faute linguistique invisible à la relecture du code : le
+  préfixe أنا du présent sortait en alif nu (اَكْتُبُ) au lieu de la hamzat al-qaṭʿ (أَكْتُبُ).
+  L'impératif, lui, garde bien l'alif nu (hamzat al-waṣl : اُكْتُبْ) — deux hamzas
+  différentes selon le contexte. Généralisable : pour tout contenu en langue étrangère
+  généré programmatiquement, un rendu visuel avec la vraie police vaut dix relectures de
+  code — l'œil attrape ce que le diff cache.
+- **L'ambiguïté sans voyelles n'est pas qu'un problème de saisie, c'est un invariant de
+  scoring.** Au présent, تَكْتُبُ est à la fois أنتَ et هي (idem تَكْتُبَانِ = أنتما/هما-fém).
+  Décision structurante : le scoring de « quelle personne ? » compare les FORMES, pas les
+  personnes — toute personne dont la forme vocalisée égale la forme montrée compte juste.
+  Vérifié en base (choisir هي pour تَكْتُبُ accepté) ET au navigateur. À retenir pour toute
+  future question inverse « valeur → clé » quand plusieurs clés partagent une valeur.
+- **Anti-triche par recalcul serveur, jamais par confiance au payload.** `generate_*`
+  n'émet jamais la bonne réponse (ni champ `correct`, ni id-source corrélable — vérifié par
+  un `bool_or(e ? 'correct' ...)` = false sur le payload). `submit_*` recharge la table de
+  conjugaison (scopée élève) et recalcule tout. Même schéma que les quiz existants
+  (formulation audio), reproduit ici.
+- **Impersonation RLS via MCP : `set_config('request.jwt.claims', ..., true)` suffit pour
+  tester les RPC SECURITY DEFINER** (elles lisent `auth.uid()` du claim), mais tester la RLS
+  au niveau TABLE exige en plus `set local role authenticated` — et alors on ne peut plus
+  écrire dans une table temp appartenant au superuser (permission denied). Leçon pratique :
+  séparer le test « garde RPC » (claim seul, écrit dans temp) du test « RLS table » (role +
+  claim, la requête finale EST le résultat, pas d'écriture temp).
+- **Player dédié plutôt que généricisation à outrance.** Le `QuizPlayer` de langue est
+  paramétré par des `direction`/`choices` texte ; la conjugation a des person_codes, un
+  verbe affiché, deux types de questions structurellement différents. Plutôt que de rendre
+  `QuizPlayer` polymorphe sur deux formes de question très éloignées, un
+  `ConjugationQuizPlayer` séparé qui REPREND le même flux éprouvé (1-clic + Précédent +
+  correction erreurs-seules) isole le risque (zéro touche au quiz de langue qui marche) au
+  prix d'un peu de flux dupliqué. Le seuil « extraire un générique » n'est pas atteint tant
+  que les shapes de données divergent autant.
+- **Injecter `generate`/`submit` en props rend un player testable au navigateur sans session
+  Supabase** (le composant devient pur, on mocke les deux fonctions dans un harnais). Refait
+  ici après avoir d'abord câblé les actions en dur — le refactor en props a aussi aligné le
+  composant sur le pattern de `QuizPlayer`. À faire d'emblée pour tout futur player.
+- **Conjugaison liée au `vocab_id` → la duplication de cours ne la copie pas gratis.** La
+  duplication recrée des vocab (nouveaux ids), donc les `verb_conjugations` (clé vocab_id)
+  ne suivent pas. Différé assumé (cas limite), à copier par correspondance `arabic_word`
+  après la RPC si le besoin monte — noté pour ne pas le redécouvrir.
+
 ## Session 33 (suite) — Retrait des boutons Suivant/Terminer (clic = valide + avance)
 
 - **Une reformulation validée n'est pas gravée dans le marbre — le retour terrain peut la

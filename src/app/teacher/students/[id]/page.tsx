@@ -31,7 +31,7 @@ export default async function StudentCardPage({
 
   if (!student) notFound();
 
-  const [recordsRes, noteRes, hwRes, vocabRes, grammarRes, formRes] =
+  const [recordsRes, noteRes, hwRes, vocabRes, grammarRes, formRes, conjRes] =
     await Promise.all([
       supabase
         .from("lesson_records")
@@ -65,7 +65,14 @@ export default async function StudentCardPage({
         .select("id, arabic_text, french_text, lesson_record_id, lesson_records(session_date, custom_title)", { count: "exact" })
         .eq("student_id", id)
         .order("created_at", { ascending: true }),
+      supabase
+        .from("verb_conjugations")
+        .select("vocab_id, tense")
+        .eq("student_id", id),
     ]);
+
+  // Mots qui ont déjà au moins un temps de conjugaison saisi.
+  const conjVocabIds = new Set((conjRes.data ?? []).map((c) => c.vocab_id));
 
   const profile = Array.isArray(student.profiles)
     ? student.profiles[0]
@@ -288,13 +295,22 @@ export default async function StudentCardPage({
             {group.items.map((v) => (
               <div
                 key={v.id}
-                className="flex items-center justify-between gap-3 rounded-[12px] px-3 py-2.5"
+                className="rounded-[12px] px-3 py-2.5 space-y-1.5"
                 style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
               >
-                <span className="text-sm" style={{ color: "#4A463F" }}>{v.french_definition}</span>
-                <span dir="rtl" lang="ar" className="font-arabic shrink-0" style={{ fontSize: 18, fontWeight: 700, color: "#0A553F" }}>
-                  {v.arabic_word}
-                </span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm" style={{ color: "#4A463F" }}>{v.french_definition}</span>
+                  <span dir="rtl" lang="ar" className="font-arabic shrink-0" style={{ fontSize: 18, fontWeight: 700, color: "#0A553F" }}>
+                    {v.arabic_word}
+                  </span>
+                </div>
+                <Link
+                  href={`/teacher/students/${id}/vocabulary/${v.id}`}
+                  className="inline-flex items-center gap-1 font-semibold"
+                  style={{ color: conjVocabIds.has(v.id) ? "#0A6B4E" : "#8B857A", fontSize: 11.5 }}
+                >
+                  {conjVocabIds.has(v.id) ? "Conjugaison ✓ — modifier" : "Conjuguer ce verbe →"}
+                </Link>
               </div>
             ))}
           </AccordionGroup>

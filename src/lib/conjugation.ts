@@ -20,7 +20,8 @@ export const KASRA = "ِ"; // ِ
 export const DAMMA = "ُ"; // ُ
 export const SUKUN = "ْ"; // ْ
 export const SHADDA = "ّ"; // ّ
-export const ALIF = "ا"; // ا
+export const ALIF = "ا"; // ا (hamzat al-waṣl de l'impératif : alif nu)
+export const ALIF_HAMZA = "أ"; // أ (hamzat al-qaṭʿ : préfixe أنا du présent)
 export const WAW = "و"; // و
 export const YA = "ي"; // ي
 export const NUN = "ن"; // ن
@@ -87,8 +88,6 @@ function toUnits(word: string): Unit[] {
   return units;
 }
 
-const render = (units: Unit[]): string =>
-  units.map((u) => u.base + u.marks).join("");
 
 // Extrait les 3 lettres-racine d'un passé هو trilitère sain (ex. كَتَبَ → ك ت ب).
 // Ignore les harakat ; ne garde que les consonnes. Défensif : renvoie ce qu'il
@@ -159,7 +158,7 @@ export function prefillMudari(mudariHuwa: string): Record<PersonCode, string> {
   const withPrefix = (prefix: string, ending: string) => prefix + stem + ending;
 
   return {
-    ana: withPrefix(ALIF + FATHA, DAMMA), // أَ...ُ
+    ana: withPrefix(ALIF_HAMZA + FATHA, DAMMA), // أَ...ُ (hamzat al-qaṭʿ)
     nahnu: withPrefix(NUN + FATHA, DAMMA), // نَ...ُ
     anta: withPrefix(TA + FATHA, DAMMA), // تَ...ُ
     anti: TA + FATHA + f.base + SUKUN + a.base + midVowel + l.base + KASRA + YA + NUN + FATHA, // تَ...ِينَ
@@ -190,7 +189,6 @@ export function prefillAmr(mudariHuwa: string): Partial<Record<PersonCode, strin
   const midVowel = a.marks.replace(SUKUN, "") || FATHA;
   // Hamza de liaison : اُ si voyelle médiane damma, sinon اِ.
   const helper = ALIF + (midVowel === DAMMA ? DAMMA : KASRA);
-  const stem = f.base + SUKUN + a.base + midVowel + l.base; // ف(ْ)ع(voyelle)ل
 
   return {
     anta: helper + f.base + SUKUN + a.base + midVowel + l.base + SUKUN, // اُفْعُلْ

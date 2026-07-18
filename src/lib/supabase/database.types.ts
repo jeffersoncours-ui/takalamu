@@ -757,6 +757,51 @@ export type Database = {
           },
         ]
       }
+      verb_conjugations: {
+        Row: {
+          created_at: string
+          forms: Json
+          id: string
+          student_id: string
+          tense: string
+          updated_at: string
+          vocab_id: string
+        }
+        Insert: {
+          created_at?: string
+          forms?: Json
+          id?: string
+          student_id: string
+          tense: string
+          updated_at?: string
+          vocab_id: string
+        }
+        Update: {
+          created_at?: string
+          forms?: Json
+          id?: string
+          student_id?: string
+          tense?: string
+          updated_at?: string
+          vocab_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verb_conjugations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verb_conjugations_vocab_id_fkey"
+            columns: ["vocab_id"]
+            isOneToOne: false
+            referencedRelation: "vocabulary"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vocabulary: {
         Row: {
           arabic_word: string
@@ -815,6 +860,10 @@ export type Database = {
         Args: { p_record_id: string }
         Returns: undefined
       }
+      generate_conjugation_quiz: {
+        Args: { p_size?: number; p_student_id: string; p_tense?: string }
+        Returns: Json
+      }
       generate_formulation_quiz: {
         Args: {
           p_allow_audio_choices?: boolean
@@ -843,6 +892,10 @@ export type Database = {
       }
       submit_grammar_quiz: {
         Args: { p_answers: Json; p_quiz_id: string; p_student_id: string }
+        Returns: Json
+      }
+      submit_conjugation_quiz: {
+        Args: { p_answers: Json; p_student_id: string }
         Returns: Json
       }
       submit_homework:
@@ -921,7 +974,12 @@ export type Database = {
         | "session_reminder"
         | "house_rules"
       quiz_scope: "individual"
-      quiz_source: "glossary" | "grammar" | "formulation" | "language"
+      quiz_source:
+        | "glossary"
+        | "grammar"
+        | "formulation"
+        | "language"
+        | "conjugation"
       student_status: "active" | "suspended_absences"
       trial_status:
         | "pending"
@@ -1076,7 +1134,13 @@ export const Constants = {
         "house_rules",
       ],
       quiz_scope: ["individual"],
-      quiz_source: ["glossary", "grammar", "formulation", "language"],
+      quiz_source: [
+        "glossary",
+        "grammar",
+        "formulation",
+        "language",
+        "conjugation",
+      ],
       student_status: ["active", "suspended_absences"],
       trial_status: [
         "pending",
