@@ -1,5 +1,43 @@
 # Lessons
 
+## Session 33 (suite 4) — Tuiles Évaluations, longueur de quiz, déblocage par grammar_rules
+
+- **Vérifier la faisabilité d'une idée du propriétaire ("détecter depuis les règles de
+  grammaire") sur les vraies données avant de dire oui.** Le propriétaire voulait éviter un
+  champ manuel sur la fiche élève ; interroger `grammar_rules.title` a montré que le titre de
+  la règle "passé" est **identique mot pour mot** chez les 4 élèves (texte standardisé,
+  dupliqué) — signal fiable pour un matching par mot-clé. Sans cette vérification, j'aurais pu
+  soit refuser à tort (en supposant du texte libre variable), soit accepter à tort (si le texte
+  avait été très variable). Toujours interroger avant de juger une idée "trop fragile" ou
+  "assez fiable".
+- **Un paramètre RPC déjà présent mais jamais exploité par le client évite toute migration.**
+  `p_size` existait déjà sur les 3 RPC de génération de quiz (écrit dès les sessions
+  précédentes, jamais branché à un vrai sélecteur côté UI). Avant d'écrire une migration pour
+  "ajouter la taille", vérifier le code SQL existant a évité un aller-retour base de données
+  pour une fonctionnalité entièrement côté app.
+- **"Mix de plusieurs sous-ensembles" sans changer la RPC = N appels + combine + shuffle côté
+  client.** Déjà le pattern de `generateLanguageQuiz` (vocab + formulation, deux RPC
+  distinctes). Réappliqué ici pour "mix de plusieurs temps débloqués" (N appels à la MÊME RPC
+  avec des `p_tense` différents) — un seul pattern, deux usages. Généralisable à toute future
+  demande de "quiz qui pioche dans plusieurs catégories choisies".
+- **Une régression pédagogique peut se cacher derrière une fonctionnalité qui "marche".** En
+  creusant la demande de longueur, j'ai découvert que `ensureConjugations()` générait déjà les
+  3 temps pour chaque verbe dès la première visite d'Évaluations — donc "Tous les temps"
+  piochait dans des temps jamais enseignés, sans lien avec la demande initiale (juste "plus de
+  questions"). Le déblocage par `grammar_rules` corrige ce trou en même temps que la demande
+  explicite. Toujours signaler ce genre de découverte au lieu de la corriger silencieusement.
+- **Splitter une page partagée en plusieurs routes élimine un état de coordination entier.**
+  `evaluations-client.tsx` existait uniquement pour empêcher deux quiz de tourner en même temps
+  sur une page qui les affichait tous les deux. Passer à une route par quiz (tuiles → sous-page
+  dédiée) rend ce state (`active: "lang"|"conj"|null` partagé) obsolète — chaque route n'a plus
+  qu'un seul quiz, donc plus rien à coordonner. Un changement d'architecture (tuiles) a rendu un
+  bout de code entier inutile, à supprimer plutôt qu'à adapter.
+- **`stripHarakat` + regex sur mot-clé défini (`الأمر` avec alif-lam) évite un faux positif
+  connu.** Chercher juste la racine `أمر` (3 lettres) aurait matché `أمريكي`/`أمريكا`
+  (Amérique/américain, vocabulaire plausible). Exiger le préfixe défini `الأمر` (le mot "l'ordre/
+  impératif" au sens grammatical) élimine ce risque — vérifié explicitement par un test dédié
+  avant de considérer la détection fiable.
+
 ## Session 33 (suite 3) — Conjugaison automatique + moteur morphologique complet
 
 - **Vérifier l'hypothèse de l'utilisateur sur SES données avant de coder.** Le propriétaire

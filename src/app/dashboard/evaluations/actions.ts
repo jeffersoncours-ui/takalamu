@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireStudent } from "@/lib/auth";
-import { conjugate, parseVerbForms } from "@/lib/conjugation";
+import { conjugate, parseVerbForms, type Tense } from "@/lib/conjugation";
 
 // ── Quiz de langue auto-généré (vocabulaire + formulation fusionnés) ─────────
 // Génération : on appelle les deux RPC éprouvées (generate_individual_quiz,
@@ -72,20 +72,25 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export async function generateLanguageQuiz(lessonRecordId?: string): Promise<QuizQuestion[]> {
+export async function generateLanguageQuiz(size: number): Promise<QuizQuestion[]> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
 
+  // Chaque RPC est demandée à hauteur de `size` — chacune se plafonne déjà
+  // naturellement à son propre pool (LIMIT SQL, aucune erreur si trop demandé).
+  // Combiner puis tronquer à `size` après mélange donne une répartition
+  // proportionnelle au contenu réel (vocab vs formulations) sans sur-représenter
+  // un côté pauvre en contenu.
   const [vocabRes, formRes] = await Promise.all([
     supabase.rpc("generate_individual_quiz", {
       p_student_id: studentId,
-      ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
+      p_size: size,
     }),
     supabase.rpc("generate_formulation_quiz", {
       p_student_id: studentId,
       // Opt-in explicite au mode audio-choix (base partagée preview/prod).
       p_allow_audio_choices: true,
-      ...(lessonRecordId ? { p_lesson_record_id: lessonRecordId } : {}),
+      p_size: size,
     }),
   ]);
 
@@ -149,7 +154,7 @@ export async function generateLanguageQuiz(lessonRecordId?: string): Promise<Qui
     });
   }
 
-  return shuffle([...vocabQuestions, ...formQuestions]);
+  return shuffle([...vocabQuestions, ...formQuestions]).slice(0, size);
 }
 
 // ── Quiz de conjugaison (verbe → formes, ou forme → personne) ────────────────
@@ -235,15 +240,82 @@ export async function ensureConjugations(): Promise<void> {
   await supabase.rpc("ensure_conjugations", { p_student_id: studentId, p_rows: rows });
 }
 
-export async function generateConjugationQuiz(tense?: string): Promise<ConjQuestion[]> {
+/** Mélange Fisher-Yates générique (copie). */
+function shuffleAny<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * `tenses` = un seul temps, ou plusieurs pour un "mix". La RPC n'a qu'un
+ * paramètre `p_tense` (un seul temps ou null = TOUS les temps existants côté
+ * DB, ce qui inclurait des temps non enseignés) — donc pour un mix de temps
+ * précis on appelle la RPC une fois par temps (taille répartie) et on combine
+ * côté client, comme `generateLanguageQuiz` pour vocab+formulation.
+ */
+export async function generateConjugationQuiz(tenses: string[], size: number): Promise<ConjQuestion[]> {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("generate_conjugation_quiz", {
-    p_student_id: studentId,
-    ...(tense ? { p_tense: tense } : {}),
-  });
-  if (error) throw new Error(error.message);
-  return (data as ConjQuestion[]) ?? [];
+
+  if (tenses.length <= 1) {
+    const { data, error } = await supabase.rpc("generate_conjugation_quiz", {
+      p_student_id: studentId,
+      p_size: size,
+      ...(tenses[0] ? { p_tense: tenses[0] } : {}),
+    });
+    if (error) throw new Error(error.message);
+    return (data as ConjQuestion[]) ?? [];
+  }
+
+  const perTense = Math.ceil(size / tenses.length);
+  const results = await Promise.all(
+    tenses.map((t) =>
+      supabase.rpc("generate_conjugation_quiz", { p_student_id: studentId, p_tense: t, p_size: perTense }),
+    ),
+  );
+  for (const r of results) {
+    if (r.error) throw new Error(r.error.message);
+  }
+  const combined = results.flatMap((r) => (r.data as ConjQuestion[]) ?? []);
+  return shuffleAny(combined).slice(0, size);
+}
+
+const TENSE_KEYWORDS: Record<Tense, RegExp> = {
+  // Mots-clés AR (sans harakat, après normalisation) + FR — robustes à la
+  // formulation exacte du titre saisi par le prof.
+  madi: /الماضي|passé/i,
+  mudari: /المضارع|présent/i,
+  // "الأمر" (avec alif-lam) évite un faux positif sur "أمريكا" (Amérique).
+  amr: /الأمر|impératif/i,
+};
+
+/** Retire les harakat (voyelles brèves, sukun, shadda) pour un matching fiable
+ *  quelle que soit la vocalisation exacte du titre saisi par le prof. */
+function stripHarakat(s: string): string {
+  return s.replace(/[ً-ْٰ]/g, "");
+}
+
+/**
+ * Détecte les temps de conjugaison "débloqués" pour l'élève courant à partir
+ * de ses `grammar_rules` déjà saisies par l'enseignant (titre contenant le mot-
+ * clé du temps, ex. « الفِعْلُ المَاضِي = le verbe au passé »). Pas de champ à
+ * ajouter côté fiche élève : le signal existe déjà dans les données réelles.
+ */
+export async function getUnlockedTenses(): Promise<Tense[]> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("grammar_rules")
+    .select("title")
+    .eq("student_id", studentId);
+
+  const titles = (data ?? []).map((r) => stripHarakat(r.title ?? ""));
+  const order: Tense[] = ["madi", "mudari", "amr"];
+  return order.filter((t) => titles.some((title) => TENSE_KEYWORDS[t].test(title)));
 }
 
 export async function submitConjugationQuiz(answers: ConjAnswer[]): Promise<ConjResult> {

@@ -2,6 +2,99 @@
 
 ---
 
+## Session 33 (suite 4) — Tuiles Évaluations + longueur de quiz + déblocage auto des temps
+
+> **Demande (reformulée et validée au fil de l'échange)** :
+> 1. Page Évaluations → **tuiles cliquables** (« Quiz de langue » / « Quiz de conjugaison »),
+>    chacune renvoie vers son propre écran.
+> 2. **Sélecteur de longueur 10/20/30/50** (paliers, défaut 20) sur les DEUX quiz — plus de
+>    choix par cours/leçon pour le quiz de langue (retiré). Toujours plafonné par le contenu
+>    réel (jamais de répétition pour remplir).
+> 3. Conjugaison : le sélecteur de **temps** (Passé/Présent/Impératif/Mix) est conservé, mais
+>    restreint aux temps **débloqués**. Déblocage **automatique** (pas de champ ajouté sur la
+>    fiche élève) : détecté depuis les `grammar_rules` déjà saisies par le prof (titre
+>    contenant le mot-clé du temps, FR ou AR). Si aucun temps débloqué → tuile « Quiz de
+>    conjugaison » masquée entièrement.
+
+### Connexions vérifiées avant de coder
+- `generate_individual_quiz` et `generate_formulation_quiz` acceptent déjà `p_size` (LIMIT
+  SQL, se plafonne naturellement au pool réel sans erreur) → **aucune migration**.
+- `generate_conjugation_quiz` accepte déjà `p_tense` ET `p_size` (idem, LIMIT naturel) →
+  **aucune migration**. Le "Mix" de plusieurs temps débloqués se fait en appelant la RPC une
+  fois par temps puis en combinant/mélangeant côté client (même pattern déjà éprouvé dans
+  `generateLanguageQuiz` pour vocab+formulation) — pas de nouveau paramètre RPC.
+- **Bug latent trouvé en creusant** : `ensureConjugations()` génère déjà les 3 temps pour
+  chaque verbe détecté, dès la 1ʳᵉ visite d'Évaluations — indépendamment de ce que l'élève a
+  réellement "vu" en cours. Donc "Tous les temps" (`p_tense=null`) piochait déjà dans des
+  temps non enseignés. Le déblocage par grammar_rules corrige ce vrai problème, pas seulement
+  la demande du jour.
+- Échantillon réel `grammar_rules.title` (les 4 élèves) : tous portent EXACTEMENT
+  « الفِعْلُ المَاضِي = le verbe au passé » pour la règle du passé — texte standardisé (dupliqué
+  d'élève en élève), donc un matching par mot-clé est fiable. Aucune donnée réelle pour
+  présent/impératif pour l'instant (pas encore enseignés) → matching sur plusieurs variantes
+  (AR sans harakat + FR) pour rester robuste à la formulation exacte future.
+- `QuizPlayer`/`ConjugationQuizPlayer`/`EvaluationsClient` n'ont qu'un seul point d'usage
+  (`dashboard/evaluations/`) — aucune référence externe. Le lien de navigation
+  `/dashboard/revision` pointe vers `/dashboard/evaluations` (URL inchangée, devient les
+  tuiles).
+
+### Review (suite 4 — livrée sur preview)
+- Aucune migration : `p_size` était déjà supporté par `generate_individual_quiz`,
+  `generate_formulation_quiz` et `generate_conjugation_quiz` (LIMIT SQL, plafonnage naturel).
+  Le "Mix" de plusieurs temps se fait par appels RPC multiples combinés côté client (même
+  pattern que `generateLanguageQuiz` pour vocab+formulation) — zéro paramètre RPC ajouté.
+- `getUnlockedTenses()` (lecture `grammar_rules.title`, `stripHarakat` + regex AR+FR par
+  temps) validé contre les 4 vraies fiches élève : détecte `madi` seul (aucune règle
+  présent/impératif encore saisie) ; zéro faux positif sur « أمريكي » (le mot-clé impératif
+  exige le préfixe défini `الأمر`, pas juste la racine `أمر`).
+- Testé au navigateur (Playwright, harnais jetable) : sélecteur de longueur (défaut 20,
+  plafonnage réel affiché en direct, `size` transmis tel quel à `generate` — le plafonnage
+  final se fait côté RPC comme en prod) ; sélecteur de temps absent quand un seul temps est
+  débloqué (appelle directement ce temps) ; "Mix" + options individuelles quand plusieurs
+  temps débloqués, chaque choix transmis correctement à `generate(tenses, size)`.
+- Routing éclaté en 3 pages (`/evaluations` tuiles, `/evaluations/langue`,
+  `/evaluations/conjugaison`) — `evaluations-client.tsx` supprimé (la coordination
+  "un seul quiz actif" entre les deux lanceurs n'a plus lieu d'être : ils sont maintenant sur
+  des routes séparées, chacune avec son propre wrapper client minimal pour masquer l'en-tête
+  pendant le quiz).
+- Bug latent corrigé au passage (découvert en creusant, pas demandé explicitement) :
+  `ensureConjugations()` génère déjà les 3 temps pour chaque verbe dès la 1ʳᵉ visite, donc
+  "Tous les temps" piochait avant dans des temps jamais enseignés — le déblocage par
+  grammar_rules corrige ce vrai trou pédagogique, pas seulement l'irritant de longueur.
+
+### Plan d'exécution
+- [x] `src/app/dashboard/evaluations/actions.ts` :
+      - `generateLanguageQuiz(size)` : remplace `lessonRecordId?` par `size`, passe `p_size`
+        aux deux RPC (chacune plafonnée par son propre pool), combine+mélange+tronque à `size`
+      - `generateConjugationQuiz(tenses: string[], size)` : 1 appel si `tenses.length<=1`,
+        sinon 1 appel RPC par temps (taille répartie) puis combine+mélange+tronque
+      - `getUnlockedTenses()` : lit `grammar_rules.title` de l'élève courant, normalise
+        (retire les harakat), détecte passé/présent/impératif par mots-clés AR+FR, renvoie
+        `Tense[]` dans l'ordre madi→mudari→amr
+- [x] `quiz-player.tsx` : retire `courses`/le sélecteur "Réviser", ajoute le sélecteur de
+      longueur (boutons 10/20/30/50, défaut 20), `generate` prend `size` au lieu de
+      `lessonRecordId`
+- [x] `conjugation-player.tsx` : prop `unlockedTenses: Tense[]`, options du sélecteur de temps
+      limitées à ces temps (+ "Mix" si >1), ajoute le sélecteur de longueur, `generate` prend
+      `(tenses: string[], size)`
+- [x] Nouvelles routes :
+      - `dashboard/evaluations/page.tsx` → tuiles (server component) ; calcule
+        `hasLanguageContent`/`unlockedTenses`/`hasConjugationContent` pour l'affichage/masquage
+      - `dashboard/evaluations/langue/page.tsx` (+ client wrapper) : ancien contenu quiz de
+        langue, sans le sélecteur de cours
+      - `dashboard/evaluations/conjugaison/page.tsx` (+ client wrapper) : quiz de conjugaison,
+        `unlockedTenses` calculé côté serveur
+      - suppression de `evaluations-client.tsx` (plus nécessaire, un seul quiz par route)
+- [x] `dashboard/revision/page.tsx` : met à jour la description de la tuile Évaluations
+- [x] Build + lint
+- [x] Test navigateur (harnais jetable, mock generate/submit) : tuiles, sélecteurs de
+      longueur (10/20/30/50, plafonnage), sélecteur de temps limité aux débloqués + mix
+- [x] Vérification empirique via MCP de `getUnlockedTenses` contre les vraies données
+      (les 4 élèves : passé détecté, présent/impératif non détectés)
+- [x] `tasks/todo.md` (Review) + `tasks/lessons.md`, commit + push preview
+
+---
+
 ## Session 33 (suite 3) — Conjugaison AUTOMATIQUE (moteur morphologique complet)
 
 > **Demande** : le quiz de conjugaison doit apparaître TOUT SEUL dans Évaluations, à

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
-import { personByCode, type PersonCode } from "@/lib/conjugation";
+import { personByCode, type PersonCode, type Tense } from "@/lib/conjugation";
 import type { ConjQuestion, ConjAnswer, ConjResult } from "./actions";
 
 const GREEN = "#0F9D6E";
 const RED = "#B4292E";
+const LENGTH_OPTIONS = [10, 20, 30, 50] as const;
 
 const TENSE_LABEL: Record<string, string> = {
   madi: "Passé (الماضي)",
@@ -31,24 +32,30 @@ function ArabicBig({ children, size = 30 }: { children: React.ReactNode; size?: 
 }
 
 export function ConjugationQuizPlayer({
+  unlockedTenses,
   generate,
   submit,
   onActiveChange,
 }: {
-  generate: (tense?: string) => Promise<ConjQuestion[]>;
+  /** Temps débloqués pour cet élève (détectés depuis ses grammar_rules), dans
+   *  l'ordre madi→mudari→amr. Toujours ≥1 (sinon la tuile n'est pas affichée). */
+  unlockedTenses: Tense[];
+  generate: (tenses: string[], size: number) => Promise<ConjQuestion[]>;
   submit: (answers: ConjAnswer[]) => Promise<ConjResult>;
   onActiveChange?: (active: boolean) => void;
 }) {
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [loading, setLoading] = useState(false);
-  const [tense, setTense] = useState<string>("all");
+  const [tense, setTense] = useState<string>("mix");
+  const [size, setSize] = useState<number>(20);
   const [reviewIndex, setReviewIndex] = useState(0);
 
   const start = async () => {
     setLoading(true);
     onActiveChange?.(true);
     try {
-      const questions = await generate(tense === "all" ? undefined : tense);
+      const tenses = tense === "mix" ? unlockedTenses : [tense];
+      const questions = await generate(tenses, size);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: questions.map(() => null) });
       } else {
@@ -109,23 +116,55 @@ export function ConjugationQuizPlayer({
             Conjugue tes verbes, ou retrouve la personne d’une forme conjuguée.
           </p>
         </div>
+        {unlockedTenses.length > 1 && (
+          <div className="space-y-1.5">
+            <label htmlFor="conj-tense" className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+              Temps
+            </label>
+            <select
+              id="conj-tense"
+              value={tense}
+              onChange={(e) => setTense(e.target.value)}
+              className="w-full rounded-[13px] px-3.5 outline-none"
+              style={{ height: 46, background: "#FBF9F5", border: "1.5px solid #E9E3D8", fontSize: 14, color: "#1C1A17" }}
+            >
+              <option value="mix">Mix (tous les temps vus)</option>
+              {unlockedTenses.map((t) => (
+                <option key={t} value={t}>
+                  {TENSE_LABEL[t]}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Longueur du quiz : paliers, plafonnés au contenu réel disponible */}
         <div className="space-y-1.5">
-          <label htmlFor="conj-tense" className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
-            Temps
+          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+            Nombre de questions
           </label>
-          <select
-            id="conj-tense"
-            value={tense}
-            onChange={(e) => setTense(e.target.value)}
-            className="w-full rounded-[13px] px-3.5 outline-none"
-            style={{ height: 46, background: "#FBF9F5", border: "1.5px solid #E9E3D8", fontSize: 14, color: "#1C1A17" }}
-          >
-            <option value="all">Tous les temps</option>
-            <option value="madi">Passé (الماضي)</option>
-            <option value="mudari">Présent (المضارع)</option>
-            <option value="amr">Impératif (الأمر)</option>
-          </select>
+          <div className="grid grid-cols-4 gap-2">
+            {LENGTH_OPTIONS.map((n) => {
+              const selected = size === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setSize(n)}
+                  className="rounded-[12px] py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                  style={
+                    selected
+                      ? { background: GREEN, color: "#fff" }
+                      : { background: "#FBF9F5", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
+                  }
+                >
+                  {n}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
         <button
           onClick={start}
           disabled={loading}

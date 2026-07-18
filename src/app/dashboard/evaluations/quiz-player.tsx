@@ -96,8 +96,6 @@ function AudioPrompt({
   );
 }
 
-type Course = { id: string; label: string; count: number };
-
 export type QuizLabels = {
   title: string;
   unit: string;
@@ -105,7 +103,6 @@ export type QuizLabels = {
   intro: string;
   emptyTitle: string;
   emptyBody: string;
-  allScopeLabel: string;
   arToFrQuestion: string;
   frToArQuestion: string;
   /** Question de compréhension orale AR→FR (formulation avec audio). */
@@ -114,17 +111,17 @@ export type QuizLabels = {
   frToArAudioQuestion?: string;
 };
 
+const LENGTH_OPTIONS = [10, 20, 30, 50] as const;
+
 export default function QuizPlayer({
   count,
-  courses,
   generate,
   submit,
   labels,
   onActiveChange,
 }: {
   count: number;
-  courses: Course[];
-  generate: (lessonRecordId?: string) => Promise<QuizQuestion[]>;
+  generate: (size: number) => Promise<QuizQuestion[]>;
   submit: (answers: QuizAnswer[]) => Promise<QuizResult>;
   labels: QuizLabels;
   /** Prévient le parent qu'un quiz est en cours (dès le clic, avant même la
@@ -134,15 +131,14 @@ export default function QuizPlayer({
 }) {
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
   const [loading, setLoading] = useState(false);
-  const [scope, setScope] = useState<string>("all");
+  const [size, setSize] = useState<number>(20);
   const [reviewIndex, setReviewIndex] = useState(0);
 
   const start = async () => {
     setLoading(true);
     onActiveChange?.(true);
     try {
-      const lessonRecordId = scope === "all" ? undefined : scope;
-      const questions = await generate(lessonRecordId);
+      const questions = await generate(size);
       if (questions.length > 0) {
         setPhase({ name: "playing", questions, current: 0, answers: questions.map(() => null) });
       } else {
@@ -223,9 +219,7 @@ export default function QuizPlayer({
       );
     }
 
-    const selectedCount =
-      scope === "all" ? count : courses.find((c) => c.id === scope)?.count ?? count;
-    const questionCount = Math.max(1, Math.round(selectedCount / 2));
+    const effective = Math.min(size, count);
 
     return (
       <div
@@ -244,34 +238,35 @@ export default function QuizPlayer({
           {labels.intro}
         </p>
 
-        {/* Portée : tout ou un cours précis */}
-        {courses.length > 0 && (
-          <div className="space-y-1.5">
-            <label htmlFor={`quiz-scope-${labels.unit}`} className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
-              Réviser
-            </label>
-            <select
-              id={`quiz-scope-${labels.unit}`}
-              value={scope}
-              onChange={(e) => setScope(e.target.value)}
-              className="w-full rounded-[13px] px-3.5 outline-none"
-              style={{ height: 46, background: "#FBF9F5", border: "1.5px solid #E9E3D8", fontSize: 14, color: "#1C1A17" }}
-            >
-              <option value="all">
-                {labels.allScopeLabel} ({count} {count > 1 ? labels.unitPlural : labels.unit})
-              </option>
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label} ({c.count} {c.count > 1 ? labels.unitPlural : labels.unit})
-                </option>
-              ))}
-            </select>
+        {/* Longueur du quiz : paliers, plafonnés au contenu réel disponible */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+            Nombre de questions
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {LENGTH_OPTIONS.map((n) => {
+              const selected = size === n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setSize(n)}
+                  className="rounded-[12px] py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                  style={
+                    selected
+                      ? { background: GREEN, color: "#fff" }
+                      : { background: "#FBF9F5", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
+                  }
+                >
+                  {n}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
         <p className="text-xs" style={{ color: "#8B857A" }}>
-          {questionCount} question{questionCount > 1 ? "s" : ""} pour ce quiz (la moitié du
-          périmètre choisi).
+          {effective} question{effective > 1 ? "s" : ""} pour ce quiz.
         </p>
 
         <button
