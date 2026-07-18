@@ -8,59 +8,58 @@ type Props = {
   subtitle: string;
   badge: string;
   icon: React.ReactNode;
+  letter: string;
   variant: Variant;
 };
 
-const VARIANT_STYLE: Record<Variant, { bg: string; shadow: string; ink: string; sub: string; badgeBg: string; badgeText: string; iconColor: string }> = {
+const VARIANT_STYLE: Record<
+  Variant,
+  { bg: string; shadow: string; accent: string; letter: string; iconShadow: string }
+> = {
   green: {
-    bg: "linear-gradient(135deg, #12A876 0%, #0A553F 100%)",
-    shadow: "0 16px 32px rgba(10,85,63,.28)",
-    ink: "#FFFFFF",
-    sub: "rgba(255,255,255,.78)",
-    badgeBg: "rgba(255,255,255,.16)",
-    badgeText: "#FFFFFF",
-    iconColor: "rgba(255,255,255,.22)",
+    bg: "#E3F5EC",
+    shadow: "0 8px 20px rgba(15,157,110,.10)",
+    accent: "#0F9D6E",
+    letter: "rgba(15,157,110,.16)",
+    iconShadow: "0 4px 10px rgba(15,157,110,.16)",
   },
   cream: {
-    bg: "linear-gradient(135deg, #F3E9D2 0%, #E2D0A4 100%)",
-    shadow: "0 16px 32px rgba(28,26,23,.10)",
-    ink: "#3B2E14",
-    sub: "rgba(59,46,20,.65)",
-    badgeBg: "rgba(59,46,20,.10)",
-    badgeText: "#3B2E14",
-    iconColor: "rgba(59,46,20,.16)",
+    bg: "#F2E5C7",
+    shadow: "0 8px 20px rgba(138,106,46,.12)",
+    accent: "#8A6A2E",
+    letter: "rgba(138,106,46,.18)",
+    iconShadow: "0 4px 10px rgba(138,106,46,.16)",
   },
 };
 
-export function EvalHeroCard({ href, title, subtitle, badge, icon, variant }: Props) {
+export function EvalHeroCard({ href, title, subtitle, badge, icon, letter, variant }: Props) {
   const s = VARIANT_STYLE[variant];
   return (
     <Link
       href={href}
-      className="relative block overflow-hidden rounded-3xl px-5 py-5 transition-opacity hover:opacity-90"
+      className="relative flex items-center gap-4 overflow-hidden rounded-[28px] px-5 py-5 transition-opacity hover:opacity-90"
       style={{ background: s.bg, boxShadow: s.shadow }}
     >
       <span
-        className="absolute -right-2 -bottom-2 pointer-events-none"
-        style={{ color: s.iconColor }}
+        aria-hidden
+        className="font-arabic absolute -right-2 top-1/2 -translate-y-1/2 pointer-events-none select-none"
+        style={{ fontSize: 130, lineHeight: 1, color: s.letter }}
+      >
+        {letter}
+      </span>
+      <span
+        className="relative z-10 flex items-center justify-center rounded-2xl bg-white shrink-0"
+        style={{ width: 56, height: 56, boxShadow: s.iconShadow, color: s.accent }}
       >
         {icon}
       </span>
-      <div className="relative space-y-2.5">
-        <p
-          className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: s.ink }}
-        >
-          {title}
-        </p>
-        <p className="text-sm" style={{ color: s.sub }}>{subtitle}</p>
+      <div className="relative z-10 flex-1 min-w-0">
+        <p className="font-bold leading-tight" style={{ fontSize: 17, color: "#1C1A17" }}>{title}</p>
+        <p className="text-sm mt-0.5" style={{ color: "#5B564C" }}>{subtitle}</p>
         <span
-          className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
-          style={{ background: s.badgeBg, color: s.badgeText }}
+          className="inline-block mt-2 rounded-full bg-white px-3 py-1 text-xs font-semibold"
+          style={{ color: s.accent }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
           {badge}
         </span>
       </div>

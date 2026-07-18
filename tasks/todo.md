@@ -12,30 +12,59 @@
 > vérifié par balayage de toutes les branches distantes). Repris à partir de la
 > capture d'écran du mockup fournie par le propriétaire + la citation exacte de
 > l'accord (« B mais en crème pour la tuile conjugaison »).
+>
+> **Itération finale** : après un 1ᵉʳ rendu réel de l'option B (dégradés saturés), le
+> propriétaire a préféré une 3ᵉ option montrée en capture (**"C — Claire, filigrane
+> arabe + pastille"** : fond pastel clair, icône dans un badge blanc, pastille texte
+> sans coche, grande lettre arabe décorative en filigrane) — toujours avec la tuile
+> conjugaison en **crème** au lieu du bleu du mockup. Design final = option C, teintes
+> B abandonnées.
 
 ### Plan d'exécution
 - [x] Récupération du travail non fusionné de la session « conjugaison » (`claude/
-      takalamu-dev-session-3wopqs`, jamais mergée en prod — laissée de côté sur
-      demande du propriétaire) par fast-forward, nécessaire car le mockup montre les
-      2 tuiles (langue + conjugaison) déjà en place
-- [x] Nouveau composant `dashboard/evaluations/eval-hero-card.tsx` (carte pleine
-      couleur, icône décorative géante en fond, titre + sous-titre + badge "✓ ...") —
-      scopé à cet écran, `MenuCardLink` (utilisé ailleurs) non touché
-- [x] Variante `green` (dégradé `--tk-accent`→`--tk-teal-deep`, texte blanc) pour
-      Quiz de langue ; variante `cream` (dégradé crème chaud, texte encre foncée) pour
-      Quiz de conjugaison — palette dérivée des tokens `globals.css` existants
-- [x] `page.tsx` : badge dynamique réel — "X élément(s) dispo" (vocab+formulations,
-      requête déjà utilisée par `langue/page.tsx`) et "[Temps] débloqué(s)" (déduit de
-      `unlockedTenses`, déjà calculé pour l'affichage conditionnel de la tuile)
+      takalamu-dev-session-3wopqs`) par fast-forward, nécessaire car le mockup montre
+      les 2 tuiles (langue + conjugaison) déjà en place
+- [x] Nouveau composant `dashboard/evaluations/eval-hero-card.tsx` scopé à cet écran
+      (`MenuCardLink`, utilisé ailleurs, non touché) — **réécrit une 2ᵉ fois** pour
+      l'option C : fond pastel clair (vert `#E3F5EC` / crème `#F2E5C7`, plus de
+      dégradé saturé), icône dans un badge carré blanc arrondi (couleur d'accent),
+      pastille texte blanche sans coche, grande lettre arabe décorative en filigrane
+      (`font-arabic`/Amiri déjà chargé globalement — ل pour langue, ف pour
+      conjugaison, positionnée en absolu à droite, très faible opacité)
+- [x] `page.tsx` : badge dynamique réel — "X élément(s)" (vocab+formulations, requête
+      déjà utilisée par `langue/page.tsx`) et "[Temps] débloqué(s)" (déduit
+      d'`unlockedTenses`, déjà calculé pour l'affichage conditionnel de la tuile)
 - [x] Build (32 routes) + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
-- [x] Rendu réel vérifié : harnais jetable (`eval-hero-harness`, hors auth) + `.env.local`
-      temporaire (URL réelle du projet + clé anon factice, pattern déjà établi
-      session 33) + capture Playwright montrée au propriétaire avant tout commit ;
-      harnais + `.env.local` supprimés immédiatement après, jamais commités
-- [ ] Validation du rendu par le propriétaire
-- [ ] Commit + push branche de session (preview) — pas de déploiement prod sans
-      confirmation explicite (le travail conjugaison sous-jacent reste lui aussi en
-      attente, cf session 33 suite 3/4)
+- [x] Rendu réel vérifié 2 fois (harnais jetable hors-auth + `.env.local` temporaire,
+      capture Playwright) : 1ʳᵉ capture (option B) montrée → propriétaire redirige
+      vers l'option C ; 2ᵉ capture (option C, crème) validée. Harnais + `.env.local`
+      supprimés après chaque capture, jamais commités.
+- [x] Vérification MCP avant merge prod : `list_migrations` confirme les migrations
+      68/69/70 (conjugaison) réellement appliquées en base réelle (pas seulement
+      rédigées) ; `get_advisors` (sécurité) — uniquement des WARN déjà connus
+      (RPC `SECURITY DEFINER` accessibles anon/authenticated, même motif que toutes
+      les autres RPC de l'app), aucune nouvelle catégorie
+- [x] Validation du rendu par le propriétaire (option C, crème) — **autorisation
+      explicite de déploiement direct en prod** une fois fait
+- [x] Commit + push branche de session (preview)
+- [x] Merge prod (fast-forward `main` **et** branche de prod Vercel réelle
+      `claude/new-project-setup-1jcgwf`) + confirmation `READY` via MCP Vercel — ce
+      merge embarque aussi le quiz de conjugaison sous-jacent (session 33 suite 3/4,
+      DB déjà prête, propriétaire informé et d'accord)
+
+### Review
+- Écran Évaluations élève passé de tuiles compactes à liste à des **cartes pleines
+  largeur, fond pastel clair** (nouveau composant `EvalHeroCard`) : icône dans un
+  badge blanc, titre/sous-titre, pastille texte, grande lettre arabe décorative en
+  filigrane (ل / ف). Conjugaison en **crème** (`#F2E5C7`) plutôt que le bleu du
+  mockup d'origine, à la demande du propriétaire.
+- Ce merge prod embarque de fait tout le travail de la session « conjugaison »
+  laissé en attente (suite 3/4 : moteur morphologique complet, RPC, écran prof de
+  saisie/pré-remplissage, quiz élève) — la base était déjà prête (migrations 68-70
+  appliquées, vérifié `list_migrations` avant le merge), le propriétaire en a été
+  informé avant de donner son accord explicite pour le déploiement direct.
+- Aucune nouvelle migration pour ce lot précis (cartes couleur = 100% frontend,
+  badges alimentés par des requêtes déjà existantes).
 
 ---
 

@@ -58,11 +58,12 @@ export default async function EvaluationsPage() {
         <EvalHeroCard
           href="/dashboard/evaluations/langue"
           title="Quiz de langue"
-          subtitle="Vocabulaire et expressions mélangés"
-          badge={`${languageCount} élément${languageCount > 1 ? "s" : ""} dispo`}
+          subtitle="Vocabulaire et expressions"
+          badge={`${languageCount} élément${languageCount > 1 ? "s" : ""}`}
           variant="green"
+          letter="ل"
           icon={
-            <svg width="112" height="112" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
@@ -75,8 +76,9 @@ export default async function EvaluationsPage() {
             subtitle="Passé, présent, impératif"
             badge={tenseBadge(unlockedTenses)}
             variant="cream"
+            letter="ف"
             icon={
-              <svg width="112" height="112" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12a9 9 0 1 1-2.64-6.36" />
                 <polyline points="21 3 21 9 15 9" />
               </svg>

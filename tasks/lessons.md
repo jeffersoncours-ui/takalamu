@@ -34,6 +34,34 @@
   URL réelle publique + clé anon factice, capture Playwright, suppression immédiate
   après capture). Confirme que ce pattern est robuste et reproductible d'une session
   à l'autre pour tout composant serveur/présentation qui ne nécessite pas de vraie
+  écriture en base — répété une 2ᵉ fois dans la même tâche (itération B→C) sans
+  aucun coût de mise en place supplémentaire, une fois le pattern déjà en place.
+- **Montrer le rendu réel AVANT de demander une validation évite un aller-retour
+  coûteux, mais n'élimine pas le besoin d'itérer sur le design.** Le propriétaire a
+  rejeté le 1ᵉʳ rendu (option B, cartes saturées) au profit d'une 3ᵉ option (C,
+  claire + filigrane arabe) fournie en capture — la préférence visuelle reste
+  fondamentalement subjective et ne se devine pas depuis la seule demande initiale
+  ("B mais en crème"). Le coût de l'itération est resté faible précisément parce que
+  le composant était déjà isolé (`EvalHeroCard`, un seul point d'usage) : réécrire
+  entièrement son style interne (dégradé saturé → pastel + icône badge + filigrane)
+  n'a touché ni `page.tsx` (props inchangées à l'exception d'une nouvelle prop
+  `letter`) ni aucun autre écran.
+- **Une autorisation explicite et anticipée ("une fois fait, envoie direct en prod")
+  couvre le merge prod à venir, mais pas la vérification empirique qui doit rester
+  systématique.** Le propriétaire a autorisé le déploiement prod avant même de voir
+  le rendu final — cela dispense de repasser par une confirmation explicite une fois
+  le rendu validé, mais ne dispense pas de vérifier, avant de merger, que la base
+  partagée est réellement prête (ici : `list_migrations` pour confirmer que les
+  migrations 68-70 de la session « conjugaison » laissée en attente étaient bien
+  appliquées, pas seulement rédigées) et que l'advisor sécurité ne révèle rien de
+  nouveau. Une autorisation anticipée porte sur la décision produit ("j'aime ce
+  design, déploie-le"), jamais sur la vérification technique qui la rend sûre.
+- **Un merge prod "ciblé" (une refonte visuelle) peut embarquer de fait un feature
+  entier resté en attente**, si ce feature était un prérequis silencieux du travail
+  demandé (ici : le mockup montrait déjà la tuile conjugaison, donc la récupérer par
+  fast-forward pour construire dessus revient à la mettre en jeu pour le prochain
+  merge prod). Signalé explicitement au propriétaire avant de merger plutôt que
+  traité comme un détail d'implémentation invisible.
   écriture en base.
 
 ## Session 33 (suite 4) — Tuiles Évaluations, longueur de quiz, déblocage par grammar_rules
