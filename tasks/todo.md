@@ -2,6 +2,98 @@
 
 ---
 
+## Session 33 (suite 2) — Quiz de conjugaison (الماضي، المضارع، الأمر)
+
+> **Demande propriétaire (reformulée, maquette validée « vas-y »)** : quiz de conjugaison
+> auto-généré pour la leçon la plus importante. Périmètre élargi par le propriétaire aux
+> **3 temps d'un coup** (passé, présent, impératif — « autant le faire maintenant »).
+> - **13 formes** au passé/présent (أنتما commune masc/fém — corrigé par le propriétaire),
+>   **5 formes** à l'impératif (2ᵉ personnes uniquement).
+> - **Harakat complètes OBLIGATOIRES partout** (saisie, affichage, choix de quiz).
+> - Côté prof : table **pré-remplie automatiquement** (mécanique pour les verbes sains),
+>   chaque case modifiable (verbes faibles/hamza). Le présent n'est PAS déductible du
+>   passé (voyelle médiane variable : كَتَبَ→يَكْتُبُ mais جَلَسَ→يَجْلِسُ) → le prof saisit
+>   la forme هو du présent, et présent + impératif se pré-remplissent depuis elle.
+> - Côté élève : 2 types de questions QCM (jamais de saisie arabe libre — sans harakat,
+>   كتبت est ambigu entre 4 personnes) : « conjugue X pour [personne] » (distracteurs =
+>   autres formes du même verbe) et l'inverse « quelle personne ? » (pronom + trad. FR).
+> - Un clic = valide + avance ; Précédent conservé ; correction finale = erreurs seules
+>   (flux quiz existant réutilisé).
+> - **Preview uniquement** — pas de prod sans validation.
+
+### Connexions vérifiées avant de coder
+- **MCP Supabase INDISPONIBLE cette session** (serveur en « permission denied », OAuth
+  non refaisable en session non-interactive). Source de vérité utilisée : les migrations
+  versionnées du repo (01/03/04/51/66/67 relues). Conséquence assumée : les migrations
+  68/69 sont RÉDIGÉES mais PAS appliquées, et les tests empiriques DB (RLS, RPC) sont
+  DIFFÉRÉS jusqu'à ré-autorisation du MCP par le propriétaire. Les écrans neufs sont
+  gardés pour ne pas crasher tant que la table n'existe pas (erreur → état vide).
+- `vocabulary` (migration 03) : id/student_id/arabic_word/french_definition — policies
+  `vocab_teacher_all` (owns_student) + `vocab_select_student`. Une table de conjugaison
+  liée par vocab_id + student_id peut copier ce pattern exactement.
+- `quizzes`/`quiz_attempts` (04, 67) : `submit_language_quiz` = modèle exact à répliquer
+  (SECURITY DEFINER, contrôle current_student_id, 1 ligne quizzes + 1 ligne quiz_attempts,
+  answers enrichies avec is_correct). Enum `quiz_source` : nouvelle valeur `conjugation`
+  SEULE dans sa migration (règle ALTER TYPE ADD VALUE).
+- Tuile « Dernière note » (dashboard) : lit `quiz_attempts.answers` et compte les
+  `is_correct` → format enrichi identique = compatible sans modification.
+- `generate_formulation_quiz` (51) : modèle de génération (tirage random, distracteurs,
+  payload sans marquage de la bonne réponse).
+- **Ambiguïté du présent à gérer** : تَكْتُبُ est identique pour أنتَ ET هي (idem
+  أنتما/هما-fém). Garde-fous : (a) question « quelle personne ? » — les distracteurs
+  excluent toute personne dont la forme est identique à la bonne ; scoring = comparaison
+  de FORMES (toute personne à forme identique compte juste) ; (b) question « conjugue » —
+  distracteurs = formes DISTINCTES en valeur (jamais deux choix identiques).
+- Fiche élève prof (`teacher/students/[id]/page.tsx`) : liste vocab par cours → point
+  d'entrée « Conjugaison » par mot. La fiche de fin de cours n'est PAS touchée (< 30 s).
+- Duplication (`library/[recordId]/actions.ts`) : copie le vocab en re-soumettant la RPC
+  (nouvelles lignes) → les conjugaisons doivent SUIVRE (workflow réel : un cours saisi
+  une fois puis dupliqué) — copie post-RPC par correspondance arabic_word.
+- `database.types.ts` : régénération MCP impossible → édits ciblés (précédent assumé,
+  session 31 suite 7), à régénérer verbatim dès le retour du MCP.
+
+### Plan d'exécution
+- [ ] Migration 68 (NON appliquée) : `ALTER TYPE quiz_source ADD VALUE 'conjugation'` seule
+- [ ] Migration 69 (NON appliquée) : table `verb_conjugations` (vocab_id FK cascade,
+      student_id FK, tense text check madi|mudari|amr, base_form text, forms jsonb,
+      unique(vocab_id,tense)) + RLS (teacher ALL owns_student, student SELECT) + trigger
+      updated_at + RPC `generate_conjugation_quiz(p_student_id, p_tense default null)`
+      (≤10 questions, combos (verbe,temps,personne,type) distincts, 2 types de questions,
+      payload sans bonne réponse marquée, gardes d'ambiguïté) + RPC
+      `submit_conjugation_quiz(p_student_id, p_answers)` (modèle 67, source 'conjugation')
+- [ ] `src/lib/conjugation.ts` : 13 personnes (codes, pronoms vocalisés, libellés FR,
+      ordre d'affichage), 3 temps, algos de pré-remplissage `prefillMadi(base)` /
+      `prefillMudari(huwa)` / `prefillAmr(huwa_mudari)` (mécaniques verbes sains,
+      défensifs sinon)
+- [ ] Test unitaire node des 3 algos : كَتَبَ/يَكْتُبُ (table complète attendue exacte),
+      جَلَسَ/يَجْلِسُ (impératif en اِـ), entrée non vocalisée (pas de crash)
+- [ ] Écran prof `/teacher/students/[id]/vocabulary/[vocabId]` : page + `conjugation-form.tsx`
+      (3 onglets temps, pré-remplissage au clic, 13/13/5 champs harakat éditables, RTL,
+      sauvegarde par temps) + `actions.ts` (upsert direct RLS, pas de RPC)
+- [ ] Fiche élève prof : lien « Conjugaison » par mot du vocabulaire (+ indicateur si
+      des temps sont déjà validés)
+- [ ] Élève — `evaluations/actions.ts` : `generateConjugationQuiz`/`submitConjugationQuiz`
+      (mapping RPC → QuizQuestion avec champs structurés conjugaison)
+- [ ] `quiz-player.tsx` : rendu question « conjugue » (verbe + trad + pronom cible) et
+      choix riches « pronom + libellé FR » pour « quelle personne ? » — extension du
+      contrat existant (champs optionnels), flux 1-clic/Précédent/correction inchangés
+- [ ] `evaluations-client.tsx` + `page.tsx` : 2ᵉ lanceur « Quiz de conjugaison » (visible
+      seulement si ≥1 table validée ; requête gardée → invisible tant que la migration
+      n'est pas appliquée), un seul quiz actif à la fois (pattern existant)
+- [ ] Duplication : copie des `verb_conjugations` par correspondance arabic_word
+      source→cible après la RPC (requête gardée si table absente)
+- [ ] `database.types.ts` : édits ciblés (table + 2 RPC) — à régénérer verbatim au retour MCP
+- [ ] Build + lint + grep connexions résiduelles
+- [ ] Tests harnais Playwright (client uniquement) : formulaire prof (pré-remplissage
+      réel des 31 formes, édition d'une case), quiz élève (2 types de questions, flux
+      1-clic, correction erreurs seules)
+- [ ] **DIFFÉRÉ (retour MCP obligatoire)** : appliquer 68 puis 69, régénérer les types
+      verbatim, tests empiriques (RLS cross-élève/cross-prof, génération — ambiguïté
+      présent, jamais de bonne réponse marquée dans le payload, scoring, advisor)
+- [ ] `tasks/todo.md` (Review) + `tasks/lessons.md` + commit + push preview — PAS de prod
+
+---
+
 ## Session 33 (suite) — Retrait des boutons Suivant/Terminer (clic = valide + avance)
 
 > **Demande propriétaire (reformulée et validée)** : retour sur la suite précédente — lors
