@@ -1,7 +1,19 @@
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { MenuCardLink } from "@/components/menu-card-link";
+import { EvalHeroCard } from "./eval-hero-card";
 import { ensureConjugations, getUnlockedTenses } from "./actions";
+import type { Tense } from "@/lib/conjugation";
+
+const TENSE_SHORT_LABEL: Record<Tense, string> = {
+  madi: "Passé",
+  mudari: "Présent",
+  amr: "Impératif",
+};
+
+function tenseBadge(tenses: Tense[]): string {
+  const names = tenses.map((t) => TENSE_SHORT_LABEL[t]);
+  return names.length === 1 ? `${names[0]} débloqué` : `${names.join(", ")} débloqués`;
+}
 
 /**
  * Landing Évaluations : deux tuiles — Quiz de langue (toujours visible, l'écran
@@ -16,7 +28,12 @@ export default async function EvaluationsPage() {
   // décider si la tuile conjugaison est disponible (idempotent, n'écrase rien).
   await ensureConjugations();
 
-  const unlockedTenses = await getUnlockedTenses();
+  const [unlockedTenses, vocabRes, formsRes] = await Promise.all([
+    getUnlockedTenses(),
+    supabase.from("vocabulary").select("id", { count: "exact", head: true }).eq("student_id", studentId),
+    supabase.from("formulations").select("id", { count: "exact", head: true }).eq("student_id", studentId),
+  ]);
+  const languageCount = (vocabRes.count ?? 0) + (formsRes.count ?? 0);
 
   let showConjugationTile = false;
   if (unlockedTenses.length > 0) {
@@ -37,29 +54,29 @@ export default async function EvaluationsPage() {
         Évaluations
       </h1>
 
-      <div className="space-y-2">
-        <MenuCardLink
+      <div className="space-y-3">
+        <EvalHeroCard
           href="/dashboard/evaluations/langue"
-          label="Quiz de langue"
-          desc="Vocabulaire et expressions"
-          color="#0F9D6E"
-          bg="#ECFAF4"
+          title="Quiz de langue"
+          subtitle="Vocabulaire et expressions mélangés"
+          badge={`${languageCount} élément${languageCount > 1 ? "s" : ""} dispo`}
+          variant="green"
           icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg width="112" height="112" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
           }
         />
         {showConjugationTile && (
-          <MenuCardLink
+          <EvalHeroCard
             href="/dashboard/evaluations/conjugaison"
-            label="Quiz de conjugaison"
-            desc="Passé, présent, impératif"
-            color="#3E63DD"
-            bg="#EAEFFD"
+            title="Quiz de conjugaison"
+            subtitle="Passé, présent, impératif"
+            badge={tenseBadge(unlockedTenses)}
+            variant="cream"
             icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <svg width="112" height="112" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12a9 9 0 1 1-2.64-6.36" />
                 <polyline points="21 3 21 9 15 9" />
               </svg>

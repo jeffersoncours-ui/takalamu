@@ -1,5 +1,41 @@
 # Lessons
 
+## Session 33 (suite 5) — Cartes couleur (hero) sur l'écran Évaluations
+
+- **Un travail non commité est un travail perdu, même s'il a été "décidé" en
+  conversation.** Une session précédente avait obtenu l'accord explicite du
+  propriétaire sur un design (« B mais en crème pour la tuile conjugaison ») et
+  affirmé l'implémenter directement dans le vrai code — mais la session s'est
+  arrêtée sans jamais committer, et le conteneur éphémère qui portait ce travail a
+  disparu. Un balayage de **toutes** les branches distantes (`git branch -r` triées
+  par date de dernier commit) a confirmé : rien nulle part. Réflexe à généraliser en
+  reprise de session : ne jamais supposer qu'une décision verbalisée dans une
+  session précédente s'est traduite en code — vérifier par un balayage large avant
+  de recommencer, et si rien n'est trouvé, considérer le travail comme réellement
+  perdu (pas de récupération possible depuis un conteneur reclamé) plutôt que
+  d'espérer le retrouver.
+- **Committer/pousser dès qu'une étape est terminée, même en attendant une
+  validation propriétaire, évite ce genre de perte.** La méthode CLAUDE.md (§4)
+  décrit déjà "commit + push preview" comme une étape du plan, distincte de
+  "déploiement prod" (qui lui attend confirmation explicite) — la confusion entre
+  les deux ("attendre une validation" appliquée au commit local plutôt qu'au merge
+  prod) est probablement ce qui a coûté le travail de la session précédente. Un
+  hook de fin de session (`stop-hook-git-check.sh`) qui bloque sur changements non
+  commités est un filet de sécurité direct contre cette classe d'erreur.
+- **Reconstruire une palette "carte pleine couleur" à partir des tokens `globals.css`
+  existants (`--tk-accent`, `--tk-teal-deep`, `--tk-surface-alt`) plutôt que d'inventer
+  de nouvelles couleurs** garde la cohérence de marque même pour un composant tout
+  nouveau (`EvalHeroCard`) — la variante crème réutilise implicitement la famille de
+  teintes déjà présente ailleurs (fond crème du favicon, `#F7F4EE` du fond de page)
+  sans jamais s'en approcher assez pour se fondre dedans (nécessite un dégradé plus
+  saturé + ombre dédiée pour rester lisible comme "carte" sur un fond déjà crème).
+- **Rendu réel avant tout commit, même sans session élève réelle disponible** : même
+  pattern jetable que la session 33 (harnais hors-auth + `.env.local` temporaire,
+  URL réelle publique + clé anon factice, capture Playwright, suppression immédiate
+  après capture). Confirme que ce pattern est robuste et reproductible d'une session
+  à l'autre pour tout composant serveur/présentation qui ne nécessite pas de vraie
+  écriture en base.
+
 ## Session 33 (suite 4) — Tuiles Évaluations, longueur de quiz, déblocage par grammar_rules
 
 - **Vérifier la faisabilité d'une idée du propriétaire ("détecter depuis les règles de

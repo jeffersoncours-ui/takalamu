@@ -2,6 +2,43 @@
 
 ---
 
+## Session 33 (suite 5) — Cartes couleur (hero) sur l'écran Évaluations
+
+> **Reprise d'un travail interrompu** : une session précédente avait discuté avec le
+> propriétaire de 2 options de refonte visuelle pour les tuiles Évaluations (captures
+> "A" texte / "B — cartes pleines couleur hero"), et le propriétaire avait validé
+> l'option B avec la tuile conjugaison en **crème** plutôt qu'en bleu — mais cette
+> session s'est arrêtée avant tout commit (code jamais retrouvé dans aucune branche,
+> vérifié par balayage de toutes les branches distantes). Repris à partir de la
+> capture d'écran du mockup fournie par le propriétaire + la citation exacte de
+> l'accord (« B mais en crème pour la tuile conjugaison »).
+
+### Plan d'exécution
+- [x] Récupération du travail non fusionné de la session « conjugaison » (`claude/
+      takalamu-dev-session-3wopqs`, jamais mergée en prod — laissée de côté sur
+      demande du propriétaire) par fast-forward, nécessaire car le mockup montre les
+      2 tuiles (langue + conjugaison) déjà en place
+- [x] Nouveau composant `dashboard/evaluations/eval-hero-card.tsx` (carte pleine
+      couleur, icône décorative géante en fond, titre + sous-titre + badge "✓ ...") —
+      scopé à cet écran, `MenuCardLink` (utilisé ailleurs) non touché
+- [x] Variante `green` (dégradé `--tk-accent`→`--tk-teal-deep`, texte blanc) pour
+      Quiz de langue ; variante `cream` (dégradé crème chaud, texte encre foncée) pour
+      Quiz de conjugaison — palette dérivée des tokens `globals.css` existants
+- [x] `page.tsx` : badge dynamique réel — "X élément(s) dispo" (vocab+formulations,
+      requête déjà utilisée par `langue/page.tsx`) et "[Temps] débloqué(s)" (déduit de
+      `unlockedTenses`, déjà calculé pour l'affichage conditionnel de la tuile)
+- [x] Build (32 routes) + lint verts (seule l'erreur pré-existante `drawer-nav.tsx`)
+- [x] Rendu réel vérifié : harnais jetable (`eval-hero-harness`, hors auth) + `.env.local`
+      temporaire (URL réelle du projet + clé anon factice, pattern déjà établi
+      session 33) + capture Playwright montrée au propriétaire avant tout commit ;
+      harnais + `.env.local` supprimés immédiatement après, jamais commités
+- [ ] Validation du rendu par le propriétaire
+- [ ] Commit + push branche de session (preview) — pas de déploiement prod sans
+      confirmation explicite (le travail conjugaison sous-jacent reste lui aussi en
+      attente, cf session 33 suite 3/4)
+
+---
+
 ## Session 33 (suite 4) — Tuiles Évaluations + longueur de quiz + déblocage auto des temps
 
 > **Demande (reformulée et validée au fil de l'échange)** :
