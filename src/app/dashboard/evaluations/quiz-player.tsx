@@ -543,24 +543,26 @@ export default function QuizPlayer({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setReviewIndex((i) => Math.max(0, i - 1))}
-                disabled={clampedReviewIndex === 0}
-                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-              >
-                Précédent
-              </button>
-              <button
-                onClick={() => setReviewIndex((i) => Math.min(wrongIndices.length - 1, i + 1))}
-                disabled={clampedReviewIndex === wrongIndices.length - 1}
-                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-              >
-                Suivant
-              </button>
-            </div>
+            {wrongIndices.length > 1 && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setReviewIndex((i) => Math.max(0, i - 1))}
+                  disabled={clampedReviewIndex === 0}
+                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+                  style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                >
+                  Précédent
+                </button>
+                <button
+                  onClick={() => setReviewIndex((i) => Math.min(wrongIndices.length - 1, i + 1))}
+                  disabled={clampedReviewIndex === wrongIndices.length - 1}
+                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+                  style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                >
+                  Suivant
+                </button>
+              </div>
+            )}
           </div>
         )}
 
