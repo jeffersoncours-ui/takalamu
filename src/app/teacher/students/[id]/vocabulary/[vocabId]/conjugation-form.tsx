@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   PERSONS,
   personsForTense,
-  prefillMadi,
-  prefillMudari,
-  prefillAmr,
+  conjugate,
   type Tense,
   type PersonCode,
 } from "@/lib/conjugation";
@@ -17,8 +15,6 @@ import { saveConjugations, type TenseForms } from "./actions";
 const GREEN = "#0F9D6E";
 
 type FormsState = Record<Tense, Record<string, string>>;
-
-const emptyForms = (): FormsState => ({ madi: {}, mudari: {}, amr: {} });
 
 const TENSE_META: { id: Tense; ar: string; fr: string }[] = [
   { id: "madi", ar: "الماضي", fr: "Passé" },
@@ -54,18 +50,20 @@ export function ConjugationForm({
     setForms((f) => ({ ...f, [tense]: { ...f[tense], [code]: value } }));
 
   const prefillAll = () => {
-    const next = emptyForms();
-    if (madiBase.trim()) next.madi = prefillMadi(madiBase.trim());
-    if (mudariBase.trim()) {
-      next.mudari = prefillMudari(mudariBase.trim());
-      next.amr = prefillAmr(mudariBase.trim()) as Record<string, string>;
+    const m = madiBase.trim();
+    const p = mudariBase.trim();
+    // Le moteur a besoin des DEUX formes pour classer le verbe (sain, creux,
+    // défectueux…) et conjuguer les 3 temps correctement.
+    if (m && p) {
+      const c = conjugate(m, p);
+      setForms({ madi: c.madi, mudari: c.mudari, amr: c.amr as Record<string, string> });
+    } else {
+      setForms((f) => ({
+        madi: m ? { ...f.madi, huwa: m } : f.madi,
+        mudari: p ? { ...f.mudari, huwa: p } : f.mudari,
+        amr: f.amr,
+      }));
     }
-    // On ne remplace que les temps dont la forme source est fournie.
-    setForms((f) => ({
-      madi: madiBase.trim() ? next.madi : f.madi,
-      mudari: mudariBase.trim() ? next.mudari : f.mudari,
-      amr: mudariBase.trim() ? next.amr : f.amr,
-    }));
     setMsg(null);
   };
 

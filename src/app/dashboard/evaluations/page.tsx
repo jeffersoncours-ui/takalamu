@@ -2,6 +2,7 @@ import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { groupByLesson } from "@/lib/group-by-lesson";
 import { EvaluationsClient } from "./evaluations-client";
+import { ensureConjugations } from "./actions";
 
 type LessonRow = {
   lesson_record_id: string | null;
@@ -14,6 +15,10 @@ type LessonRow = {
 export default async function EvaluationsPage() {
   const { studentId } = await requireStudent();
   const supabase = await createClient();
+
+  // Auto-génère les conjugaisons manquantes des verbes du vocabulaire avant de
+  // décider si le quiz de conjugaison est disponible (idempotent, n'écrase rien).
+  await ensureConjugations();
 
   const [vocabRes, formsRes, conjRes] = await Promise.all([
     supabase

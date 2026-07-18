@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireStudent } from "@/lib/auth";
+import { conjugate, parseVerbForms } from "@/lib/conjugation";
 
 // ── Quiz de langue auto-généré (vocabulaire + formulation fusionnés) ─────────
 // Génération : on appelle les deux RPC éprouvées (generate_individual_quiz,
@@ -201,6 +202,38 @@ export type ConjResult = {
   quiz_attempt_id: string;
   answers: ConjAnswerDetail[];
 };
+
+/**
+ * Auto-génère et persiste les conjugaisons manquantes de l'élève à partir de son
+ * vocabulaire : chaque mot « passé/présent » détecté comme verbe est conjugué par
+ * le moteur (src/lib/conjugation) puis inséré (sans écraser une saisie prof, via
+ * la RPC ensure_conjugations). Idempotent — appelé à l'ouverture des Évaluations.
+ */
+export async function ensureConjugations(): Promise<void> {
+  const { studentId } = await requireStudent();
+  const supabase = await createClient();
+  const { data: vocab } = await supabase
+    .from("vocabulary")
+    .select("id, arabic_word")
+    .eq("student_id", studentId);
+  if (!vocab || vocab.length === 0) return;
+
+  const rows: { vocab_id: string; tense: string; forms: Record<string, string> }[] = [];
+  for (const v of vocab) {
+    const parsed = parseVerbForms(v.arabic_word);
+    if (!parsed) continue;
+    try {
+      const c = conjugate(parsed.madi, parsed.mudari);
+      rows.push({ vocab_id: v.id, tense: "madi", forms: c.madi });
+      rows.push({ vocab_id: v.id, tense: "mudari", forms: c.mudari });
+      rows.push({ vocab_id: v.id, tense: "amr", forms: c.amr as Record<string, string> });
+    } catch {
+      // verbe non conjugable par le moteur → ignoré (l'enseignant peut le saisir).
+    }
+  }
+  if (rows.length === 0) return;
+  await supabase.rpc("ensure_conjugations", { p_student_id: studentId, p_rows: rows });
+}
 
 export async function generateConjugationQuiz(tense?: string): Promise<ConjQuestion[]> {
   const { studentId } = await requireStudent();

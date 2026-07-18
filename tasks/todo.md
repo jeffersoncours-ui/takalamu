@@ -2,6 +2,52 @@
 
 ---
 
+## Session 33 (suite 3) — Conjugaison AUTOMATIQUE (moteur morphologique complet)
+
+> **Demande** : le quiz de conjugaison doit apparaître TOUT SEUL dans Évaluations, à
+> partir des mots déjà saisis (verbes écrits « passé/présent », ex. `جلس/يجلس`), sans
+> aucune saisie manuelle du prof. Périmètre « tout » (B) : couvrir aussi les verbes
+> irréguliers, pas seulement les sains.
+
+### Découvertes (données réelles, via MCP)
+- Le « / » N'EST PAS un marqueur de verbe : il sert aussi aux pluriels (`يوم/أيام`),
+  masc/fém (`طبيب/بة`), pronoms (`هو/هي`). Détection fiable d'un verbe = la 2ᵉ forme
+  commence par يَ/يُ (préfixe présent), en excluant يّة (adjectif féminin). → 93 candidats
+  verbes (dont doublons inter-élèves), ~33 distincts.
+- Familles réelles : ~14 sains, ~1 augmenté (تكلّم), 4 hamzés, 3 creux, 2 redoublés,
+  1 assimilé, 1 défectueux (صلّى, en fait forme II défectueux).
+
+### Review (suite 3 — livrée sur preview)
+- **Moteur morphologique complet réécrit** (`src/lib/conjugation.ts`) : dérive les radicaux
+  des DEUX formes fournies (au lieu de supposer un verbe sain). `conjugate(madi, mudari)`
+  classe (`sound`/`doubled`/`hollow`/`defective`) et couvre : sains, formes dérivées II–X
+  (voyelle de préfixe lue de la forme), assimilés, hamzés (siège de hamza ~cosmétique),
+  **redoublés** (مدّ, gémination qui se défait), **creux** (قال/باع, voyelle longue
+  raccourcie), **défectueux** (رمى/دعا/نسي, lettre faible finale). Validé visuellement +
+  texte contre tables de référence, famille par famille — a attrapé plusieurs vraies fautes
+  (préfixe أنا présent en hamza أَ ; voyelles inversées du redoublé مَدَدْتُ ; 1re radicale
+  du creux qui porte la voyelle longue أَقُولُ ; shadda gardée au défectueux forme II
+  تُصَلِّينَ). Résiduel connu : impératif de أكل (كُل, exception), رأى (hyper-irrégulier) —
+  corrigeables par le prof via l'écran de saisie.
+- **Détection auto** : `parseVerbForms(arabic_word)` (verbe = 2ᵉ forme يَ/يُ, exclut يّة).
+- **Pipeline automatique** : migration 70 = RPC `ensure_conjugations(student, rows)`
+  (SECURITY DEFINER, n'insère que les (vocab_id,tense) ABSENTS → n'écrase jamais une
+  saisie prof). Action serveur `ensureConjugations()` (moteur TS → RPC) appelée à
+  l'ouverture de la page Évaluations. Résultat : le quiz de conjugaison apparaît tout seul
+  dès que l'élève a des verbes, zéro saisie prof.
+- **Testé empiriquement via MCP** (impersonation Rayan) : ensure a inséré 12 conjugations
+  (قرأ hamzé, صلّى forme II défectueux, سلّم forme II, توضّأ forme V) — nisba `يّة`
+  correctement ignorée ; idempotence OK ; `generate_conjugation_quiz` a produit 10 questions
+  (2 types, 4 choix, aucune fuite). Données de test nettoyées (0 résidu).
+- **Testé au navigateur** (Playwright, harnais jetable) : formulaire prof pré-remplit
+  correctement un verbe creux (قال → قُلْتُ/أَقُولُ/قُلْ, 33 champs).
+- L'écran prof de saisie reste le **filet de correction** pour les rares verbes que le
+  moteur approxime.
+- Note : la duplication de cours ne copie toujours pas les conjugaisons (liées au vocab_id,
+  regénérées automatiquement par `ensureConjugations` côté élève de toute façon).
+
+---
+
 ## Session 33 (suite 2) — Quiz de conjugaison (الماضي، المضارع، الأمر)
 
 > **Demande propriétaire (reformulée, maquette validée « vas-y »)** : quiz de conjugaison

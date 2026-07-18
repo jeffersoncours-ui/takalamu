@@ -1,5 +1,49 @@
 # Lessons
 
+## Session 33 (suite 3) — Conjugaison automatique + moteur morphologique complet
+
+- **Vérifier l'hypothèse de l'utilisateur sur SES données avant de coder.** Le propriétaire
+  était convaincu que « / » distinguait ses verbes. Un simple `select … like '%/%'` a montré
+  que le « / » sert aussi aux pluriels, masc/fém et pronoms — 90 non-verbes sur 183. Coder la
+  détection sur « présence de / » aurait « conjugué » jour/jours. Le vrai signal (2ᵉ forme
+  commençant par يَ/يُ, hors يّة) n'apparaît qu'en regardant les données réelles. Toujours
+  interroger la base avant d'accepter la règle mentale de l'utilisateur.
+- **« Tout automatique » sur une langue naturelle a une limite dure qu'il faut chiffrer, pas
+  masquer.** La conjugaison arabe n'est mécanique que pour les verbes SAINS ; ~la moitié des
+  verbes réels sont irréguliers (creux, défectueux, redoublés, hamzés, formes dérivées). J'ai
+  classé les vrais verbes par famille AVANT de décider quoi construire — ça a montré que le
+  volume dur était petit (≈1 défectueux, 2 redoublés, 3 creux) et donc que « B, tout » était
+  atteignable avec un effort fini. Chiffrer la difficulté par famille sur les vraies données
+  = la bonne base de décision, bien meilleure que « c'est trop dur » ou « ça marche ».
+- **Dériver des DEUX formes fournies généralise énormément le moteur, gratuitement.** En
+  lisant le radical présent depuis la forme هو du présent (au lieu de supposer 3 radicales +
+  préfixe يَ), le même code couvre d'un coup : formes II–X (voyelle de préfixe يُ lue, pas
+  supposée), assimilés (le و déjà tombé dans la forme présent), hamzés. Seules 3 familles
+  (creux/défectueux/redoublé) ont vraiment besoin de branches dédiées. Concevoir les entrées
+  pour porter l'information (2 formes) plutôt que de la re-deviner réduit le code ET les cas.
+- **Le rendu visuel avec la vraie police reste le meilleur détecteur de fautes de harakat.**
+  Chaque famille validée par un rendu image + une sortie texte contre des tables connues a
+  révélé des erreurs invisibles au diff : préfixe أنا en alif nu au lieu de hamza, voyelles
+  inversées du redoublé (مَدْدتُ vs مَدَدْتُ), sukun parasite superposé à une fatha. Une
+  faute de harakat ne « casse » ni le type ni le build — seul l'œil (ou un test d'égalité
+  stricte contre une référence) l'attrape.
+- **Auto-générer sans jamais écraser la correction humaine = insert-if-absent, pas upsert.**
+  La RPC `ensure_conjugations` n'insère QUE les (vocab_id, tense) absents. Ça permet de
+  regénérer en boucle (à chaque ouverture d'Évaluations) tout en laissant intacte une
+  conjugaison qu'un prof aurait corrigée à la main pour un verbe irrégulier. L'automatique et
+  la correction manuelle coexistent proprement grâce à cette seule règle.
+- **Splicer un fichier par script (Python) sur des marqueurs fragiles corrompt tout si le
+  marqueur ne matche pas.** Un `end=None` non détecté a produit `s[None:]` = fichier entier
+  dupliqué. Leçon : après un splice programmatique, TOUJOURS vérifier par grep que chaque
+  symbole n'existe qu'en un exemplaire avant de compiler — et préférer l'outil Edit (match
+  exact, échoue proprement) au splice par index de ligne quand c'est possible.
+- **Éditer des fichiers pendant qu'un `next dev` tourne peut faire paniquer Turbopack.**
+  Créer/supprimer des routes de harnais à répétition a provoqué un panic Turbopack
+  (« cell no longer exists ») et un serveur mort silencieux (connection refused). Réflexe :
+  pour un test navigateur jetable, figer les fichiers d'abord, lancer dev, tester, puis
+  nettoyer — et si le dev devient incohérent, `pkill -9 next` + `rm -rf .next` + redémarrage
+  propre plutôt que s'acharner.
+
 ## Session 33 (suite 2) — Quiz de conjugaison (moteur arabe + table + RPC)
 
 - **Tester le moteur AVANT de bâtir dessus a payé immédiatement.** Le rendu visuel des

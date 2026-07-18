@@ -860,6 +860,10 @@ export type Database = {
         Args: { p_record_id: string }
         Returns: undefined
       }
+      ensure_conjugations: {
+        Args: { p_rows: Json; p_student_id: string }
+        Returns: number
+      }
       generate_conjugation_quiz: {
         Args: { p_size?: number; p_student_id: string; p_tense?: string }
         Returns: Json
