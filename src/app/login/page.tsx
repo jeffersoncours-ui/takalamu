@@ -46,33 +46,22 @@ export default async function LoginPage({
 
       <div className="relative w-full max-w-sm space-y-7">
         <div className="relative flex flex-col items-center text-center">
-          <KhatamOrnament
-            size={150}
-            circle
-            strokeWidth={0.5}
-            className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
-            style={{ opacity: 0.5 }}
-          />
           <Link href="/" className="relative flex flex-col items-center gap-[22px]">
-            <img
-              src="/logo.png"
-              alt=""
-              style={{ height: 88, width: "auto", filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }}
-            />
-            <div className="flex flex-col items-center gap-3">
-              <Wordmark size={54} />
-              <p
-                className="italic"
-                style={{
-                  fontFamily: "var(--font-spectral)",
-                  fontSize: 19,
-                  color: "var(--tk-sage)",
-                  letterSpacing: ".14em",
-                }}
-              >
-                apprends. récite. progresse.
-              </p>
+            <div className="relative flex items-center justify-center" style={{ width: 150, height: 150 }}>
+              <KhatamOrnament
+                size={150}
+                circle
+                strokeWidth={0.5}
+                className="pointer-events-none absolute inset-0"
+                style={{ opacity: 0.5 }}
+              />
+              <img
+                src="/logo.png"
+                alt=""
+                style={{ height: 88, width: "auto", filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }}
+              />
             </div>
+            <Wordmark size={54} />
           </Link>
         </div>
 
