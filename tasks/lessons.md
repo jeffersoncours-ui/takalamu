@@ -1,5 +1,34 @@
 # Lessons
 
+## Session 33 (suite 7) — Identité visuelle : wordmark + logo
+
+- **Détourer une image fournie par le propriétaire (fond blanc/uni → alpha) est un
+  traitement systématique et fiable au pixel** : luminance inverse comme alpha (noir
+  opaque, blanc transparent) + recadrage sur la bounding box du canal alpha (seuil
+  bas ~4-10 pour ignorer le bruit de compression). Appliqué deux fois cette session
+  (calligraphie, logo) avec le même petit script Python (Pillow) — aucune bibliothèque
+  de retouche externe nécessaire, résultat vérifié par composition sur le fond crème
+  réel de l'app avant tout commit.
+- **Comparer objectivement avant de trancher "meilleure qualité" : résolution native +
+  rendu composé sur le vrai fond, pas une impression à l'œil sur l'image brute.** Le
+  nouveau logo proposé avait un fond gris avec un halo de glow flou — à l'œil nu sur
+  fond gris ça pouvait sembler "moins net" ; composé sur le fond crème réel de l'app,
+  le halo disparaît (alpha 0) et la comparaison objective (résolution 1024² vs 404×480,
+  facettes/ombres plus détaillées, ratio largeur/hauteur presque identique à l'existant)
+  confirme sans ambiguïté la meilleure qualité, permettant une réponse tranchée plutôt
+  qu'un jugement esthétique flou.
+- **Réutiliser un seul fichier consommé à plusieurs endroits (`public/logo.png`,
+  `public/wordmark.png`) propage un changement sans toucher au code** — seul le PNG
+  change, les 4 pages qui l'importent sont mises à jour d'un coup. Distinct des
+  favicons/icônes PWA (`icon.png`, `favicon.ico`, etc.) qui sont des fichiers générés
+  séparément à un moment donné (session antérieure) à partir de l'ancien logo — ne pas
+  supposer qu'ils se mettent à jour automatiquement en changeant `logo.png` ; à
+  signaler/traiter comme un lot à part, sur confirmation explicite.
+- **Deux retours successifs sur un même asset (calligraphie puis sa taille) restent
+  des itérations légitimes, pas des signes d'un mauvais premier essai.** Montrer le
+  rendu réel à chaque étape (composé sur fond crème, tailles d'usage réelles) a permis
+  des ajustements rapides sans relecture de code ni divergence d'interprétation.
+
 ## Session 33 (suite 5) — Cartes couleur (hero) sur l'écran Évaluations
 
 - **Un travail non commité est un travail perdu, même s'il a été "décidé" en

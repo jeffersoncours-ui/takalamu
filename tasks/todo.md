@@ -2,6 +2,37 @@
 
 ---
 
+## Session 33 (suite 7) — Identité visuelle : wordmark + logo
+
+> **Demande propriétaire** (deux allers-retours) : (1) remplacer la calligraphie du
+> wordmark (تتكلموا) par un nouveau tracé fourni en capture ; (2) l'agrandir, jugée
+> trop petite par rapport au logo ; (3) remplacer le logo (oiseau origami) par une
+> nouvelle version fournie en capture, jugée de meilleure qualité.
+
+- [x] `public/wordmark.png` : nouvelle calligraphie détourée (fond blanc → alpha,
+      encre noire, recadrage serré) — remplace le fichier consommé aux 4 emplacements
+      (login, mot de passe oublié, réinitialisation, header élève)
+- [x] Taille du wordmark relevée : login/mot de passe oublié/réinitialisation
+      64px → 100px ; header élève 22px → 30px (aligné sur la hauteur du logo)
+- [x] Build + lint verts, rendu réel vérifié (harnais jetable + `.env.local`
+      temporaire, supprimés avant commit) aux tailles réelles d'usage
+- [x] Commit + push preview → merge `main` + branche de prod Vercel réelle
+      (`claude/new-project-setup-1jcgwf`) → déploiement prod confirmé `READY` sur
+      `www.tatakalamu.fr` (wordmark + agrandissement)
+- [x] `public/logo.png` : nouveau tracé (oiseau origami) fourni par le propriétaire,
+      détouré (fond transparent, recadrage serré, ratio quasi identique à l'ancien
+      0.85 vs 0.84) — meilleure résolution native (1024×1024 vs 404×480), facettes/
+      ombres plus détaillées. Comparatif avant/après envoyé au propriétaire avant
+      commit, rendu réel vérifié (header 30px, login 104px)
+- [ ] Confirmation propriétaire sur le nouveau logo (rendu envoyé, réponse attendue)
+- [ ] Question posée au propriétaire : régénérer aussi les favicons/icônes d'app
+      (`icon.png`, `favicon.ico`, `apple-icon.png`, icônes PWA 192/512/maskable) —
+      actuellement basés sur l'ANCIEN logo, pas encore fait (scope pas confirmé)
+- [ ] Commit + push preview — pas de merge prod sans nouvelle confirmation explicite
+      pour ce lot (logo)
+
+---
+
 ## Session 33 (suite 5) — Cartes couleur (hero) sur l'écran Évaluations
 
 > **Reprise d'un travail interrompu** : une session précédente avait discuté avec le
