@@ -27,10 +27,13 @@ export default async function TeacherLayout({
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col" style={{ background: "#F7F4EE" }}>
+    <div className="flex min-h-full flex-1 flex-col" style={{ background: "var(--tk-parchment)" }}>
       <header
-        className="bg-white sticky top-0 z-30 border-b"
-        style={{ borderColor: "#E9E3D8" }}
+        className="hachure-ink sticky top-0 z-30"
+        style={{
+          background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))",
+          boxShadow: "var(--tk-shadow-hero)",
+        }}
       >
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
           <DrawerNav

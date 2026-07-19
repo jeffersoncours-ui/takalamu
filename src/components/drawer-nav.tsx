@@ -143,10 +143,10 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
       <button
         onClick={() => setOpen(true)}
         aria-label="Ouvrir le menu"
-        className="flex items-center justify-center rounded-xl bg-white transition-opacity hover:opacity-75"
-        style={{ width: 44, height: 44, boxShadow: "0 6px 16px rgba(28,26,23,.04)", border: "1px solid #E9E3D8" }}
+        className="flex items-center justify-center transition-opacity hover:opacity-75"
+        style={{ width: 24, height: 24 }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
@@ -155,8 +155,8 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
 
       {/* Page title */}
       <span
-        className="font-semibold text-xl"
-        style={{ color: "#1C1A17", fontFamily: "var(--font-spectral)" }}
+        className="font-bold text-xl"
+        style={{ color: "var(--tk-cream-text)", fontFamily: "var(--font-spectral)" }}
       >
         {currentLabel}
       </span>
@@ -165,7 +165,7 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
       {open && (
         <div
           className="fixed inset-0 z-40"
-          style={{ background: "rgba(28,26,23,.45)" }}
+          style={{ background: "rgba(8,16,12,.55)" }}
           onClick={() => setOpen(false)}
         />
       )}
@@ -173,21 +173,29 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
       {/* Drawer */}
       <div
         ref={drawerRef}
-        className="fixed inset-y-0 left-0 z-50 flex flex-col"
+        className="hachure-ink fixed inset-y-0 left-0 z-50 flex flex-col"
         style={{
           width: "82vw",
           maxWidth: "340px",
-          background: "#0A4636",
-          borderRadius: "0 28px 28px 0",
+          background: "linear-gradient(165deg, var(--tk-drawer-from), var(--tk-drawer-to))",
+          borderRadius: "0 30px 30px 0",
+          boxShadow: "26px 0 50px -20px rgba(0,0,0,.6)",
           transform: open ? "translateX(0)" : "translateX(-100%)",
           transition: "transform .28s cubic-bezier(.22,1,.36,1)",
         }}
       >
         {/* Profil */}
-        <div className="px-6 pt-12 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,.1)" }}>
+        <div className="px-6 pt-12 pb-6" style={{ borderBottom: "1px solid rgba(199,154,62,.22)" }}>
           <div
-            className="flex items-center justify-center overflow-hidden rounded-full text-white font-semibold text-xl mb-3"
-            style={{ width: 56, height: 56, background: "rgba(255,255,255,.15)", fontFamily: "var(--font-spectral)" }}
+            className="flex items-center justify-center overflow-hidden rounded-full font-semibold text-xl mb-3"
+            style={{
+              width: 48,
+              height: 48,
+              background: "rgba(255,255,255,.1)",
+              border: "1.5px solid rgba(199,154,62,.5)",
+              color: "var(--tk-cream-text)",
+              fontFamily: "var(--font-spectral)",
+            }}
           >
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -196,17 +204,22 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
               profileName?.[0]?.toUpperCase() ?? "?"
             )}
           </div>
-          <p className="text-white font-semibold text-base" style={{ fontFamily: "var(--font-spectral)" }}>
+          <p className="font-bold text-base" style={{ color: "var(--tk-cream-text)", fontFamily: "var(--font-spectral)" }}>
             {profileName}
           </p>
-          <p className="text-sm mt-0.5" style={{ color: "#9FE3C8" }}>Enseignant · Arabe</p>
+          <p className="text-sm mt-0.5" style={{ color: "var(--tk-sage-bright)" }}>Enseignant · Arabe</p>
         </div>
 
         {/* Nav items */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <p
-            className="px-3 mb-2 text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "#6B9E8A", letterSpacing: ".07em", fontSize: "10px" }}
+            className="px-3 mb-2 font-bold uppercase"
+            style={{
+              color: "var(--tk-gold)",
+              letterSpacing: ".22em",
+              fontSize: "11px",
+              fontFamily: "var(--font-spectral)",
+            }}
           >
             Mon espace
           </p>
@@ -222,12 +235,28 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
                     href={item.href}
                     className="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors"
                     style={{
-                      background: active ? "rgba(255,255,255,.14)" : "transparent",
-                      color: active ? "#FFFFFF" : "#DCEFE7",
+                      background: active ? "rgba(228,200,118,.16)" : "transparent",
+                      border: active ? "1px solid rgba(199,154,62,.35)" : "1px solid transparent",
+                      color: active ? "var(--tk-cream-text)" : "#C7D9CD",
                     }}
                   >
-                    <span style={{ color: active ? "#FFFFFF" : "#9FE3C8" }}>{item.icon}</span>
+                    <span style={{ color: active ? "var(--tk-gold-light)" : "var(--tk-sage-bright)" }}>{item.icon}</span>
                     <span className="text-sm font-medium">{item.label}</span>
+                    {item.adminOnly && (
+                      <span
+                        className="ml-auto font-semibold"
+                        style={{
+                          fontSize: "9.5px",
+                          letterSpacing: ".1em",
+                          color: "var(--tk-gold)",
+                          border: "1px solid rgba(199,154,62,.4)",
+                          borderRadius: 7,
+                          padding: "2px 6px",
+                        }}
+                      >
+                        ADMIN
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
@@ -236,14 +265,14 @@ export function DrawerNav({ profileName, signOutAction, isAdmin = false, avatarU
         </nav>
 
         {/* Déconnexion */}
-        <div className="px-3 pb-8 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,.1)" }}>
+        <div className="px-3 pb-8 pt-2" style={{ borderTop: "1px solid rgba(199,154,62,.22)" }}>
           <form action={signOutAction}>
             <button
               type="submit"
-              className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-white/10"
-              style={{ color: "#F5A9AB" }}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm font-medium transition-colors"
+              style={{ color: "var(--tk-danger-soft)", border: "1px solid rgba(217,139,126,.3)" }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />

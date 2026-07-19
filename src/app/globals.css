@@ -10,57 +10,86 @@
   --site-h1-size: 48px;
   --site-h2-size: 34px;
 
-  /* Design tokens Takalamu */
-  --tk-accent: #0F9D6E;
-  --tk-accent-pressed: #0A8560;
-  --tk-accent-bg: #ECFAF4;
-  --tk-accent-border: #9FE3C8;
-  --tk-teal-deep: #0A553F;
-  --tk-teal-drawer: #0A4636;
+  /* Design tokens Takalamu — « Maktab Émeraude » */
 
-  --tk-page-bg: #F7F4EE;
-  --tk-surface: #FFFFFF;
-  --tk-surface-alt: #FBF9F5;
-  --tk-border: #E9E3D8;
-  --tk-border-alt: #EDE7DC;
+  /* Encre (fonds sombres : héros, nav, app shell) */
+  --tk-ink-deep: #0B1712;
+  --tk-ink-screen: #10231B;
+  --tk-ink-hero-from: #12261D;
+  --tk-ink-hero-to: #0C3A2C;
+  --tk-drawer-from: #0A4636;
+  --tk-drawer-to: #083528;
+  --tk-emerald-btn-from: #0E4A38;
+  --tk-emerald-btn-to: #0C3A2C;
+  --tk-green-active: #0C6B4E;
 
-  --tk-ink: #1C1A17;
-  --tk-ink-soft: #4A463F;
-  --tk-muted: #8B857A;
-  --tk-faint: #A8A29E;
+  /* Parchemin (fonds clairs : corps des écrans) */
+  --tk-parchment: #EFE6D2;
+  --tk-parchment-card: #FBF6EA;
+  --tk-parchment-field: #F3EBD8;
+  --tk-parchment-border: #E5D8B8;
+  --tk-parchment-border-alt: #E0D2AE;
+
+  /* Or (accent) */
+  --tk-gold-light: #E4C876;
+  --tk-gold: #C79A3E;
+  --tk-gold-dark: #B0781F;
+  --tk-gold-darker: #8A6316;
+
+  /* Textes */
+  --tk-ink-text: #132A20;
+  --tk-ink-text-soft: #6E7A6A;
+  --tk-muted-olive: #8A7F63;
+  --tk-faint-olive: #B6AB92;
+  --tk-cream-text: #F3EAD6;
+  --tk-cream-text-soft: #E9DFC6;
+  --tk-sage: #9FB29C;
+  --tk-sage-bright: #8FCBA8;
+
+  /* Sémantique */
+  --tk-danger: #A3342A;
+  --tk-danger-dot: #D98B7E;
+  --tk-danger-soft: #E7A99E;
+  --tk-warning: #B0781F;
+  --tk-info: #2E5A8A;
 
   /* Ombres */
-  --tk-shadow-card: 0 6px 16px rgba(28,26,23,.04);
-  --tk-shadow-card-raised: 0 10px 26px rgba(28,26,23,.09);
-  --tk-shadow-hero: 0 16px 32px rgba(10,85,63,.32);
-  --tk-shadow-cta: 0 8px 18px rgba(15,157,110,.30);
-  --tk-shadow-nav: 0 12px 30px rgba(28,26,23,.12);
+  --tk-shadow-card: 0 10px 22px -16px rgba(10,20,15,.4);
+  --tk-shadow-card-raised: 0 16px 28px -18px rgba(10,20,15,.5);
+  --tk-shadow-cta: 0 14px 30px -12px rgba(199,154,62,.58);
+  --tk-shadow-hero: 0 8px 24px -12px rgba(10,20,15,.5);
+  --tk-shadow-nav: 0 12px 30px -12px rgba(10,20,15,.45);
+
+  /* Texture (surfaces encre) */
+  --tk-hachure: repeating-linear-gradient(45deg, rgba(199,154,62,.05) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(-45deg, rgba(199,154,62,.05) 0 1px, transparent 1px 18px);
 }
 
 @theme inline {
-  /* Fonts */
+  /* Fonts — noms de variable conservés (des dizaines d'écrans lisent var(--font-spectral)
+     directement) ; seule la police chargée dans layout.tsx change (Cormorant Garamond /
+     Instrument Sans), donc le renommage se propage sans toucher chaque écran. */
   --font-spectral: var(--font-spectral);
-  --font-outfit: var(--font-outfit);
   --font-inter: var(--font-inter);
   --font-amiri: var(--font-amiri);
   --font-sans: var(--font-inter);
 
   /* Couleurs custom */
-  --color-page: var(--tk-page-bg);
-  --color-surface: var(--tk-surface);
-  --color-surface-alt: var(--tk-surface-alt);
-  --color-border: var(--tk-border);
-  --color-border-alt: var(--tk-border-alt);
-  --color-ink: var(--tk-ink);
-  --color-ink-soft: var(--tk-ink-soft);
-  --color-muted: var(--tk-muted);
-  --color-faint: var(--tk-faint);
-  --color-accent: var(--tk-accent);
-  --color-accent-pressed: var(--tk-accent-pressed);
-  --color-accent-bg: var(--tk-accent-bg);
-  --color-accent-border: var(--tk-accent-border);
-  --color-teal-deep: var(--tk-teal-deep);
-  --color-teal-drawer: var(--tk-teal-drawer);
+  --color-page: var(--tk-parchment);
+  --color-surface: var(--tk-parchment-card);
+  --color-surface-alt: var(--tk-parchment-field);
+  --color-border: var(--tk-parchment-border);
+  --color-border-alt: var(--tk-parchment-border-alt);
+  --color-ink: var(--tk-ink-text);
+  --color-ink-soft: var(--tk-ink-text-soft);
+  --color-muted: var(--tk-muted-olive);
+  --color-faint: var(--tk-faint-olive);
+  --color-accent: var(--tk-gold);
+  --color-accent-pressed: var(--tk-gold-dark);
+  --color-accent-bg: var(--tk-parchment-field);
+  --color-accent-border: var(--tk-gold-light);
+  --color-teal-deep: var(--tk-ink-hero-to);
+  --color-teal-drawer: var(--tk-drawer-from);
 
   /* Ombres custom */
   --shadow-card: var(--tk-shadow-card);
@@ -78,6 +107,11 @@
 
 .font-arabic {
   font-family: var(--font-amiri);
+}
+
+/* Texture hachurée (surfaces encre) */
+.hachure-ink {
+  background-image: var(--tk-hachure);
 }
 
 /* Animations (design system) */

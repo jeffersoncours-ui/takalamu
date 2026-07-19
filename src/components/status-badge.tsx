@@ -2,13 +2,15 @@ import type { CSSProperties } from "react";
 
 export type BadgeHue = "green" | "amber" | "red" | "blue" | "purple" | "slate";
 
+// Palette « Maktab Émeraude » : purple ("corrigé") réutilise l'or foncé de la DA
+// (le nouveau design ne définit pas de teinte violette).
 const HUES: Record<BadgeHue, { dot: string; border: string; bg: string; text: string }> = {
-  green: { dot: "#0F9D6E", border: "#9FE3C8", bg: "#ECFAF4", text: "#0A6B4E" },
-  amber: { dot: "#F59E0B", border: "#F4D193", bg: "#FDF4E3", text: "#9A6206" },
-  red: { dot: "#E5484D", border: "#F3B0B2", bg: "#FDECEC", text: "#B4292E" },
-  blue: { dot: "#3E63DD", border: "#AEBEF2", bg: "#EAEFFD", text: "#2C49B8" },
-  purple: { dot: "#8E4EC6", border: "#D4B0EC", bg: "#F6EDFC", text: "#7233A8" },
-  slate: { dot: "#A8A29E", border: "#C7C0B4", bg: "#F4F1EB", text: "#6B6459" },
+  green: { dot: "#0C6B4E", border: "#B7D9C4", bg: "#E9F1E6", text: "#0C6B4E" },
+  amber: { dot: "#B0781F", border: "rgba(184,120,42,.35)", bg: "rgba(184,120,42,.10)", text: "#B0781F" },
+  red: { dot: "#A3342A", border: "#E3B7AE", bg: "#F6E4E0", text: "#A3342A" },
+  blue: { dot: "#2E5A8A", border: "#B9CBE0", bg: "#E7EDF5", text: "#2E5A8A" },
+  purple: { dot: "#8A6316", border: "#DBC190", bg: "#F3EBD8", text: "#8A6316" },
+  slate: { dot: "#8A7F63", border: "#DCD2B8", bg: "#F3EBD8", text: "#6E7A6A" },
 };
 
 export function StatusBadge({

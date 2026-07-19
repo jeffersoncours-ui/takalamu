@@ -2,6 +2,7 @@ import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import DashboardTabs from "./dashboard-tabs";
 import { NotifBell } from "@/components/notif-bell";
+import { Wordmark } from "@/components/wordmark";
 
 export default async function DashboardLayout({
   children,
@@ -18,20 +19,18 @@ export default async function DashboardLayout({
     .limit(20);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col" style={{ background: "#F7F4EE" }}>
-      <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: "#E9E3D8" }}>
+    <div className="flex min-h-full flex-1 flex-col" style={{ background: "var(--tk-parchment)" }}>
+      <header
+        className="hachure-ink sticky top-0 z-40"
+        style={{
+          background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))",
+          boxShadow: "var(--tk-shadow-hero)",
+        }}
+      >
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <img
-              src="/logo.png"
-              alt=""
-              style={{ height: 30, width: "auto" }}
-            />
-            <img
-              src="/wordmark.png"
-              alt="تتكلموا"
-              style={{ height: 30, width: "auto" }}
-            />
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="" style={{ height: 30, width: "auto" }} />
+            <Wordmark size={22} />
           </div>
           <NotifBell userId={userId} initialNotifs={notifs ?? []} />
         </div>

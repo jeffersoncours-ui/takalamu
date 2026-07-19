@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { homePathForRole } from "@/lib/auth";
+import { Wordmark } from "@/components/wordmark";
+import { KhatamOrnament } from "@/components/khatam-ornament";
 
 import { LoginForm } from "./login-form";
 
@@ -27,38 +29,63 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16" style={{ background: "#F7F4EE" }}>
-      <div className="w-full max-w-sm space-y-7">
-        <div className="flex flex-col items-center text-center space-y-3">
-          <Link href="/" className="flex flex-col items-center gap-3">
+    <main
+      className="hachure-ink relative flex flex-1 items-center justify-center overflow-hidden px-6 py-16"
+      style={{ background: "var(--tk-ink-screen)" }}
+    >
+      <span
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{
+          top: -70,
+          width: 360,
+          height: 360,
+          borderRadius: "50%",
+          background: "radial-gradient(closest-side, rgba(199,154,62,.18), transparent 70%)",
+        }}
+      />
+
+      <div className="relative w-full max-w-sm space-y-7">
+        <div className="relative flex flex-col items-center text-center">
+          <KhatamOrnament
+            size={150}
+            circle
+            strokeWidth={0.5}
+            className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
+            style={{ opacity: 0.5 }}
+          />
+          <Link href="/" className="relative flex flex-col items-center gap-[22px]">
             <img
               src="/logo.png"
               alt=""
-              style={{ height: 104, width: "auto" }}
+              style={{ height: 88, width: "auto", filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }}
             />
-            <img
-              src="/wordmark.png"
-              alt="تتكلموا"
-              style={{ height: 100, width: "auto" }}
-            />
+            <div className="flex flex-col items-center gap-3">
+              <Wordmark size={54} />
+              <p
+                className="italic"
+                style={{
+                  fontFamily: "var(--font-spectral)",
+                  fontSize: 19,
+                  color: "var(--tk-sage)",
+                  letterSpacing: ".14em",
+                }}
+              >
+                apprends. récite. progresse.
+              </p>
+            </div>
           </Link>
         </div>
 
         {error ? (
           <p
             className="rounded-2xl px-4 py-3 text-center"
-            style={{ background: "#FDECEC", color: "#B4292E", border: "1px solid #F3B0B2", fontSize: 14 }}
+            style={{ background: "rgba(163,52,42,.12)", color: "#E7A99E", border: "1px solid rgba(163,52,42,.35)", fontSize: 14 }}
           >
             {error}
           </p>
         ) : null}
 
-        <div
-          className="rounded-[20px] p-5"
-          style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 10px 26px rgba(28,26,23,.09)" }}
-        >
-          <LoginForm />
-        </div>
+        <LoginForm />
       </div>
     </main>
   );

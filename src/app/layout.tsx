@@ -1,20 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Spectral, Inter, Amiri, Outfit } from "next/font/google";
+import { Cormorant_Garamond, Instrument_Sans, Amiri } from "next/font/google";
 import "./globals.css";
 
-const spectral = Spectral({
+// Variable conservée --font-spectral (des dizaines d'écrans lisent var(--font-spectral)
+// directement en style inline) : seule la police chargée change, pas le nom de variable.
+const spectral = Cormorant_Garamond({
   variable: "--font-spectral",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
-});
-
-const inter = Inter({
+const inter = Instrument_Sans({
   variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -39,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FBF9F5",
+  themeColor: "#EFE6D2",
 };
 
 export default function RootLayout({
@@ -50,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${spectral.variable} ${outfit.variable} ${inter.variable} ${amiri.variable} h-full antialiased`}
+      className={`${spectral.variable} ${inter.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-page text-ink">{children}</body>
     </html>

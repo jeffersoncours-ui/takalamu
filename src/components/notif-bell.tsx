@@ -97,53 +97,75 @@ export function NotifBell({
     <div ref={ref} className="relative">
       <button
         onClick={handleOpen}
-        className="relative text-slate-600 hover:text-slate-900 transition"
+        className="relative flex items-center justify-center rounded-full transition"
+        style={{
+          width: 40,
+          height: 40,
+          background: "rgba(255,255,255,.08)",
+          border: "1px solid rgba(199,154,62,.35)",
+        }}
         aria-label="Notifications"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={1.7}>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
         </svg>
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+          <span
+            className="absolute flex items-center justify-center rounded-full font-bold text-white"
+            style={{
+              top: -3,
+              right: -2,
+              minWidth: 16,
+              height: 16,
+              padding: "0 3px",
+              fontSize: 10,
+              background: "var(--tk-danger-dot)",
+              border: "1.5px solid var(--tk-ink-hero-from)",
+            }}
+          >
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-50 w-72 rounded-xl border border-slate-200 bg-white shadow-lg">
-          <div className="border-b border-slate-100 px-4 py-2">
-            <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+        <div
+          className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-xl"
+          style={{
+            background: "var(--tk-parchment-card)",
+            border: "1px solid var(--tk-parchment-border)",
+            boxShadow: "var(--tk-shadow-card-raised)",
+          }}
+        >
+          <div className="px-4 py-2" style={{ borderBottom: "1px solid var(--tk-parchment-border)" }}>
+            <p
+              className="text-xs font-semibold uppercase tracking-wide"
+              style={{ color: "var(--tk-muted-olive)" }}
+            >
               Notifications
             </p>
           </div>
           {notifs.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-slate-400">
+            <p className="px-4 py-4 text-sm" style={{ color: "var(--tk-faint-olive)" }}>
               Aucune notification.
             </p>
           ) : (
-            <ul className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+            <ul className="max-h-80 overflow-y-auto">
               {notifs.slice(0, 20).map((n) => {
                 const url = n.payload?.url as string | undefined;
                 const senderName = n.payload?.sender_name as string | undefined;
                 const label = TYPE_LABEL[n.type] ?? n.type;
-                const className = `block px-4 py-3 text-sm ${n.read ? "text-slate-500" : "text-slate-900 font-medium"}`;
+                const style: React.CSSProperties = {
+                  borderBottom: "1px solid var(--tk-parchment-border)",
+                  color: n.read ? "var(--tk-muted-olive)" : "var(--tk-ink-text)",
+                  fontWeight: n.read ? 400 : 600,
+                };
 
                 const inner = (
                   <>
-                    <p>{senderName ? `${label} · ${senderName}` : label}</p>
-                    <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>
+                    <p className="text-sm">{senderName ? `${label} · ${senderName}` : label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--tk-faint-olive)" }} suppressHydrationWarning>
                       {new Date(n.created_at).toLocaleString("fr-FR", {
                         day: "numeric",
                         month: "short",
@@ -157,11 +179,11 @@ export function NotifBell({
                 return (
                   <li key={n.id}>
                     {url ? (
-                      <Link href={url} className={className} onClick={handleItemClick}>
+                      <Link href={url} className="block px-4 py-3" style={style} onClick={handleItemClick}>
                         {inner}
                       </Link>
                     ) : (
-                      <div className={className}>{inner}</div>
+                      <div className="px-4 py-3" style={style}>{inner}</div>
                     )}
                   </li>
                 );

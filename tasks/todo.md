@@ -2,6 +2,74 @@
 
 ---
 
+## Session 34 — Refonte visuelle « Maktab Émeraude »
+
+> **Demande propriétaire** : refonte complète de l'UI (29 écrans, élève + enseignant) à partir
+> d'un handoff de design fourni (`design_handoff_tatakalamu_refonte`) — nouvelle direction
+> artistique « manuscrit enluminé » : fond encre-émeraude très sombre (héros/nav) + parchemin
+> clair (corps), accents or, typographies Cormorant Garamond / Amiri / Instrument Sans, texture
+> hachurée, ornement *khatam*, chiffres arabo-indiens. **Logo gardé tel quel** (`public/logo.png`).
+> **Wordmark remplacé** : plus une image, texte arabe `تتكلم` rendu en direct (Amiri, or), comme
+> dans le fichier de design. Refonte visuelle pure — aucune migration/RLS/RPC/logique métier
+> touchée. Plan validé par le propriétaire avant de démarrer (séquencement en 2 temps + checkpoint
+> visuel après la Phase 1).
+
+### Connexions vérifiées avant de coder
+- Handoff rendu réellement dans un navigateur headless (React/Babel de npm en local, proxy de
+  l'environnement bloquant unpkg.com) pour inspection visuelle des 29 écrans — confirmé : logo =
+  `<image-slot>` (à remplir avec l'asset existant), wordmark = texte Amiri or (pas une image).
+- `--font-outfit` déclaré dans `globals.css`/`layout.tsx` mais jamais consommé par aucune classe
+  ni écran (grep exhaustif) → retrait sûr, sans rapport avec la refonte.
+- `StatusBadge`/`homeworkBadge` (`src/components/status-badge.tsx`) : signature stable, seul le
+  mapping hue→hex change (aucun appelant à toucher).
+- Aucun composant `Button`/`Card`/`Input` n'existe aujourd'hui — tout est du inline dupliqué par
+  écran. Primitives minimales introduites pour éviter de dupliquer 29 fois les mêmes styles (pas
+  de système de variants complexe — cohérent avec le principe anti-sur-ingénierie).
+
+### Plan d'exécution — Phase 1 (fondations + coquille + connexion)
+- [x] `src/app/globals.css` : nouveaux tokens (encre/parchemin/or), texture hachurée, ombres,
+      rayons — remplace le bloc `--tk-*` actuel
+- [x] `src/app/layout.tsx` : Cormorant Garamond (remplace Spectral), Instrument Sans (remplace
+      Inter), retrait Outfit (mort), Amiri inchangé — **noms de variable CSS conservés**
+      (`--font-spectral`/`--font-inter`) pour que les ~40 écrans qui lisent déjà
+      `var(--font-spectral)` en inline héritent de la nouvelle police sans être touchés
+- [x] `src/lib/arabic-numerals.ts` : `toArabicIndicDigits(n)`
+- [x] `src/components/khatam-ornament.tsx` : SVG filigrane réutilisable
+- [x] `src/components/ui/` : `gold-button.tsx`, `emerald-button.tsx`, `parchment-card.tsx`,
+      `elevated-card.tsx`, `field.tsx` (primitives minimales)
+- [x] `src/components/status-badge.tsx` : remap hues (green/amber/red/blue/slate → nouvelle
+      palette ; purple/« corrigé » → or foncé `#8A6316`)
+- [x] `src/app/dashboard/dashboard-tabs.tsx` : tab bar fond encre, pilule active or
+- [x] `src/components/drawer-nav.tsx` : tiroir encre/vert + texture hachurée, items actifs or
+- [x] `src/components/notif-bell.tsx` : reskin tokens or/encre (actuellement seul composant en
+      classes Tailwind slate génériques, incohérent)
+- [x] `src/app/dashboard/layout.tsx` + `src/app/teacher/layout.tsx` : en-têtes ink/texture —
+      logo inchangé + `Wordmark` texte (au lieu de `wordmark.png`, désormais orphelin)
+- [x] `src/app/login/page.tsx`, `login/forgot-password/page.tsx`, `reset-password/page.tsx` :
+      reskin complet (fond encre, halo + khatam, champs bordés or, CTA or)
+- [x] Build + lint verts (seule erreur : `drawer-nav.tsx:118` pré-existante, confirmée par
+      `git stash` — sans lien avec cette session)
+- [x] Test navigateur réel (Playwright, `.env.local` temporaire URL Supabase factice +
+      clé anon factice, `getUser()` échoue proprement en 403 rapide côté proxy sandbox sans
+      planter le middleware ; harnais jetable `preview-harness-tmp` pour tab bar + drawer,
+      supprimés après capture) : connexion, mot de passe oublié, tab bar, drawer ouvert
+- [x] **Checkpoint : captures envoyées au propriétaire avant Phase 2**
+- [ ] Retour du propriétaire sur la direction avant de lancer Phase 2
+
+### Plan d'exécution — Phase 2 (à lancer après validation du checkpoint)
+- [ ] Espace élève (10 routes) : Accueil, Mes cours, Leçon, Révision, Évaluations (+ quiz/résultat),
+      Mon glossaire, Règles de grammaire, Mes formulations, Mes devoirs, Messages, Mon compte/Plus,
+      Mon profil, Règlement intérieur
+- [ ] Espace enseignant (16 routes) : Cockpit, Mes élèves, Fiche élève, **Fiche de fin de cours**
+      (< 30 s préservé), File de correction, Conjugaison, Mes livres, Dupliquer un cours, Messages,
+      Conversation, Mon profil, Enseignants (admin)
+- [ ] Build + lint + test navigateur (flux élève complet, flux enseignant + chrono fiche fin de
+      cours, RTL arabe)
+- [ ] `tasks/todo.md` (Review) + `tasks/lessons.md`
+- [ ] Commit + push preview par lot — pas de merge prod sans confirmation explicite
+
+---
+
 ## Session 33 (suite 7) — Identité visuelle : wordmark + logo
 
 > **Demande propriétaire** (deux allers-retours) : (1) remplacer la calligraphie du

@@ -74,8 +74,13 @@ export default function DashboardTabs() {
       style={{ width: "calc(100% - 32px)", maxWidth: "420px" }}
     >
       <div
-        className="flex items-center justify-around bg-white rounded-[22px] px-2"
-        style={{ boxShadow: "0 12px 30px rgba(28,26,23,.12)", height: "62px" }}
+        className="flex items-center justify-around rounded-[22px] px-2"
+        style={{
+          background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+          border: "1px solid rgba(199,154,62,.25)",
+          boxShadow: "0 18px 34px -12px rgba(10,20,15,.6)",
+          height: "62px",
+        }}
       >
         {TABS.map(({ href, label, icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
@@ -88,9 +93,10 @@ export default function DashboardTabs() {
             >
               {active ? (
                 <span
-                  className="flex items-center gap-1.5 text-white font-semibold px-4 rounded-full"
+                  className="flex items-center gap-1.5 font-semibold px-4 rounded-full"
                   style={{
-                    background: "#0F9D6E",
+                    background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))",
+                    color: "var(--tk-ink-hero-to)",
                     height: "46px",
                     fontSize: "13px",
                     whiteSpace: "nowrap",
@@ -102,7 +108,7 @@ export default function DashboardTabs() {
               ) : (
                 <span
                   className="flex items-center justify-center"
-                  style={{ color: "#A8A29E", width: "46px", height: "46px" }}
+                  style={{ color: "rgba(243,234,214,.55)", width: "46px", height: "46px" }}
                 >
                   {icon(false)}
                 </span>
