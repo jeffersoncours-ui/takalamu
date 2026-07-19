@@ -24,12 +24,18 @@
       0.85 vs 0.84) — meilleure résolution native (1024×1024 vs 404×480), facettes/
       ombres plus détaillées. Comparatif avant/après envoyé au propriétaire avant
       commit, rendu réel vérifié (header 30px, login 104px)
-- [ ] Confirmation propriétaire sur le nouveau logo (rendu envoyé, réponse attendue)
-- [ ] Question posée au propriétaire : régénérer aussi les favicons/icônes d'app
-      (`icon.png`, `favicon.ico`, `apple-icon.png`, icônes PWA 192/512/maskable) —
-      actuellement basés sur l'ANCIEN logo, pas encore fait (scope pas confirmé)
-- [ ] Commit + push preview — pas de merge prod sans nouvelle confirmation explicite
-      pour ce lot (logo)
+- [x] Confirmation propriétaire sur le nouveau logo → merge `main` + branche de prod
+      Vercel réelle → déploiement prod confirmé `READY` sur `www.tatakalamu.fr`
+- [x] Régénération des favicons/icônes d'app (confirmé par le propriétaire) :
+      `src/app/icon.png` (512), `apple-icon.png` (180), `favicon.ico` (16/32/48),
+      `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` — même recette
+      que la génération d'origine (fond crème #FBF9F5 opaque, logo centré, mêmes
+      fractions de remplissage par fichier — la variante maskable garde une zone de
+      sécurité plus large ~45% vs ~65% pour les autres, pour survivre au recadrage
+      circulaire Android)
+- [x] Vérifié sur build de prod servi localement : `manifest.webmanifest` correct,
+      les 6 fichiers répondent 200, aperçu visuel envoyé au propriétaire avant commit
+- [ ] Commit + push preview — merge prod sur confirmation
 
 ---
 
