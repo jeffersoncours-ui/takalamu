@@ -30,7 +30,7 @@ export default async function DashboardLayout({
             <img
               src="/wordmark.png"
               alt="تتكلموا"
-              style={{ height: 22, width: "auto" }}
+              style={{ height: 30, width: "auto" }}
             />
           </div>
           <NotifBell userId={userId} initialNotifs={notifs ?? []} />

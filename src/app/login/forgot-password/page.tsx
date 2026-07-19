@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
         <div className="flex flex-col items-center text-center space-y-3">
           <Link href="/" className="flex flex-col items-center gap-3">
             <img src="/logo.png" alt="" style={{ height: 104, width: "auto" }} />
-            <img src="/wordmark.png" alt="تتكلموا" style={{ height: 64, width: "auto" }} />
+            <img src="/wordmark.png" alt="تتكلموا" style={{ height: 100, width: "auto" }} />
           </Link>
         </div>
 

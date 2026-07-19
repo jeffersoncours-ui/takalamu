@@ -39,7 +39,7 @@ export default async function LoginPage({
             <img
               src="/wordmark.png"
               alt="تتكلموا"
-              style={{ height: 64, width: "auto" }}
+              style={{ height: 100, width: "auto" }}
             />
           </Link>
         </div>
