@@ -26,7 +26,7 @@ export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#A8A29E"
+          stroke="var(--tk-muted-olive)"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -43,20 +43,20 @@ export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
           className="w-full rounded-[14px] pl-11 pr-4 outline-none"
           style={{
             height: 48,
-            background: "#FBF9F5",
-            border: "1.5px solid #E9E3D8",
+            background: "var(--tk-parchment-field)",
+            border: "1.5px solid var(--tk-parchment-border)",
             fontSize: 14,
-            color: "#1C1A17",
+            color: "var(--tk-ink-text)",
           }}
         />
       </div>
 
       {items.length === 0 && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée pour le moment.</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucune règle enregistrée pour le moment.</p>
       )}
 
       {items.length > 0 && q && filtered.length === 0 && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
       )}
 
       <div className="flex flex-col gap-2.5">
@@ -65,15 +65,15 @@ export default function GrammarSearch({ items }: { items: GrammarItem[] }) {
             key={r.id}
             href={`/dashboard/grammar/${r.id}`}
             className="flex items-center justify-between gap-3 rounded-[16px] px-4 py-3.5 transition-opacity hover:opacity-80"
-            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "var(--tk-shadow-card)" }}
           >
             <div className="min-w-0">
-              <p className="font-bold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>{r.title}</p>
-              <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
+              <p className="font-bold truncate" style={{ color: "var(--tk-ink-text)", fontSize: 15 }}>{r.title}</p>
+              <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12.5 }}>
                 {format(new Date(r.date), "d MMM yyyy", { locale: fr })}
               </p>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </Link>

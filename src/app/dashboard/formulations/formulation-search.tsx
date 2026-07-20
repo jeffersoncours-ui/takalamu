@@ -37,7 +37,7 @@ export default function FormulationSearch({ groups }: { groups: LessonGroup<Form
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#A8A29E"
+          stroke="var(--tk-muted-olive)"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -54,20 +54,20 @@ export default function FormulationSearch({ groups }: { groups: LessonGroup<Form
           className="w-full rounded-[14px] pl-11 pr-4 outline-none"
           style={{
             height: 48,
-            background: "#FBF9F5",
-            border: "1.5px solid #E9E3D8",
+            background: "var(--tk-parchment-field)",
+            border: "1.5px solid var(--tk-parchment-border)",
             fontSize: 14,
-            color: "#1C1A17",
+            color: "var(--tk-ink-text)",
           }}
         />
       </div>
 
       {!hasAnyItems && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune formulation enregistrée pour le moment.</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucune formulation enregistrée pour le moment.</p>
       )}
 
       {hasAnyItems && q && !hasAnyMatch && (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun résultat pour «&nbsp;{query}&nbsp;».</p>
       )}
 
       <div className="flex flex-col gap-3">
@@ -79,17 +79,17 @@ export default function FormulationSearch({ groups }: { groups: LessonGroup<Form
                 <div
                   key={f.id}
                   className="rounded-[14px] px-3.5 py-3 space-y-1.5"
-                  style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+                  style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)" }}
                 >
                   <p
                     className="font-arabic"
                     dir="rtl"
                     lang="ar"
-                    style={{ fontSize: 20, fontWeight: 700, color: "#0A553F", lineHeight: 1.5 }}
+                    style={{ fontSize: 20, fontWeight: 700, color: "var(--tk-ink-hero-to)", lineHeight: 1.5 }}
                   >
                     {f.arabic_text}
                   </p>
-                  <p style={{ color: "#1C1A17", fontSize: 14 }}>{f.french_text}</p>
+                  <p style={{ color: "var(--tk-ink-text)", fontSize: 14 }}>{f.french_text}</p>
                 </div>
               ))}
             </AccordionGroup>
