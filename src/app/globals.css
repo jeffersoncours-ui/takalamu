@@ -109,9 +109,20 @@
   font-family: var(--font-amiri);
 }
 
-/* Texture hachurée (surfaces encre) */
+/* Texture hachurée (surfaces encre) — pseudo-élément plutôt que
+   background-image direct : la plupart des surfaces encre posent AUSSI un
+   dégradé via `style={{ background: ... }}` en inline, et le raccourci
+   `background` réinitialise `background-image` à `none`, ce qui écraserait
+   silencieusement la texture (l'inline gagne toujours sur la classe). */
 .hachure-ink {
+  position: relative;
+}
+.hachure-ink::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background-image: var(--tk-hachure);
+  pointer-events: none;
 }
 
 /* Animations (design system) */
