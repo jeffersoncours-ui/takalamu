@@ -46,15 +46,20 @@ export default async function EvaluationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1
-        className="px-0.5 leading-tight"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+    <div className="-mx-4 -mt-5">
+      <div
+        className="hachure-ink px-[22px] pb-7 pt-6"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
       >
-        Évaluations
-      </h1>
+        <h1
+          className="leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 32, color: "var(--tk-cream-text)" }}
+        >
+          Évaluations
+        </h1>
+      </div>
 
-      <div className="space-y-3">
+      <div className="px-[22px] pt-6 pb-2 space-y-[15px]">
         <EvalHeroCard
           href="/dashboard/evaluations/langue"
           title="Quiz de langue"

@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { personByCode, type PersonCode, type Tense } from "@/lib/conjugation";
 import type { ConjQuestion, ConjAnswer, ConjResult } from "./actions";
+import { toArabicIndicDigits } from "@/lib/arabic-numerals";
+import { KhatamOrnament } from "@/components/khatam-ornament";
 
-const GREEN = "#0F9D6E";
-const RED = "#B4292E";
 const LENGTH_OPTIONS = [10, 20, 30, 50] as const;
 
 const TENSE_LABEL: Record<string, string> = {
@@ -25,7 +25,7 @@ const pronFr = (code: string) => personByCode(code as PersonCode).fr;
 
 function ArabicBig({ children, size = 30 }: { children: React.ReactNode; size?: number }) {
   return (
-    <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: size, color: "#1C1A17", fontWeight: 700 }}>
+    <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: size, color: "var(--tk-ink-hero-to)", fontWeight: 700 }}>
       {children}
     </span>
   );
@@ -109,16 +109,19 @@ export function ConjugationQuizPlayer({
   // ── Idle ──────────────────────────────────────────────────────────────────
   if (phase.name === "idle") {
     return (
-      <div className="rounded-[18px] p-5 flex flex-col gap-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
+      <div
+        className="rounded-[18px] p-5 flex flex-col gap-4"
+        style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "var(--tk-shadow-card)" }}
+      >
         <div>
-          <p className="font-semibold text-base" style={{ color: "#1C1A17" }}>Quiz de conjugaison</p>
-          <p className="text-sm mt-0.5" style={{ color: "#8B857A" }}>
+          <p style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 19, color: "var(--tk-ink-text)" }}>Quiz de conjugaison</p>
+          <p className="text-sm mt-0.5" style={{ color: "var(--tk-muted-olive)" }}>
             Conjugue tes verbes, ou retrouve la personne d’une forme conjuguée.
           </p>
         </div>
         {unlockedTenses.length > 1 && (
           <div className="space-y-1.5">
-            <label htmlFor="conj-tense" className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+            <label htmlFor="conj-tense" className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--tk-muted-olive)" }}>
               Temps
             </label>
             <select
@@ -126,7 +129,7 @@ export function ConjugationQuizPlayer({
               value={tense}
               onChange={(e) => setTense(e.target.value)}
               className="w-full rounded-[13px] px-3.5 outline-none"
-              style={{ height: 46, background: "#FBF9F5", border: "1.5px solid #E9E3D8", fontSize: 14, color: "#1C1A17" }}
+              style={{ height: 46, background: "var(--tk-parchment-field)", border: "1.5px solid var(--tk-parchment-border)", fontSize: 14, color: "var(--tk-ink-text)" }}
             >
               <option value="mix">Mix (tous les temps vus)</option>
               {unlockedTenses.map((t) => (
@@ -140,7 +143,7 @@ export function ConjugationQuizPlayer({
 
         {/* Longueur du quiz : paliers, plafonnés au contenu réel disponible */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--tk-muted-olive)" }}>
             Nombre de questions
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -154,8 +157,8 @@ export function ConjugationQuizPlayer({
                   className="rounded-[12px] py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
                   style={
                     selected
-                      ? { background: GREEN, color: "#fff" }
-                      : { background: "#FBF9F5", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
+                      ? { background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))", color: "#fff" }
+                      : { background: "var(--tk-parchment-field)", color: "var(--tk-ink-text)", border: "1.5px solid var(--tk-parchment-border)" }
                   }
                 >
                   {n}
@@ -168,8 +171,8 @@ export function ConjugationQuizPlayer({
         <button
           onClick={start}
           disabled={loading}
-          className="w-full rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-          style={{ background: GREEN }}
+          className="w-full rounded-[14px] py-3.5 font-bold text-sm transition-opacity hover:opacity-85 disabled:opacity-60"
+          style={{ background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-hero-to)", boxShadow: "var(--tk-shadow-cta)" }}
         >
           {loading ? "Génération…" : "Commencer le quiz"}
         </button>
@@ -184,85 +187,104 @@ export function ConjugationQuizPlayer({
     const progress = (current / questions.length) * 100;
 
     return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 rounded-full overflow-hidden" style={{ background: "#EFEAE0", height: 6 }}>
-            <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: GREEN }} />
+      <div className="-mx-4 -mt-5">
+        <div
+          className="hachure-ink px-[22px] pb-6 pt-6"
+          style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 15, color: "var(--tk-sage)" }}>
+              Quiz de conjugaison
+            </span>
+            <span dir="ltr" className="font-bold" style={{ fontSize: 12, color: "var(--tk-gold-light)", unicodeBidi: "bidi-override" }}>
+              {toArabicIndicDigits(current + 1)} / {toArabicIndicDigits(questions.length)}
+            </span>
           </div>
-          <span className="text-xs font-semibold shrink-0" style={{ color: "#8B857A" }}>
-            {current + 1} / {questions.length}
-          </span>
+          <div className="rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,.12)", height: 7 }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--tk-gold-light), var(--tk-gold))" }}
+            />
+          </div>
         </div>
 
-        <div className="rounded-[18px] p-5" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#8B857A" }}>
-            {q.qtype === "conjugate"
-              ? `Conjugue au ${TENSE_LABEL[q.tense] ?? q.tense}`
-              : "À quelle personne est cette forme ?"}
-          </p>
-          {q.qtype === "conjugate" ? (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-baseline gap-2.5">
-                <ArabicBig size={28}>{q.verb_ar}</ArabicBig>
-                <span style={{ color: "#8B857A", fontSize: 13 }}>{q.verb_fr}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span style={{ color: "#4A463F", fontSize: 14 }}>pour</span>
-                <span
-                  className="inline-flex items-center gap-2 rounded-[10px] px-3 py-1"
-                  style={{ background: "#ECFAF4", border: "1px solid #C8EBDB" }}
-                >
-                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "#0A6B4E" }}>
-                    {pron(q.person_code)}
-                  </span>
-                  <span style={{ color: "#0A6B4E", fontSize: 12 }}>{pronFr(q.person_code)}</span>
-                </span>
-              </div>
-            </div>
-          ) : (
-            <ArabicBig size={36}>{q.shown_form}</ArabicBig>
-          )}
-        </div>
-
-        {/* Choix : 1 clic valide et avance */}
-        <div className="flex flex-col gap-2.5">
-          {q.qtype === "conjugate"
-            ? q.choices.map((c, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => choose(c)}
-                  disabled={loading}
-                  className="w-full rounded-[14px] px-4 py-3.5 text-right transition-opacity hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "#fff", border: "1.5px solid #EFEAE0" }}
-                >
-                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "#1C1A17" }}>{c}</span>
-                </button>
-              ))
-            : q.choices.map((code, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => choose(code)}
-                  disabled={loading}
-                  className="w-full rounded-[14px] px-4 py-3 flex items-center justify-between gap-3 transition-opacity hover:opacity-80 disabled:opacity-50"
-                  style={{ background: "#fff", border: "1.5px solid #EFEAE0" }}
-                >
-                  <span style={{ color: "#4A463F", fontSize: 14 }}>{pronFr(code)}</span>
-                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "#0A553F", fontWeight: 700 }}>{pron(code)}</span>
-                </button>
-              ))}
-        </div>
-
-        {current > 0 && (
-          <button
-            onClick={goPrev}
-            disabled={loading}
-            className="self-start rounded-[14px] px-5 py-3.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-            style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+        <div className="px-[22px] pt-5 pb-2 flex flex-col gap-4">
+          <div
+            className="rounded-[20px] p-6"
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 16px 30px -18px rgba(10,20,15,.45)" }}
           >
-            Précédent
-          </button>
-        )}
-        {loading && <p className="text-center text-sm" style={{ color: "#8B857A" }}>Calcul du score…</p>}
+            <p className="font-bold uppercase mb-3.5" style={{ fontSize: 11, letterSpacing: ".16em", color: "var(--tk-gold)" }}>
+              {q.qtype === "conjugate"
+                ? `Conjugue au ${TENSE_LABEL[q.tense] ?? q.tense}`
+                : "À quelle personne est cette forme ?"}
+            </p>
+            {q.qtype === "conjugate" ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-baseline gap-2.5">
+                  <ArabicBig size={28}>{q.verb_ar}</ArabicBig>
+                  <span style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>{q.verb_fr}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: "var(--tk-ink-text-soft)", fontSize: 14 }}>pour</span>
+                  <span
+                    className="inline-flex items-center gap-2 rounded-[10px] px-3 py-1"
+                    style={{ background: "rgba(12,107,78,.10)", border: "1px solid rgba(12,107,78,.28)" }}
+                  >
+                    <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "var(--tk-green-active)" }}>
+                      {pron(q.person_code)}
+                    </span>
+                    <span style={{ color: "var(--tk-green-active)", fontSize: 12 }}>{pronFr(q.person_code)}</span>
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <ArabicBig size={36}>{q.shown_form}</ArabicBig>
+            )}
+          </div>
+
+          {/* Choix : 1 clic valide et avance */}
+          <div className="flex flex-col gap-2.5">
+            {q.qtype === "conjugate"
+              ? q.choices.map((c, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => choose(c)}
+                    disabled={loading}
+                    className="w-full rounded-[14px] px-4 py-3.5 text-right transition-opacity hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "var(--tk-parchment-card)", border: "1.5px solid var(--tk-parchment-border)", boxShadow: "0 8px 18px -14px rgba(10,20,15,.35)" }}
+                  >
+                    <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "var(--tk-ink-text)" }}>{c}</span>
+                  </button>
+                ))
+              : q.choices.map((code, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => choose(code)}
+                    disabled={loading}
+                    className="w-full rounded-[14px] px-4 py-3 flex items-center justify-between gap-3 transition-opacity hover:opacity-80 disabled:opacity-50"
+                    style={{ background: "var(--tk-parchment-card)", border: "1.5px solid var(--tk-parchment-border)", boxShadow: "0 8px 18px -14px rgba(10,20,15,.35)" }}
+                  >
+                    <span style={{ color: "var(--tk-ink-text-soft)", fontSize: 14 }}>{pronFr(code)}</span>
+                    <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "var(--tk-ink-hero-to)", fontWeight: 700 }}>{pron(code)}</span>
+                  </button>
+                ))}
+          </div>
+
+          {current > 0 && (
+            <button
+              onClick={goPrev}
+              disabled={loading}
+              className="self-start inline-flex items-center gap-1.5 rounded-[13px] px-4 py-2.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+              style={{ background: "transparent", color: "var(--tk-ink-hero-to)", border: "1px solid rgba(12,58,44,.3)" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-ink-hero-to)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Précédent
+            </button>
+          )}
+          {loading && <p className="text-center text-sm" style={{ color: "var(--tk-muted-olive)" }}>Calcul du score…</p>}
+        </div>
       </div>
     );
   }
@@ -270,66 +292,127 @@ export function ConjugationQuizPlayer({
   // ── Done ──────────────────────────────────────────────────────────────────
   const { result } = phase;
   const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
-  const isGood = pct >= 70;
+  const mood = pct === 100 ? "Excellent" : pct >= 70 ? "Bien joué" : "Continue à réviser";
   const wrong = result.answers.filter((a) => !a.is_correct);
   const hasWrong = wrong.length > 0;
   const clamped = Math.min(reviewIndex, Math.max(0, wrong.length - 1));
   const a = hasWrong ? wrong[clamped] : undefined;
 
+  const RING_R = 42;
+  const RING_C = 2 * Math.PI * RING_R;
+  const ringOffset = RING_C * (1 - pct / 100);
+
   return (
-    <div className="flex flex-col gap-4">
-      <div
-        className="rounded-[18px] p-6 text-center"
-        style={{ background: isGood ? "#ECFAF4" : "#FDECEC", border: `1px solid ${isGood ? "#C8EBDB" : "#F3B0B2"}` }}
+    <div
+      className="hachure-ink -mx-4 -mt-5 flex flex-col items-center px-6 pb-8 pt-10"
+      style={{ background: "linear-gradient(180deg, var(--tk-ink-hero-from), var(--tk-ink-deep))", minHeight: "calc(100vh - 160px)" }}
+    >
+      <p style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 19, color: "var(--tk-sage)" }}>
+        Mâ shâ Allah !
+      </p>
+      <h1
+        className="text-center mt-1"
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 30, color: "var(--tk-cream-text)" }}
       >
-        <p className="text-5xl font-bold" style={{ color: isGood ? GREEN : RED, fontFamily: "var(--font-spectral)" }}>
-          {result.score}/{result.total}
-        </p>
-        <p className="text-lg font-semibold mt-1" style={{ color: isGood ? "#0A6B4E" : "#7A1A1E" }}>{pct}%</p>
-        <p className="text-sm mt-2" style={{ color: isGood ? "#0A6B4E" : "#7A1A1E" }}>
-          {pct === 100 ? "Parfait !" : pct >= 70 ? "Bien joué !" : "Continue à réviser !"}
-        </p>
+        Quiz de conjugaison terminé
+      </h1>
+
+      <div className="relative mt-6" style={{ width: 190, height: 190 }}>
+        <KhatamOrnament size={190} strokeWidth={0.4} className="absolute inset-0" style={{ opacity: 0.4 }} />
+        <svg width="190" height="190" viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+          <circle cx="50" cy="50" r={RING_R} fill="none" stroke="rgba(199,154,62,.15)" strokeWidth="5" />
+          <circle
+            cx="50"
+            cy="50"
+            r={RING_R}
+            fill="none"
+            stroke="url(#conjGoldRing)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={RING_C}
+            strokeDashoffset={ringOffset}
+          />
+          <defs>
+            <linearGradient id="conjGoldRing" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="var(--tk-gold-light)" />
+              <stop offset="1" stopColor="var(--tk-gold)" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div style={{ fontFamily: "var(--font-spectral)", fontSize: 56, fontWeight: 700, color: "var(--tk-gold-light)", lineHeight: 0.9 }}>
+            {result.score}
+            <span style={{ fontSize: 26, color: "var(--tk-sage)" }}>/{result.total}</span>
+          </div>
+          <div
+            className="mt-1 text-center uppercase"
+            style={{ fontSize: 10, letterSpacing: ".15em", color: "var(--tk-sage)", maxWidth: 118, lineHeight: 1.3 }}
+          >
+            {mood}
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full flex gap-3 mt-8">
+        <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+          <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-sage-bright)" }}>
+            {result.total - wrong.length}
+          </div>
+          <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>Correctes</div>
+        </div>
+        <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+          <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-danger-dot)" }}>
+            {wrong.length}
+          </div>
+          <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>À revoir</div>
+        </div>
+        <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+          <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-gold-light)" }}>
+            {pct}%
+          </div>
+          <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>Score</div>
+        </div>
       </div>
 
       {!hasWrong ? (
-        <div className="rounded-[18px] p-5 text-center" style={{ background: "#ECFAF4", border: "1px solid #C8EBDB" }}>
-          <p className="text-sm font-semibold" style={{ color: "#0A6B4E" }}>Aucune erreur, bravo !</p>
+        <div className="w-full rounded-[16px] p-4 mt-5 text-center" style={{ background: "rgba(143,203,168,.08)", border: "1px solid rgba(143,203,168,.3)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--tk-sage-bright)" }}>Aucune erreur, bravo !</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
-            Erreur {clamped + 1} / {wrong.length}
-          </p>
-          <div className="rounded-[14px] p-3.5 space-y-1.5" style={{ background: "#FFF8F8", border: "1px solid #F3B0B2" }}>
+        <div className="w-full flex flex-col gap-3 mt-5">
+          <div className="rounded-[16px] p-4 space-y-1.5" style={{ background: "rgba(217,139,126,.08)", border: "1px solid rgba(217,139,126,.3)" }}>
+            <p className="font-bold uppercase mb-1" style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--tk-danger-dot)" }}>
+              À revoir · {clamped + 1}/{wrong.length}
+            </p>
             {a && a.qtype === "conjugate" ? (
               <>
-                <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
+                <p className="text-xs" style={{ color: "var(--tk-sage)" }}>
                   {TENSE_LABEL[a.tense] ?? a.tense} — {pronFr(a.person_code)}
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <ArabicBig size={22}>{a.verb_ar}</ArabicBig>
-                  <span style={{ color: "#8B857A", fontSize: 12 }}>{a.verb_fr}</span>
-                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 18, color: "#0A6B4E" }}>{pron(a.person_code)}</span>
+                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 22, color: "var(--tk-cream-text)", fontWeight: 700 }}>{a.verb_ar}</span>
+                  <span style={{ color: "var(--tk-sage)", fontSize: 12 }}>{a.verb_fr}</span>
+                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 18, color: "var(--tk-gold-light)" }}>{pron(a.person_code)}</span>
                 </div>
-                <p className="text-xs" style={{ color: RED }}>
-                  Ta réponse : <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 17 }}>{a.chosen}</span>
+                <p className="text-xs" style={{ color: "#C7D2C1" }}>
+                  Ta réponse : <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 17, color: "var(--tk-danger-dot)" }}>{a.chosen}</span>
                 </p>
-                <p className="text-xs font-semibold" style={{ color: "#0A6B4E" }}>
+                <p className="text-xs font-semibold" style={{ color: "var(--tk-cream-text)" }}>
                   Bonne réponse : <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 17 }}>{a.correct}</span>
                 </p>
               </>
             ) : a && a.qtype === "which_person" ? (
               <>
-                <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
+                <p className="text-xs" style={{ color: "var(--tk-sage)" }}>
                   {TENSE_LABEL[a.tense] ?? a.tense} — quelle personne ?
                 </p>
-                <ArabicBig size={24}>{a.shown_form}</ArabicBig>
-                <p className="text-xs" style={{ color: RED }}>
+                <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 24, color: "var(--tk-cream-text)", fontWeight: 700 }}>{a.shown_form}</span>
+                <p className="text-xs" style={{ color: "#C7D2C1" }}>
                   Ta réponse : {pronFr(a.chosen)}{" "}
-                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 16 }}>{pron(a.chosen)}</span>
+                  <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 16, color: "var(--tk-danger-dot)" }}>{pron(a.chosen)}</span>
                 </p>
                 {a.correct_person && (
-                  <p className="text-xs font-semibold" style={{ color: "#0A6B4E" }}>
+                  <p className="text-xs font-semibold" style={{ color: "var(--tk-cream-text)" }}>
                     Bonne réponse : {pronFr(a.correct_person)}{" "}
                     <span dir="rtl" lang="ar" style={{ fontFamily: "var(--font-amiri)", fontSize: 16 }}>{pron(a.correct_person)}</span>
                   </p>
@@ -342,16 +425,16 @@ export function ConjugationQuizPlayer({
               <button
                 onClick={() => setReviewIndex((i) => Math.max(0, i - 1))}
                 disabled={clamped === 0}
-                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-40"
+                style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
               >
                 Précédent
               </button>
               <button
                 onClick={() => setReviewIndex((i) => Math.min(wrong.length - 1, i + 1))}
                 disabled={clamped === wrong.length - 1}
-                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-40"
+                style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
               >
                 Suivant
               </button>
@@ -360,13 +443,22 @@ export function ConjugationQuizPlayer({
         </div>
       )}
 
-      <button
-        onClick={restart}
-        className="w-full rounded-[14px] py-3.5 font-semibold text-sm transition-opacity hover:opacity-85"
-        style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-      >
-        Refaire un quiz
-      </button>
+      <div className="w-full flex gap-3 mt-6">
+        <button
+          onClick={restart}
+          className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm transition-opacity hover:opacity-85"
+          style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
+        >
+          Revoir
+        </button>
+        <button
+          onClick={restart}
+          className="flex-1 rounded-[14px] py-3.5 font-bold text-sm transition-opacity hover:opacity-85"
+          style={{ background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-hero-to)", boxShadow: "var(--tk-shadow-cta)" }}
+        >
+          Continuer
+        </button>
+      </div>
     </div>
   );
 }

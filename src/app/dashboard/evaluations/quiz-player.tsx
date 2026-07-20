@@ -2,14 +2,15 @@
 
 import { useRef, useState } from "react";
 import type { QuizQuestion, QuizAnswer, QuizResult } from "./actions";
+import { toArabicIndicDigits } from "@/lib/arabic-numerals";
+import { KhatamOrnament } from "@/components/khatam-ornament";
 
 type Phase =
   | { name: "idle" }
   | { name: "playing"; questions: QuizQuestion[]; current: number; answers: (QuizAnswer | null)[] }
   | { name: "done"; result: QuizResult; questions: QuizQuestion[] };
 
-const GREEN = "#0F9D6E";
-const RED = "#B4292E";
+const GREEN = "var(--tk-emerald-btn-from)";
 
 /** Un seul audio à la fois sur tout l'écran quiz : lancer une lecture coupe
  *  celle en cours, où qu'elle soit (question, propositions, correction). */
@@ -49,17 +50,17 @@ function AudioPrompt({
     }
   };
 
-  const fill = neutral ? (playing ? "#0A6B4E" : "#4A463F") : "#fff";
+  const fill = neutral ? (playing ? "var(--tk-green-active)" : "var(--tk-ink-text-soft)") : "#fff";
   const btnStyle: React.CSSProperties = neutral
     ? {
-        background: playing ? "#ECFAF4" : "#FBF9F5",
-        color: playing ? "#0A6B4E" : "#4A463F",
-        border: `1.5px solid ${playing ? "#C8EBDB" : "#E9E3D8"}`,
+        background: playing ? "rgba(12,107,78,.10)" : "var(--tk-parchment-field)",
+        color: playing ? "var(--tk-green-active)" : "var(--tk-ink-text-soft)",
+        border: `1.5px solid ${playing ? "rgba(12,107,78,.28)" : "var(--tk-parchment-border)"}`,
         fontSize: compact ? 12 : 14,
         padding: compact ? "6px 14px" : "10px 18px",
       }
     : {
-        background: playing ? "#0A6B4E" : GREEN,
+        background: playing ? "var(--tk-green-active)" : GREEN,
         color: "#fff",
         fontSize: compact ? 12 : 15,
         padding: compact ? "6px 14px" : "12px 22px",
@@ -207,12 +208,12 @@ export default function QuizPlayer({
       return (
         <div
           className="rounded-[18px] p-5 text-center"
-          style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+          style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}
         >
-          <p className="text-base font-semibold mb-1" style={{ color: "#1C1A17" }}>
+          <p className="text-base font-semibold mb-1" style={{ color: "var(--tk-ink-text)" }}>
             {labels.emptyTitle}
           </p>
-          <p className="text-sm" style={{ color: "#8B857A" }}>
+          <p className="text-sm" style={{ color: "var(--tk-muted-olive)" }}>
             {labels.emptyBody}
           </p>
         </div>
@@ -224,23 +225,23 @@ export default function QuizPlayer({
     return (
       <div
         className="rounded-[18px] p-5 flex flex-col gap-4"
-        style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+        style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "var(--tk-shadow-card)" }}
       >
         <div>
-          <p className="font-semibold text-base" style={{ color: "#1C1A17" }}>
+          <p style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 19, color: "var(--tk-ink-text)" }}>
             {labels.title}
           </p>
-          <p className="text-sm mt-0.5" style={{ color: "#8B857A" }}>
+          <p className="text-sm mt-0.5" style={{ color: "var(--tk-muted-olive)" }}>
             {count} {count > 1 ? labels.unitPlural : labels.unit}
           </p>
         </div>
-        <p className="text-sm leading-relaxed" style={{ color: "#4A463F" }}>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--tk-ink-text-soft)" }}>
           {labels.intro}
         </p>
 
         {/* Longueur du quiz : paliers, plafonnés au contenu réel disponible */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
+          <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--tk-muted-olive)" }}>
             Nombre de questions
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -254,8 +255,8 @@ export default function QuizPlayer({
                   className="rounded-[12px] py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
                   style={
                     selected
-                      ? { background: GREEN, color: "#fff" }
-                      : { background: "#FBF9F5", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
+                      ? { background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))", color: "#fff" }
+                      : { background: "var(--tk-parchment-field)", color: "var(--tk-ink-text)", border: "1.5px solid var(--tk-parchment-border)" }
                   }
                 >
                   {n}
@@ -265,15 +266,15 @@ export default function QuizPlayer({
           </div>
         </div>
 
-        <p className="text-xs" style={{ color: "#8B857A" }}>
+        <p className="text-xs" style={{ color: "var(--tk-muted-olive)" }}>
           {effective} question{effective > 1 ? "s" : ""} pour ce quiz.
         </p>
 
         <button
           onClick={start}
           disabled={loading}
-          className="w-full rounded-[14px] py-3.5 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-          style={{ background: GREEN }}
+          className="w-full rounded-[14px] py-3.5 font-bold text-sm transition-opacity hover:opacity-85 disabled:opacity-60"
+          style={{ background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-hero-to)", boxShadow: "var(--tk-shadow-cta)" }}
         >
           {loading ? "Génération…" : "Commencer le quiz"}
         </button>
@@ -290,143 +291,165 @@ export default function QuizPlayer({
     const isArabicAnswer = q.direction === "fr_to_ar";
 
     return (
-      <div className="flex flex-col gap-4">
-        {/* Progress */}
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 rounded-full overflow-hidden"
-            style={{ background: "#EFEAE0", height: 6 }}
-          >
+      <div className="-mx-4 -mt-5">
+        {/* Progress, sur fond encre */}
+        <div
+          className="hachure-ink px-[22px] pb-6 pt-6"
+          style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 15, color: "var(--tk-sage)" }}>
+              {labels.title}
+            </span>
+            <span dir="ltr" className="font-bold" style={{ fontSize: 12, color: "var(--tk-gold-light)", unicodeBidi: "bidi-override" }}>
+              {toArabicIndicDigits(current + 1)} / {toArabicIndicDigits(questions.length)}
+            </span>
+          </div>
+          <div className="rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,.12)", height: 7 }}>
             <div
               className="h-full rounded-full transition-all"
-              style={{ width: `${progress}%`, background: GREEN }}
+              style={{ width: `${progress}%`, background: "linear-gradient(90deg, var(--tk-gold-light), var(--tk-gold))" }}
             />
           </div>
-          <span className="text-xs font-semibold shrink-0" style={{ color: "#8B857A" }}>
-            {current + 1} / {questions.length}
-          </span>
         </div>
 
-        {/* Question card */}
-        <div
-          className="rounded-[18px] p-5"
-          style={{ background: "#fff", border: "1px solid #EFEAE0" }}
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#8B857A" }}>
-            {q.direction === "fr_to_ar_audio"
-              ? labels.frToArAudioQuestion ?? labels.frToArQuestion
-              : q.audio_url
-              ? labels.arToFrAudioQuestion ?? labels.arToFrQuestion
-              : q.direction === "ar_to_fr"
-              ? labels.arToFrQuestion
-              : labels.frToArQuestion}
-          </p>
-          {q.audio_url ? (
-            <div className="py-1">
-              {/* key=current force un remontage complet à chaque question :
-                  sans lui, React réutilise l'instance précédente et son état
-                  "en lecture" reste bloqué sur l'ancienne question. */}
-              <AudioPrompt key={current} url={q.audio_url} />
+        <div className="px-[22px] pt-5 pb-2 flex flex-col gap-4">
+          {/* Question card */}
+          <div
+            className="rounded-[20px] p-6 text-center"
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 16px 30px -18px rgba(10,20,15,.45)" }}
+          >
+            <p className="font-bold uppercase mb-3.5" style={{ fontSize: 11, letterSpacing: ".16em", color: "var(--tk-gold)" }}>
+              {q.direction === "fr_to_ar_audio"
+                ? labels.frToArAudioQuestion ?? labels.frToArQuestion
+                : q.audio_url
+                ? labels.arToFrAudioQuestion ?? labels.arToFrQuestion
+                : q.direction === "ar_to_fr"
+                ? labels.arToFrQuestion
+                : labels.frToArQuestion}
+            </p>
+            {q.audio_url ? (
+              <div className="py-1 flex justify-center">
+                {/* key=current force un remontage complet à chaque question :
+                    sans lui, React réutilise l'instance précédente et son état
+                    "en lecture" reste bloqué sur l'ancienne question. */}
+                <AudioPrompt key={current} url={q.audio_url} />
+              </div>
+            ) : (
+              <p
+                className="font-bold leading-snug"
+                dir={q.direction === "ar_to_fr" ? "rtl" : undefined}
+                lang={q.direction === "ar_to_fr" ? "ar" : undefined}
+                style={{
+                  color: "var(--tk-ink-hero-to)",
+                  fontSize: q.direction === "ar_to_fr" ? 44 : 24,
+                  fontFamily: q.direction === "ar_to_fr" ? "var(--font-amiri)" : "var(--font-spectral)",
+                }}
+              >
+                {q.prompt}
+              </p>
+            )}
+          </div>
+
+          {/* Choices : audio (mode audio-choix) ou texte */}
+          {q.audio_choices ? (
+            <div className="flex flex-col gap-2.5">
+              {q.audio_choices.map((c, idx) => {
+                const isSelected = currentAnswer?.chosen === c.token;
+                return (
+                  <div
+                    key={`${current}-${c.token}`}
+                    className="w-full rounded-[14px] px-3.5 py-3 flex items-center gap-3"
+                    style={{
+                      background: isSelected
+                        ? "linear-gradient(180deg, rgba(14,74,56,.1), rgba(12,58,44,.08))"
+                        : "var(--tk-parchment-card)",
+                      border: `1.5px solid ${isSelected ? "var(--tk-emerald-btn-from)" : "var(--tk-parchment-border)"}`,
+                    }}
+                  >
+                    <span
+                      className="shrink-0 inline-flex items-center justify-center rounded-full text-xs font-bold"
+                      style={{ width: 24, height: 24, background: "var(--tk-parchment-field)", color: "var(--tk-muted-olive)" }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <AudioPrompt url={c.audio_url} neutral compact />
+                    <button
+                      onClick={() => choose(c.token)}
+                      disabled={loading}
+                      className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
+                      style={
+                        isSelected
+                          ? { background: "var(--tk-emerald-btn-from)", color: "#fff" }
+                          : { background: "var(--tk-parchment-card)", color: "var(--tk-ink-text)", border: "1.5px solid var(--tk-parchment-border)" }
+                      }
+                    >
+                      {isSelected ? "Sélectionné ✓" : "Choisir"}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : (
-            <p
-              className="text-2xl font-bold leading-snug mb-1"
-              dir={q.direction === "ar_to_fr" ? "rtl" : undefined}
-              lang={q.direction === "ar_to_fr" ? "ar" : undefined}
-              style={{
-                color: "#1C1A17",
-                fontFamily: q.direction === "ar_to_fr" ? "var(--font-amiri)" : "var(--font-spectral)",
-              }}
+            <div className="flex flex-col gap-2.5">
+              {q.choices.map((choice, idx) => {
+                const isSelected = currentAnswer?.chosen === choice;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => choose(choice)}
+                    disabled={loading}
+                    className="w-full rounded-[14px] px-[17px] py-[15px] text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50 flex items-center justify-between"
+                    style={{
+                      background: isSelected
+                        ? "linear-gradient(180deg, rgba(14,74,56,.1), rgba(12,58,44,.08))"
+                        : "var(--tk-parchment-card)",
+                      border: `1.5px solid ${isSelected ? "var(--tk-emerald-btn-from)" : "var(--tk-parchment-border)"}`,
+                      color: isSelected ? "var(--tk-ink-hero-to)" : "#3C4A3F",
+                      fontWeight: isSelected ? 600 : 400,
+                      textAlign: isArabicAnswer ? "right" : "left",
+                      boxShadow: "0 8px 18px -14px rgba(10,20,15,.35)",
+                    }}
+                    dir={isArabicAnswer ? "rtl" : undefined}
+                    lang={isArabicAnswer ? "ar" : undefined}
+                  >
+                    <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
+                      {choice}
+                    </span>
+                    {isSelected && (
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tk-emerald-btn-from)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Retour possible sur une question déjà vue pour changer sa réponse
+              (main glissée, erreur) — cliquer une option valide toujours et
+              avance directement, aucun bouton de validation séparé. */}
+          {current > 0 && (
+            <button
+              onClick={goPrev}
+              disabled={loading}
+              className="self-start inline-flex items-center gap-1.5 rounded-[13px] px-4 py-2.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
+              style={{ background: "transparent", color: "var(--tk-ink-hero-to)", border: "1px solid rgba(12,58,44,.3)" }}
             >
-              {q.prompt}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-ink-hero-to)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Précédent
+            </button>
+          )}
+
+          {loading && (
+            <p className="text-center text-sm" style={{ color: "var(--tk-muted-olive)" }}>
+              Calcul du score…
             </p>
           )}
         </div>
-
-        {/* Choices : audio (mode audio-choix) ou texte */}
-        {q.audio_choices ? (
-          <div className="flex flex-col gap-2.5">
-            {q.audio_choices.map((c, idx) => {
-              const isSelected = currentAnswer?.chosen === c.token;
-              return (
-                <div
-                  key={`${current}-${c.token}`}
-                  className="w-full rounded-[14px] px-3.5 py-3 flex items-center gap-3"
-                  style={{
-                    background: isSelected ? "#ECFAF4" : "#fff",
-                    border: `1.5px solid ${isSelected ? GREEN : "#EFEAE0"}`,
-                  }}
-                >
-                  <span
-                    className="shrink-0 inline-flex items-center justify-center rounded-full text-xs font-bold"
-                    style={{ width: 24, height: 24, background: "#F7F4EE", color: "#8B857A" }}
-                  >
-                    {idx + 1}
-                  </span>
-                  <AudioPrompt url={c.audio_url} neutral compact />
-                  <button
-                    onClick={() => choose(c.token)}
-                    disabled={loading}
-                    className="ml-auto shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-50"
-                    style={
-                      isSelected
-                        ? { background: GREEN, color: "#fff" }
-                        : { background: "#fff", color: "#1C1A17", border: "1.5px solid #E9E3D8" }
-                    }
-                  >
-                    {isSelected ? "Sélectionné ✓" : "Choisir"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2.5">
-            {q.choices.map((choice, idx) => {
-              const isSelected = currentAnswer?.chosen === choice;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => choose(choice)}
-                  disabled={loading}
-                  className="w-full rounded-[14px] px-4 py-3.5 text-left font-medium text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
-                  style={{
-                    background: isSelected ? "#ECFAF4" : "#fff",
-                    border: `1.5px solid ${isSelected ? GREEN : "#EFEAE0"}`,
-                    color: "#1C1A17",
-                    textAlign: isArabicAnswer ? "right" : "left",
-                  }}
-                  dir={isArabicAnswer ? "rtl" : undefined}
-                  lang={isArabicAnswer ? "ar" : undefined}
-                >
-                  <span style={{ fontFamily: isArabicAnswer ? "var(--font-amiri)" : undefined }}>
-                    {choice}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Retour possible sur une question déjà vue pour changer sa réponse
-            (main glissée, erreur) — cliquer une option valide toujours et
-            avance directement, aucun bouton de validation séparé. */}
-        {current > 0 && (
-          <button
-            onClick={goPrev}
-            disabled={loading}
-            className="self-start rounded-[14px] px-5 py-3.5 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-            style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-          >
-            Précédent
-          </button>
-        )}
-
-        {loading && (
-          <p className="text-center text-sm" style={{ color: "#8B857A" }}>
-            Calcul du score…
-          </p>
-        )}
       </div>
     );
   }
@@ -435,7 +458,7 @@ export default function QuizPlayer({
   if (phase.name === "done") {
     const { result, questions } = phase;
     const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
-    const isGood = pct >= 70;
+    const mood = pct === 100 ? "Excellent" : pct >= 70 ? "Bien joué" : "Continue à réviser";
 
     const wrongIndices = result.answers
       .map((_, idx) => idx)
@@ -448,93 +471,136 @@ export default function QuizPlayer({
     // Réponses en arabe pour les deux sens FR→AR (texte et audio-choix).
     const isAr = a ? a.direction !== "ar_to_fr" : false;
 
+    // Anneau de progression (r=42, C=2πr) — même technique que la maquette.
+    const RING_R = 42;
+    const RING_C = 2 * Math.PI * RING_R;
+    const ringOffset = RING_C * (1 - pct / 100);
+
     return (
-      <div className="flex flex-col gap-4">
-        {/* Score hero */}
-        <div
-          className="rounded-[18px] p-6 text-center"
-          style={{ background: isGood ? "#ECFAF4" : "#FDECEC", border: `1px solid ${isGood ? "#C8EBDB" : "#F3B0B2"}` }}
+      <div
+        className="hachure-ink -mx-4 -mt-5 flex flex-col items-center px-6 pb-8 pt-10"
+        style={{ background: "linear-gradient(180deg, var(--tk-ink-hero-from), var(--tk-ink-deep))", minHeight: "calc(100vh - 160px)" }}
+      >
+        <p style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 19, color: "var(--tk-sage)" }}>
+          Mâ shâ Allah !
+        </p>
+        <h1
+          className="text-center mt-1"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 30, color: "var(--tk-cream-text)" }}
         >
-          <p
-            className="text-5xl font-bold"
-            style={{ color: isGood ? GREEN : RED, fontFamily: "var(--font-spectral)" }}
-          >
-            {result.score}/{result.total}
-          </p>
-          <p className="text-lg font-semibold mt-1" style={{ color: isGood ? "#0A6B4E" : "#7A1A1E" }}>
-            {pct}%
-          </p>
-          <p className="text-sm mt-2" style={{ color: isGood ? "#0A6B4E" : "#7A1A1E" }}>
-            {pct === 100
-              ? "Parfait !"
-              : pct >= 70
-              ? "Bien joué !"
-              : "Continue à réviser !"}
-          </p>
+          {labels.title} terminé
+        </h1>
+
+        {/* Anneau de score */}
+        <div className="relative mt-6" style={{ width: 190, height: 190 }}>
+          <KhatamOrnament
+            size={190}
+            strokeWidth={0.4}
+            circle={false}
+            className="absolute inset-0"
+            style={{ opacity: 0.4 }}
+          />
+          <svg width="190" height="190" viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+            <circle cx="50" cy="50" r={RING_R} fill="none" stroke="rgba(199,154,62,.15)" strokeWidth="5" />
+            <circle
+              cx="50"
+              cy="50"
+              r={RING_R}
+              fill="none"
+              stroke="url(#quizGoldRing)"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={RING_C}
+              strokeDashoffset={ringOffset}
+            />
+            <defs>
+              <linearGradient id="quizGoldRing" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="var(--tk-gold-light)" />
+                <stop offset="1" stopColor="var(--tk-gold)" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div style={{ fontFamily: "var(--font-spectral)", fontSize: 56, fontWeight: 700, color: "var(--tk-gold-light)", lineHeight: 0.9 }}>
+              {result.score}
+              <span style={{ fontSize: 26, color: "var(--tk-sage)" }}>/{result.total}</span>
+            </div>
+            <div
+              className="mt-1 text-center uppercase"
+              style={{ fontSize: 10, letterSpacing: ".15em", color: "var(--tk-sage)", maxWidth: 118, lineHeight: 1.3 }}
+            >
+              {mood}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="w-full flex gap-3 mt-8">
+          <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+            <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-sage-bright)" }}>
+              {result.total - wrongIndices.length}
+            </div>
+            <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>Correctes</div>
+          </div>
+          <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+            <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-danger-dot)" }}>
+              {wrongIndices.length}
+            </div>
+            <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>À revoir</div>
+          </div>
+          <div className="flex-1 rounded-[16px] p-3.5 text-center" style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(199,154,62,.25)" }}>
+            <div style={{ fontFamily: "var(--font-spectral)", fontSize: 26, fontWeight: 700, color: "var(--tk-gold-light)" }}>
+              {pct}%
+            </div>
+            <div className="mt-1" style={{ fontSize: 10.5, color: "var(--tk-sage)" }}>Score</div>
+          </div>
         </div>
 
         {/* Correction : uniquement les mauvaises réponses, une par une */}
         {!hasWrong ? (
           <div
-            className="rounded-[18px] p-5 text-center"
-            style={{ background: "#ECFAF4", border: "1px solid #C8EBDB" }}
+            className="w-full rounded-[16px] p-4 mt-5 text-center"
+            style={{ background: "rgba(143,203,168,.08)", border: "1px solid rgba(143,203,168,.3)" }}
           >
-            <p className="text-sm font-semibold" style={{ color: "#0A6B4E" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--tk-sage-bright)" }}>
               Aucune erreur, bravo !
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#8B857A" }}>
-              Erreur {clampedReviewIndex + 1} / {wrongIndices.length}
-            </p>
-
+          <div className="w-full flex flex-col gap-3 mt-5">
             <div
-              className="rounded-[14px] p-3.5"
-              style={{ background: "#FFF8F8", border: "1px solid #F3B0B2" }}
+              className="rounded-[16px] p-4"
+              style={{ background: "rgba(217,139,126,.08)", border: "1px solid rgba(217,139,126,.3)" }}
             >
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 shrink-0" style={{ color: RED, fontSize: 14 }}>
-                  ✗
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: "#8B857A" }}>
-                    {q?.direction === "ar_to_fr" ? "Arabe → Français" : "Français → Arabe"}
-                  </p>
-                  {q?.audio_url ? (
-                    <div className="mt-1">
-                      <AudioPrompt url={q.audio_url} compact />
-                    </div>
-                  ) : (
-                    <p
-                      className="text-sm font-medium mt-0.5"
-                      style={{ color: "#1C1A17" }}
-                      dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
-                    >
-                      {q?.prompt}
-                    </p>
-                  )}
-                  <div className="mt-1.5 space-y-0.5">
-                    <p className="text-xs" style={{ color: RED }}>
-                      Ta réponse :{" "}
-                      <span
-                        dir={isAr ? "rtl" : undefined}
-                        style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
-                      >
-                        {a?.chosen}
-                      </span>
-                    </p>
-                    <p className="text-xs font-semibold" style={{ color: "#0A6B4E" }}>
-                      Bonne réponse :{" "}
-                      <span
-                        dir={isAr ? "rtl" : undefined}
-                        style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined }}
-                      >
-                        {a?.correct}
-                      </span>
-                    </p>
-                  </div>
+              <p className="font-bold uppercase mb-2" style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--tk-danger-dot)" }}>
+                À revoir · {clampedReviewIndex + 1}/{wrongIndices.length}
+              </p>
+              {q?.audio_url ? (
+                <div className="mt-1">
+                  <AudioPrompt url={q.audio_url} compact />
                 </div>
+              ) : (
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: "var(--tk-cream-text)" }}
+                  dir={q?.direction === "ar_to_fr" ? "rtl" : undefined}
+                >
+                  {q?.prompt}
+                </p>
+              )}
+              <div className="mt-2 flex items-center justify-between">
+                <span style={{ fontSize: 13.5, color: "#C7D2C1" }}>
+                  Ta réponse :{" "}
+                  <span dir={isAr ? "rtl" : undefined} style={{ fontFamily: isAr ? "var(--font-amiri)" : undefined, color: "var(--tk-danger-dot)" }}>
+                    {a?.chosen}
+                  </span>
+                </span>
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <span style={{ fontSize: 13.5, color: "#C7D2C1" }}>Bonne réponse :</span>
+                <span dir={isAr ? "rtl" : undefined} lang={isAr ? "ar" : undefined} className={isAr ? "font-arabic" : undefined} style={{ fontSize: isAr ? 20 : 13.5, color: "var(--tk-cream-text)", fontWeight: 600 }}>
+                  {a?.correct}
+                </span>
               </div>
             </div>
 
@@ -543,16 +609,16 @@ export default function QuizPlayer({
                 <button
                   onClick={() => setReviewIndex((i) => Math.max(0, i - 1))}
                   disabled={clampedReviewIndex === 0}
-                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                  style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-40"
+                  style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
                 >
                   Précédent
                 </button>
                 <button
                   onClick={() => setReviewIndex((i) => Math.min(wrongIndices.length - 1, i + 1))}
                   disabled={clampedReviewIndex === wrongIndices.length - 1}
-                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-50"
-                  style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
+                  className="flex-1 rounded-[14px] py-3 font-semibold text-sm transition-opacity hover:opacity-85 disabled:opacity-40"
+                  style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
                 >
                   Suivant
                 </button>
@@ -561,13 +627,22 @@ export default function QuizPlayer({
           </div>
         )}
 
-        <button
-          onClick={restart}
-          className="w-full rounded-[14px] py-3.5 font-semibold text-sm transition-opacity hover:opacity-85"
-          style={{ background: "#F7F4EE", color: "#1C1A17", border: "1px solid #EFEAE0" }}
-        >
-          Refaire un quiz
-        </button>
+        <div className="w-full flex gap-3 mt-6">
+          <button
+            onClick={restart}
+            className="flex-1 rounded-[14px] py-3.5 font-semibold text-sm transition-opacity hover:opacity-85"
+            style={{ background: "transparent", color: "var(--tk-gold-light)", border: "1px solid rgba(199,154,62,.4)" }}
+          >
+            Revoir
+          </button>
+          <button
+            onClick={restart}
+            className="flex-1 rounded-[14px] py-3.5 font-bold text-sm transition-opacity hover:opacity-85"
+            style={{ background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-hero-to)", boxShadow: "var(--tk-shadow-cta)" }}
+          >
+            Continuer
+          </button>
+        </div>
       </div>
     );
   }
