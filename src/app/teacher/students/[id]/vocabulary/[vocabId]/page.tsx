@@ -37,26 +37,47 @@ export default async function VocabConjugationPage({
   }
 
   return (
-    <div className="space-y-5">
-      <Link
-        href={`/teacher/students/${id}#vocabulaire`}
-        className="inline-flex items-center gap-1 font-semibold"
-        style={{ color: "#8B857A", fontSize: 13 }}
+    <div className="-mx-4 -mt-5">
+      {/* Héros encre avec filigrane arabe */}
+      <div
+        className="hachure-ink relative overflow-hidden px-[22px] pb-8 pt-6"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
       >
-        ← Fiche élève
-      </Link>
+        <span
+          aria-hidden
+          className="font-arabic pointer-events-none absolute select-none"
+          style={{ right: 18, bottom: -8, fontSize: 80, lineHeight: 1, color: "rgba(228,200,118,.12)" }}
+        >
+          ف
+        </span>
+        <Link href={`/teacher/students/${id}#vocabulaire`} className="relative inline-flex items-center gap-2.5">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 16, color: "var(--tk-sage)" }}>
+            Fiche élève
+          </span>
+        </Link>
 
-      <h1 className="leading-tight" style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}>
-        Conjugaison
-      </h1>
+        <div className="relative mt-6 flex items-baseline gap-3.5">
+          <span dir="rtl" lang="ar" className="font-arabic font-bold" style={{ fontSize: 40, color: "var(--tk-cream-text)", lineHeight: 1 }}>
+            {vocab.arabic_word}
+          </span>
+          <span style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 17, color: "var(--tk-sage)" }}>
+            {vocab.french_definition}
+          </span>
+        </div>
+      </div>
 
-      <ConjugationForm
-        studentId={id}
-        vocabId={vocabId}
-        arabicWord={vocab.arabic_word}
-        frenchDefinition={vocab.french_definition}
-        initial={initial}
-      />
+      <div className="px-[22px] pt-6 pb-2">
+        <ConjugationForm
+          studentId={id}
+          vocabId={vocabId}
+          arabicWord={vocab.arabic_word}
+          frenchDefinition={vocab.french_definition}
+          initial={initial}
+        />
+      </div>
     </div>
   );
 }

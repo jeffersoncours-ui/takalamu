@@ -7,53 +7,52 @@ export function HwCorrectionForm({ homeworkId }: { homeworkId: string }) {
   const boundAction = correctHomework.bind(null, homeworkId);
   const [state, formAction, pending] = useActionState(boundAction, {});
 
+  const fieldStyle: React.CSSProperties = {
+    background: "var(--tk-parchment-field)",
+    border: "1px solid var(--tk-parchment-border)",
+    color: "var(--tk-ink-text)",
+    borderRadius: 10,
+    outline: "none",
+  };
+
   return (
-    <form action={formAction} className="space-y-3">
+    <form action={formAction} className="space-y-2.5" style={{ borderTop: "1px solid #EEE4CC", paddingTop: 13 }}>
       {state.error && (
-        <p className="text-xs text-red-600">{state.error}</p>
+        <p className="text-xs" style={{ color: "var(--tk-danger)" }}>{state.error}</p>
       )}
 
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-slate-600">
-          Retour (feedback)
-        </label>
-        <textarea
-          name="feedback"
-          rows={2}
-          placeholder="Commentaire sur le rendu…"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 resize-none"
-        />
-      </div>
+      <textarea
+        name="feedback"
+        rows={2}
+        placeholder="Ton retour à l'élève…"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[color:var(--tk-faint-olive)] resize-none"
+        style={fieldStyle}
+      />
 
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-slate-600">
-          Copie corrigée (optionnel)
-        </label>
+      <label className="block text-xs" style={{ color: "var(--tk-muted-olive)" }}>
+        Copie corrigée (optionnel)
         <input
           name="correction_file"
           type="file"
           accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-          className="block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:cursor-pointer"
+          className="mt-1 block w-full text-xs file:mr-2 file:rounded-[8px] file:border-0 file:px-2.5 file:py-1 file:font-semibold file:cursor-pointer"
         />
-      </div>
+      </label>
 
-      <div className="flex items-end gap-3">
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-slate-600">
-            Note (optionnel)
-          </label>
-          <input
-            name="grade"
-            type="text"
-            placeholder="ex. 16/20"
-            className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-          />
-        </div>
+      <div className="flex gap-2.5">
+        <input
+          name="grade"
+          type="text"
+          placeholder="Note (ex. 16/20)"
+          className="flex-1 px-3 text-sm placeholder:text-[color:var(--tk-faint-olive)]"
+          style={{ ...fieldStyle, height: 44 }}
+        />
 
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition"
+          className="shrink-0 rounded-[10px] px-4 font-bold text-sm disabled:opacity-60"
+          style={{ background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))", color: "var(--tk-cream-text)" }}
         >
           {pending ? "Envoi…" : "Marquer corrigé"}
         </button>
