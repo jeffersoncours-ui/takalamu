@@ -13,8 +13,8 @@ const REVISION_ITEMS = [
         <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
-    color: "#D97706",
-    bg: "#FEF3C7",
+    color: "var(--tk-warning)",
+    bg: "rgba(184,120,42,.12)",
   },
   {
     href: "/dashboard/vocabulary",
@@ -26,8 +26,8 @@ const REVISION_ITEMS = [
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
       </svg>
     ),
-    color: "#0F9D6E",
-    bg: "#ECFAF4",
+    color: "var(--tk-green-active)",
+    bg: "rgba(12,107,78,.12)",
   },
   {
     href: "/dashboard/grammar",
@@ -41,8 +41,8 @@ const REVISION_ITEMS = [
         <line x1="16" y1="3" x2="14" y2="21" />
       </svg>
     ),
-    color: "#3E63DD",
-    bg: "#EAEFFD",
+    color: "var(--tk-info)",
+    bg: "rgba(46,90,138,.12)",
   },
   {
     href: "/dashboard/formulations",
@@ -53,8 +53,8 @@ const REVISION_ITEMS = [
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
-    color: "#9333EA",
-    bg: "#F3E8FF",
+    color: "var(--tk-gold-darker)",
+    bg: "rgba(138,99,22,.12)",
   },
 ];
 
@@ -66,11 +66,11 @@ export default async function RevisionPage() {
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
         >
           Révision
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+        <p className="font-medium mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>
           Vocabulaire, grammaire et évaluations.
         </p>
       </div>

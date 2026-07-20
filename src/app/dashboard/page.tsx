@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { KhatamOrnament } from "@/components/khatam-ornament";
 
 export default async function CoursPage() {
   const { profile } = await requireStudent();
@@ -74,113 +75,154 @@ export default async function CoursPage() {
     b.kind === "grammar" ? (n > 1 ? "règles" : "règle") : n > 1 ? "cours" : "cours";
 
   return (
-    <div className="space-y-1">
-      {/* Salutation */}
-      <div className="px-0.5 pb-1">
-        <div className="font-semibold" style={{ color: "#8B857A", fontSize: 13 }}>
+    <div className="-mx-4 -mt-5">
+      {/* Héros encre */}
+      <div
+        className="hachure-ink relative overflow-hidden px-[22px] pb-14 pt-7"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
+      >
+        <KhatamOrnament
+          size={200}
+          strokeWidth={0.4}
+          className="pointer-events-none absolute -right-10 -top-8"
+          style={{ opacity: 0.5 }}
+        />
+        <p className="relative" style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 19, color: "var(--tk-sage)" }}>
           Salâm &apos;alaykoum,
-        </div>
-        <div
-          className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        </p>
+        <h1
+          className="relative leading-none"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 44, color: "var(--tk-cream-text)", marginTop: 1 }}
         >
           {firstName}
-        </div>
+        </h1>
         {startDate && (
-          <div className="mt-1 font-medium" style={{ color: "#8B857A", fontSize: 13 }}>
+          <p className="relative mt-1" style={{ color: "var(--tk-gold)", fontSize: 12, letterSpacing: ".03em" }}>
             En évolution depuis le {startDate}
-          </div>
+          </p>
         )}
       </div>
 
-      {/* Tuiles cliquables : Mots · Expressions · Dernière note */}
-      <div className="flex gap-2.5 pt-3">
-        <StatTile value={String(vocabCount ?? 0)} label="Mots" href="/dashboard/vocabulary" />
-        <StatTile value={String(formCount ?? 0)} label="Expressions" href="/dashboard/formulations" />
-        <StatTile value={lastGrade ?? "—"} label="Dernière note" accent />
+      {/* Ruban de stats, superposé entre héros et corps */}
+      <div className="relative px-[22px]" style={{ marginTop: -40 }}>
+        <div
+          className="flex overflow-hidden rounded-[18px]"
+          style={{ background: "#F7F0DF", border: "1px solid var(--tk-parchment-border-alt)", boxShadow: "0 22px 40px -18px rgba(10,20,15,.55)" }}
+        >
+          <StatCell value={String(vocabCount ?? 0)} label="Mots" href="/dashboard/vocabulary" borderRight />
+          <StatCell value={String(formCount ?? 0)} label="Expressions" href="/dashboard/formulations" borderRight />
+          <StatCell value={lastGrade ?? "—"} label="Note" accent />
+        </div>
       </div>
 
       {/* Reprendre mes cours */}
-      <div
-        className="pt-7 pb-3 px-0.5"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 600, fontSize: 19, color: "#1C1A17" }}
-      >
-        Reprendre mes cours
-      </div>
-
-      {visibleBooks.length === 0 ? (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun cours enregistré pour le moment.</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {visibleBooks.map((b) => {
-            const n = bookCount(b);
-            return (
-              <Link
-                key={b.id}
-                href={`/dashboard/livres/${b.id}`}
-                className="flex items-center gap-3.5 rounded-[18px] p-3 transition-opacity hover:opacity-90"
-                style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.05)" }}
-              >
-                {/* Couverture */}
-                {b.cover_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={b.cover_url}
-                    alt=""
-                    className="shrink-0 rounded-[10px] object-cover"
-                    style={{ width: 62, height: 84, boxShadow: "0 2px 8px rgba(28,26,23,.15)" }}
-                  />
-                ) : (
-                  <div
-                    className="shrink-0 rounded-[10px]"
-                    style={{ width: 62, height: 84, background: "#EFEAE0" }}
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div
-                    className="font-bold leading-snug"
-                    dir="rtl"
-                    lang="ar"
-                    style={{ color: "#1C1A17", fontSize: 18, fontFamily: "var(--font-amiri)" }}
-                  >
-                    {b.title}
-                  </div>
-                  {b.subtitle && (
-                    <div className="mt-0.5 font-medium" style={{ color: "#8B857A", fontSize: 13 }}>
-                      {b.subtitle}
-                    </div>
-                  )}
-                  <div className="mt-1.5 font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
-                    {n} {bookUnit(b, n)}
-                  </div>
-                </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C7C0B4" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </Link>
-            );
-          })}
+      <div className="px-[22px] pt-7 pb-4">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 23, color: "var(--tk-ink-text)" }}>
+            Reprendre mes cours
+          </h3>
+          <span className="flex-1" style={{ height: 1, background: "linear-gradient(90deg,#D8C79E,transparent)" }} />
+          <KhatamOrnament size={15} strokeWidth={1.6} />
         </div>
-      )}
+
+        {visibleBooks.length === 0 ? (
+          <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun cours enregistré pour le moment.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {visibleBooks.map((b) => {
+              const n = bookCount(b);
+              return (
+                <Link
+                  key={b.id}
+                  href={`/dashboard/livres/${b.id}`}
+                  className="flex items-stretch gap-0 overflow-hidden rounded-[16px] transition-opacity hover:opacity-90"
+                  style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 12px 26px -18px rgba(10,20,15,.4)" }}
+                >
+                  {/* Couverture */}
+                  {b.cover_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={b.cover_url}
+                      alt=""
+                      className="shrink-0 object-cover"
+                      style={{ width: 60 }}
+                    />
+                  ) : (
+                    <div className="shrink-0" style={{ width: 60, background: "var(--tk-parchment-border)" }} />
+                  )}
+                  <div className="flex-1 min-w-0 px-3.5 py-3">
+                    <div
+                      className="font-bold leading-snug"
+                      dir="rtl"
+                      lang="ar"
+                      style={{ color: "var(--tk-ink-text)", fontSize: 22, fontFamily: "var(--font-amiri)" }}
+                    >
+                      {b.title}
+                    </div>
+                    {b.subtitle && (
+                      <div className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12 }}>
+                        {b.subtitle}
+                      </div>
+                    )}
+                    <div
+                      className="mt-2 inline-block font-bold uppercase"
+                      style={{
+                        fontSize: 10.5,
+                        letterSpacing: ".05em",
+                        color: "var(--tk-ink-hero-to)",
+                        border: "1px solid #CFB98A",
+                        borderRadius: 20,
+                        padding: "3px 10px",
+                      }}
+                    >
+                      {n} {bookUnit(b, n)}
+                    </div>
+                  </div>
+                  <div className="flex items-center pr-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function StatTile({ value, label, href, accent }: { value: string; label: string; href?: string; accent?: boolean }) {
-  const className = "flex-1 rounded-[16px] p-3.5";
-  const style = { background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" };
+function StatCell({
+  value,
+  label,
+  href,
+  accent,
+  borderRight,
+}: {
+  value: string;
+  label: string;
+  href?: string;
+  accent?: boolean;
+  borderRight?: boolean;
+}) {
+  const className = "flex-1 text-center py-4 px-1.5";
+  const style = borderRight ? { borderRight: "1px solid #EADFC0" } : undefined;
   const inner = (
     <>
-      <div className="leading-none" style={{ fontWeight: 800, fontSize: 22, color: accent ? "#0F9D6E" : "#1C1A17" }}>
+      <div
+        className="leading-none"
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 30, color: accent ? "var(--tk-gold-dark)" : "var(--tk-ink-hero-to)" }}
+      >
         {value}
       </div>
-      <div className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>
+      <div className="mt-1.5" style={{ color: "var(--tk-muted-olive)", fontSize: 10.5, letterSpacing: ".04em" }}>
         {label}
       </div>
     </>
   );
 
-  // Tuile "Dernière note" : simple encart d'information, non cliquable.
+  // Cellule "Note" : simple encart d'information, non cliquable.
   if (!href) {
     return (
       <div className={className} style={style}>
