@@ -67,12 +67,30 @@
 - [x] Build + lint verts après chaque lot ; rendu réel vérifié au navigateur (harnais jetable,
       fixtures `generate`/`submit` injectées en props pour `QuizPlayer`/`ConjugationQuizPlayer`
       — composants purement client, testables sans backend)
-- [ ] Espace enseignant (16 routes) : Cockpit, Mes élèves, Fiche élève, **Fiche de fin de cours**
-      (< 30 s préservé — à faire personnellement, pas en délégué), File de correction, Conjugaison,
-      Mes livres, Dupliquer un cours, Messages, Conversation, Mon profil, Enseignants (admin)
-- [ ] Build + lint + test navigateur (flux enseignant + chrono fiche fin de cours, RTL arabe)
-- [ ] `tasks/todo.md` (Review) + `tasks/lessons.md`
-- [ ] Commit + push preview par lot — pas de merge prod sans confirmation explicite
+- [x] Espace enseignant (16 routes), livré en plusieurs lots commit+push distincts :
+      - Cockpit, Mes élèves, Fiche élève (héros encre + cartes stats superposées, note de profil)
+      - **Fiche de fin de cours** (`session/new` + `session-form.tsx`, vue/édition de séance) — faite
+        personnellement (pas en délégué), zéro champ/étape ajouté, < 30 s préservé
+      - File de correction, Conjugaison (filigrane arabe ف, pré-remplissage 3 temps, tableaux bordés)
+      - Mes livres (grille de couvertures 2 colonnes, tuile khatam émeraude pour le livre grammaire,
+        tuile pointillée « Ajouter »), Dupliquer un cours (cases à cocher émeraude, ligne grisée
+        « a déjà ce cours/cette règle », CTA or sticky) — réutilise le composant `DuplicateForm`
+        partagé entre cours et règles de grammaire
+      - Messages (liste + fil de conversation, `ChatBox` déjà reskiné en Phase 2), Mon profil
+        (héros encre + `AvatarUpload`, même structure que côté élève), Enseignants (admin — liste +
+        formulaire d'invitation)
+- [x] Balayage final des couleurs codées en dur de l'ancienne palette (`grep` sur tout `src/app` +
+      `src/components`) : un seul résidu trouvé (`audio-recorder-input.tsx`, enregistreur audio des
+      formulations) + `manifest.ts` (couleur de thème PWA `#FBF9F5` → `#EFE6D2`) — corrigés
+- [x] Build + lint verts après chaque lot (seule erreur restante : `drawer-nav.tsx:118`,
+      pré-existante avant la refonte, confirmée par `git show` sur l'historique pré-Phase 1)
+- [x] Test navigateur réel (harnais jetable `preview-harness-tmp` + `.env.local` factice, supprimés
+      après capture) : grille « Mes livres » (tuile khatam, tuile pointillée), formulaire
+      « Dupliquer vers » (case cochée → halo émeraude + compteur, ligne désactivée grisée pour un
+      élève qui a déjà le contenu) — interactions cliquées et vérifiées, pas seulement rendu statique
+- [x] `tasks/todo.md` (Review) + `tasks/lessons.md`
+- [x] Commit + push preview par lot (branche `claude/resume-dev-preview-oupecz`) — **pas de merge
+      prod**, aucune confirmation explicite du propriétaire en ce sens à ce stade
 
 ### Incident agents parallèles (noté pour mémoire)
 4 agents lancés en parallèle pour le lot élève ont tous échoué immédiatement (rate limit de
@@ -81,6 +99,37 @@ Phase 2 fait directement, séquentiellement, sans délégation. Détail addition
 reprenant : le brief donné aux agents pointait vers `scratchpad/screens/` et `scratchpad/shots/`
 alors que ces dossiers étaient en réalité sous `scratchpad/handoff/screens/` et
 `scratchpad/handoff/shots/` — un chemin à corriger si des agents sont redélégués plus tard.
+
+### Review
+
+La refonte visuelle « Maktab Émeraude » est terminée sur les 29 écrans du handoff (10 élève +
+16 enseignant + connexion/mot de passe), en 3 phases toutes livrées et poussées sur
+`claude/resume-dev-preview-oupecz` :
+
+- **Fondations** (tokens, polices, primitives, coquille de navigation) posées une fois en Phase 1,
+  réutilisées telles quelles sur tout le reste — aucun token retouché après coup.
+- **Zéro changement fonctionnel** sur toute la session : mêmes routes, mêmes `server actions`, mêmes
+  requêtes Supabase, aucune migration ni policy RLS touchée. Seule exception délibérée et mineure :
+  l'écran « Mes livres » a gagné un `useState` local (`showForm`) pour replier/déplier le formulaire
+  d'ajout derrière la tuile pointillée « Ajouter » du nouveau design — pas de logique métier, pas de
+  nouvel appel serveur, juste un repli visuel du formulaire déjà existant.
+- **Fiche de fin de cours** (le composant le plus critique du produit, Principe 5) : reskin fait
+  personnellement plutôt que délégué, aucun champ/étape ajouté ou retiré — même formulaire, nouvel
+  habillage.
+- **Vérification empirique systématique** : `npm run build` + `npx eslint` verts après chaque lot,
+  au moins une capture Playwright (harnais jetable, toujours nettoyé après coup) par pattern visuel
+  nouveau (héros encre plein-bord, anneau de score SVG, grille de couvertures, formulaire de
+  duplication avec états coché/désactivé) — jamais de "terminé" affirmé sans preuve.
+- **Balayage final de sécurité** : `grep` de toute la palette hex de l'ancienne DA sur `src/app` et
+  `src/components` en toute fin de session pour rattraper les résidus non touchés par les lots
+  écran-par-écran (trouvé et corrigé : `audio-recorder-input.tsx`, `manifest.ts`).
+- **Reste hors du périmètre de cette session** (aucune régression connue, juste non fait) :
+  `drawer-nav.tsx:118` a une erreur lint pré-existante (confirmée antérieure à la refonte via
+  `git show` sur l'historique) — sans lien avec le style, non corrigée pour respecter le principe
+  d'impact minimal (une refonte visuelle n'est pas le bon véhicule pour un correctif de comportement
+  React sans rapport).
+- **Aucun merge en production** effectué ni demandé par le propriétaire à ce stade — tout reste sur
+  la branche de preview, comme instruit.
 
 ---
 

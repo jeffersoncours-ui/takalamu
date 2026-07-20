@@ -1,5 +1,39 @@
 # Lessons
 
+## Session 34 — Refonte visuelle « Maktab Émeraude » (Phases 1-3 complètes)
+
+- **Préserver les noms de variable CSS de police (`--font-spectral`, `--font-inter`) en changeant
+  seulement la police sous-jacente (`next/font/google`) évite une réécriture mécanique de ~40
+  fichiers.** Le code existant lisait déjà `var(--font-spectral)`/`var(--font-inter)` en inline
+  partout ; changer uniquement l'import (`Cormorant_Garamond`/`Instrument_Sans` à la place de
+  `Spectral`/`Inter`) dans `layout.tsx` a suffi pour que tout l'héritage de police se propage sans
+  toucher un seul écran. À généraliser : quand un token existe déjà et est massivement consommé,
+  chercher d'abord s'il peut absorber le changement plutôt que renommer.
+- **Un balayage `grep` de l'ancienne palette hex en toute fin de refonte (sur `src/app` +
+  `src/components` en entier) a rattrapé 2 résidus que les lots écran-par-écran avaient manqués** :
+  un composant partagé peu visible (`audio-recorder-input.tsx`, utilisé dans les formulaires de
+  séance) et un fichier de métadonnées (`manifest.ts`, couleur de thème PWA). Les composants
+  partagés faiblement associés à un "écran" précis (utilisés en sous-composant d'un formulaire plus
+  gros) et les fichiers hors `app`/`components` habituels (manifest, metadata) sont les points morts
+  d'une revue lot-par-écran — toujours faire un balayage global de sécurité avant de clore une
+  refonte visuelle, même quand chaque lot individuel a été vérifié.
+- **Le harnais Playwright jetable (établi en session précédente) reste réutilisable même après un
+  reset apparent de l'état temporaire du conteneur** : `npm install playwright` dans le scratchpad a
+  suffi à le reconstituer en quelques secondes après sa disparition entre deux tours de
+  conversation — pas besoin de redécouvrir la méthode, seulement de réinstaller la dépendance
+  manquante.
+- **Vérifier l'interactivité réelle d'un composant client (pas seulement son rendu statique) vaut le
+  coût d'un clic Playwright supplémentaire.** Pour le formulaire « Dupliquer vers », une capture
+  statique aurait validé la mise en page mais pas l'état "coché" (halo émeraude + coche + compteur
+  "N sélectionné") ni le fait que la ligne désactivée reste bien non cliquable visuellement — un
+  `page.click()` avant la capture a confirmé les deux en une étape.
+- **Pour un écran de type "liste" (Mes livres, Messages, Enseignants), rester sur le header simple
+  (`<h1>` sans héros encre) déjà utilisé par les écrans analogues déjà reskinés (Mes élèves, File de
+  correction) plutôt que d'imposer le pattern "héros encre plein-bord" partout.** Le handoff de
+  design ne distinguait pas toujours explicitement quels écrans méritent un héros immersif (Accueil,
+  Leçon, Profil) et lesquels restent des listes utilitaires — suivre la cohérence interne déjà
+  établie dans le code du même lot évite un pattern visuel incohérent d'un écran de liste à l'autre.
+
 ## Session 33 (suite 7) — Identité visuelle : wordmark + logo
 
 - **Détourer une image fournie par le propriétaire (fond blanc/uni → alpha) est un
