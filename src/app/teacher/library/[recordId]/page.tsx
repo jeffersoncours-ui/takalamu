@@ -58,7 +58,7 @@ export default async function LibraryCoursePage({
       <Link
         href={record.book_id ? `/teacher/books/${record.book_id}` : "/teacher/books"}
         className="inline-flex items-center gap-1 font-semibold"
-        style={{ color: "#8B857A", fontSize: 13 }}
+        style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}
       >
         ← Mes livres
       </Link>
@@ -66,30 +66,30 @@ export default async function LibraryCoursePage({
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "var(--tk-ink-text)" }}
         >
           {title}
         </h1>
-        <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+        <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>
           {format(new Date(record.session_date), "d MMMM yyyy", { locale: fr })}
         </p>
       </div>
 
       {/* Aperçu du contenu qui sera dupliqué */}
-      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+        <p className="font-bold uppercase" style={{ color: "var(--tk-gold-dark)", fontSize: 11, letterSpacing: ".05em" }}>
           Contenu dupliqué
         </p>
 
         {vocab.length > 0 && (
           <div>
-            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
+            <p className="font-semibold mb-1" style={{ color: "var(--tk-ink-text)", fontSize: 13 }}>
               Vocabulaire ({vocab.length})
             </p>
             {vocab.map((v) => (
               <div key={v.id} className="flex items-center justify-between gap-3" style={{ fontSize: 13 }}>
-                <span dir="rtl" lang="ar" style={{ color: "#1C1A17" }}>{v.arabic_word}</span>
-                <span style={{ color: "#8B857A" }}>{v.french_definition}</span>
+                <span dir="rtl" lang="ar" style={{ color: "var(--tk-ink-text)" }}>{v.arabic_word}</span>
+                <span style={{ color: "var(--tk-muted-olive)" }}>{v.french_definition}</span>
               </div>
             ))}
           </div>
@@ -97,16 +97,16 @@ export default async function LibraryCoursePage({
 
         {formulations.length > 0 && (
           <div>
-            <p className="font-semibold mb-1" style={{ color: "#1C1A17", fontSize: 13 }}>
+            <p className="font-semibold mb-1" style={{ color: "var(--tk-ink-text)", fontSize: 13 }}>
               Formulations ({formulations.length}
               {audioCount > 0 ? ` · ${audioCount} audio${audioCount > 1 ? "s" : ""}` : ""})
             </p>
             {formulations.map((f) => (
               <div key={f.id} className="flex items-center justify-between gap-3" style={{ fontSize: 13 }}>
-                <span dir="rtl" lang="ar" style={{ color: "#1C1A17" }}>{f.arabic_text}</span>
-                <span className="flex items-center gap-1.5" style={{ color: "#8B857A" }}>
+                <span dir="rtl" lang="ar" style={{ color: "var(--tk-ink-text)" }}>{f.arabic_text}</span>
+                <span className="flex items-center gap-1.5" style={{ color: "var(--tk-muted-olive)" }}>
                   {f.audio_path && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F9D6E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--tk-green-active)" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                       <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                     </svg>
@@ -119,12 +119,12 @@ export default async function LibraryCoursePage({
         )}
 
         {supportCount > 0 && (
-          <p style={{ color: "#8B857A", fontSize: 12.5 }}>
+          <p style={{ color: "var(--tk-muted-olive)", fontSize: 12.5 }}>
             {supportCount} support{supportCount > 1 ? "s" : ""} (fichiers) seront aussi copiés.
           </p>
         )}
 
-        <p style={{ color: "#A8A29E", fontSize: 11.5 }}>
+        <p style={{ color: "var(--tk-faint-olive)", fontSize: 11.5 }}>
           Le devoir, la note privée et la règle de grammaire du cours d&apos;origine ne
           sont pas copiés (la grammaire se duplique séparément, depuis le livre de
           grammaire).

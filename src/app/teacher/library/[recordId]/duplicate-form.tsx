@@ -28,11 +28,11 @@ export function DuplicateForm({
     <form action={formAction} className="space-y-4 pb-28">
       <div className="space-y-2">
         <div className="flex items-center justify-between px-0.5">
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#8B857A", textTransform: "uppercase", letterSpacing: ".06em" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--tk-muted-olive)", textTransform: "uppercase", letterSpacing: ".06em" }}>
             Dupliquer vers
           </span>
           {selectedIds.length > 0 && (
-            <span style={{ color: "#8B857A", fontSize: 12, fontWeight: 600 }}>
+            <span style={{ color: "var(--tk-muted-olive)", fontSize: 12, fontWeight: 600 }}>
               {selectedIds.length} sélectionné{selectedIds.length > 1 ? "s" : ""}
             </span>
           )}
@@ -44,14 +44,29 @@ export function DuplicateForm({
             return (
               <label
                 key={s.id}
-                className="flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 transition-colors"
-                style={{
-                  border: `1.5px solid ${checked ? "#9FE3C8" : "#E9E3D8"}`,
-                  background: disabled ? "#F7F4EE" : checked ? "#ECFAF4" : "#fff",
-                  opacity: disabled ? 0.6 : 1,
-                  cursor: disabled ? "not-allowed" : "pointer",
-                }}
+                className="flex items-center gap-2.5 rounded-[12px] px-3.5 py-3 transition-colors"
+                style={
+                  disabled
+                    ? { border: "1px solid var(--tk-parchment-border)", background: "var(--tk-parchment-field)", opacity: 0.6, cursor: "not-allowed" }
+                    : checked
+                    ? { border: "1.5px solid var(--tk-emerald-btn-from)", background: "linear-gradient(180deg, rgba(14,74,56,.1), rgba(12,58,44,.07))", cursor: "pointer" }
+                    : { border: "1px solid var(--tk-parchment-border)", background: "var(--tk-parchment-card)", cursor: "pointer" }
+                }
               >
+                <span
+                  className="flex shrink-0 items-center justify-center rounded-[6px]"
+                  style={
+                    checked && !disabled
+                      ? { width: 20, height: 20, background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))" }
+                      : { width: 20, height: 20, border: "1.5px solid #CFB98A" }
+                  }
+                >
+                  {checked && !disabled && (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </span>
                 <input
                   type="checkbox"
                   name="target_ids"
@@ -59,16 +74,16 @@ export function DuplicateForm({
                   checked={checked}
                   disabled={disabled}
                   onChange={() => toggle(s.id)}
-                  style={{ width: 18, height: 18, accentColor: "#0F9D6E" }}
+                  className="sr-only"
                 />
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#1C1A17" }}>
+                <span className="flex-1" style={{ fontSize: 14, fontWeight: 600, color: "var(--tk-ink-text)" }}>
                   {s.name}
                   {s.status !== "active" ? " (suspendu)" : ""}
                 </span>
                 {s.alreadyHas && (
                   <span
-                    className="ml-auto rounded-full"
-                    style={{ background: "#F4F1EB", color: "#8B857A", fontSize: 10, fontWeight: 700, padding: "2px 8px" }}
+                    className="rounded-full italic"
+                    style={{ background: "var(--tk-parchment-field)", color: "var(--tk-muted-olive)", fontSize: 10.5, fontWeight: 600, padding: "2px 8px" }}
                   >
                     {alreadyHasLabel}
                   </span>
@@ -80,21 +95,26 @@ export function DuplicateForm({
       </div>
 
       {state?.error ? (
-        <p style={{ color: "#B4292E", fontSize: 14 }} role="alert">
+        <p style={{ color: "var(--tk-danger)", fontSize: 14 }} role="alert">
           {state.error}
         </p>
       ) : null}
 
       <div
         className="fixed bottom-0 left-0 right-0 z-30 px-4 pt-3 pb-5"
-        style={{ background: "linear-gradient(to top, #F7F4EE 70%, rgba(247,244,238,0))" }}
+        style={{ background: "linear-gradient(to top, var(--tk-parchment) 70%, rgba(239,230,210,0))" }}
       >
         <div className="mx-auto max-w-lg">
           <button
             type="submit"
             disabled={pending || selectedIds.length === 0}
-            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[16px] font-bold text-white disabled:opacity-60"
-            style={{ background: "#0F9D6E", fontSize: 15, boxShadow: "0 10px 22px rgba(15,157,110,.30)" }}
+            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] font-bold disabled:opacity-60"
+            style={{
+              background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))",
+              color: "var(--tk-ink-screen)",
+              fontSize: 15,
+              boxShadow: "var(--tk-shadow-cta)",
+            }}
           >
             {pending
               ? "Duplication…"

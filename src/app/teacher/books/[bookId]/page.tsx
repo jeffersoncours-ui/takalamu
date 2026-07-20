@@ -35,7 +35,7 @@ export default async function TeacherBookDetailPage({
       <Link
         href="/teacher/books"
         className="inline-flex items-center gap-1 font-semibold"
-        style={{ color: "#8B857A", fontSize: 13 }}
+        style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}
       >
         ← Mes livres
       </Link>
@@ -45,12 +45,12 @@ export default async function TeacherBookDetailPage({
           dir="rtl"
           lang="ar"
           className="leading-snug font-arabic font-bold"
-          style={{ fontSize: 24, color: "#1C1A17" }}
+          style={{ fontSize: 24, color: "var(--tk-ink-text)" }}
         >
           {book.title}
         </h1>
         {book.subtitle && (
-          <p className="mt-0.5 font-medium" style={{ color: "#8B857A", fontSize: 14 }}>
+          <p className="mt-0.5 font-medium" style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>
             {book.subtitle}
           </p>
         )}
@@ -59,7 +59,7 @@ export default async function TeacherBookDetailPage({
       {dupCount > 0 && (
         <p
           className="rounded-[14px] px-4 py-3"
-          style={{ background: "#ECFAF4", border: "1px solid #9FE3C8", color: "#0A6B4E", fontSize: 13.5, fontWeight: 600 }}
+          style={{ background: "rgba(12,107,78,.10)", border: "1px solid rgba(12,107,78,.28)", color: "var(--tk-green-active)", fontSize: 13.5, fontWeight: 600 }}
         >
           Dupliqué vers {dupCount} élève{dupCount > 1 ? "s" : ""} ✓
         </p>
@@ -127,7 +127,7 @@ async function CoursesContent({ bookId }: { bookId: string }) {
     return (
       <p
         className="rounded-[16px] p-4"
-        style={{ background: "#FDF4E3", border: "1px solid #F4D193", color: "#9A6206", fontSize: 14 }}
+        style={{ background: "rgba(176,120,31,.10)", border: "1px solid rgba(176,120,31,.3)", color: "var(--tk-warning)", fontSize: 14 }}
       >
         Aucun cours enregistré pour l&apos;instant dans ce livre.
       </p>
@@ -141,23 +141,23 @@ async function CoursesContent({ bookId }: { bookId: string }) {
           key={c.id}
           href={`/teacher/library/${c.id}`}
           className="block rounded-[16px] p-4 transition-opacity hover:opacity-90"
-          style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+          style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 10px 22px -16px rgba(10,20,15,.4)" }}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-semibold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>
+              <p className="font-semibold truncate" style={{ color: "var(--tk-ink-text)", fontSize: 15 }}>
                 {c.title}
               </p>
-              <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
+              <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12.5 }}>
                 {c.date}
               </p>
             </div>
             <span
               className="shrink-0 inline-flex items-center gap-1 rounded-full font-semibold"
-              style={{ background: "#ECFAF4", color: "#0A6B4E", fontSize: 11, padding: "4px 10px" }}
+              style={{ background: "rgba(12,107,78,.10)", color: "var(--tk-green-active)", fontSize: 11, padding: "4px 10px" }}
             >
               Dupliquer
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A6B4E" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--tk-green-active)" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </span>
@@ -219,7 +219,7 @@ async function GrammarRulesContent() {
     return (
       <p
         className="rounded-[16px] p-4"
-        style={{ background: "#FDF4E3", border: "1px solid #F4D193", color: "#9A6206", fontSize: 14 }}
+        style={{ background: "rgba(176,120,31,.10)", border: "1px solid rgba(176,120,31,.3)", color: "var(--tk-warning)", fontSize: 14 }}
       >
         Aucune règle de grammaire enregistrée pour l&apos;instant.
       </p>
@@ -233,23 +233,23 @@ async function GrammarRulesContent() {
             key={r.id}
             href={`/teacher/library/grammar/${r.id}`}
             className="block rounded-[16px] p-4 transition-opacity hover:opacity-90"
-            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 10px 22px -16px rgba(10,20,15,.4)" }}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-semibold truncate" style={{ color: "#1C1A17", fontSize: 15 }}>
+                <p className="font-semibold truncate" style={{ color: "var(--tk-ink-text)", fontSize: 15 }}>
                   {r.title}
                 </p>
-                <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 12.5 }}>
+                <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12.5 }}>
                   {r.date}
                 </p>
               </div>
               <span
                 className="shrink-0 inline-flex items-center gap-1 rounded-full font-semibold"
-                style={{ background: "#ECFAF4", color: "#0A6B4E", fontSize: 11, padding: "4px 10px" }}
+                style={{ background: "rgba(12,107,78,.10)", color: "var(--tk-green-active)", fontSize: 11, padding: "4px 10px" }}
               >
                 Dupliquer
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0A6B4E" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--tk-green-active)" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18l6-6-6-6" />
                 </svg>
               </span>
@@ -264,7 +264,7 @@ function Chip({ label }: { label: string }) {
   return (
     <span
       className="inline-flex items-center rounded-full"
-      style={{ background: "#FBF9F5", border: "1px solid #EFEAE0", color: "#6B6459", fontSize: 11, padding: "3px 9px" }}
+      style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)", color: "var(--tk-ink-text-soft)", fontSize: 11, padding: "3px 9px" }}
     >
       {label}
     </span>

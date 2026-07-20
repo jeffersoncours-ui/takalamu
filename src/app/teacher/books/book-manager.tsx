@@ -7,10 +7,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { uploadFilesToBucket } from "@/lib/upload-files";
 import { compressImage } from "@/lib/compress-image";
+import { KhatamOrnament } from "@/components/khatam-ornament";
 import { createBook } from "./actions";
-
-const GREEN = "#0F9D6E";
-const RED = "#B4292E";
 
 type Book = {
   id: string;
@@ -31,11 +29,11 @@ async function uploadCover(file: File): Promise<string> {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: 12,
-  border: "1.5px solid #E9E3D8",
-  background: "#fff",
+  border: "1.5px solid var(--tk-parchment-border)",
+  background: "var(--tk-parchment-field)",
   padding: "10px 13px",
   fontSize: 14,
-  color: "#1C1A17",
+  color: "var(--tk-ink-text)",
   outline: "none",
 };
 
@@ -43,6 +41,7 @@ export function BookManager({ books }: { books: Book[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   // Ajout
   const [title, setTitle] = useState("");
@@ -68,6 +67,7 @@ export function BookManager({ books }: { books: Book[] }) {
       setKind("courses");
       setCoverPreview(null);
       if (coverRef.current) coverRef.current.value = "";
+      setShowForm(false);
       router.refresh();
     } catch {
       setError("Échec de l'envoi de la couverture.");
@@ -79,89 +79,131 @@ export function BookManager({ books }: { books: Book[] }) {
   return (
     <div className="space-y-6">
       {error && (
-        <p className="text-sm font-medium" style={{ color: RED }}>{error}</p>
+        <p className="text-sm font-medium" style={{ color: "var(--tk-danger)" }}>{error}</p>
       )}
 
-      {/* Liste des livres */}
-      <div className="flex flex-col gap-2.5">
+      {/* Grille des livres */}
+      <div className="grid grid-cols-2 gap-3">
         {books.map((b) => (
           <Link
             key={b.id}
             href={`/teacher/books/${b.id}`}
-            className="flex items-center gap-3 rounded-[16px] p-3 transition-opacity hover:opacity-90"
-            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+            className="group block transition-opacity hover:opacity-90"
           >
-            {b.cover_url ? (
+            {b.kind === "grammar" ? (
+              <div
+                className="flex flex-col items-center justify-center gap-2 rounded-[14px]"
+                style={{
+                  aspectRatio: "3/4",
+                  background: "linear-gradient(160deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+                  border: "1px solid rgba(199,154,62,.35)",
+                }}
+              >
+                <KhatamOrnament size={40} color="var(--tk-gold-light)" />
+              </div>
+            ) : b.cover_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={b.cover_url} alt="" className="shrink-0 rounded-[8px] object-cover" style={{ width: 46, height: 62 }} />
+              <img
+                src={b.cover_url}
+                alt=""
+                className="w-full rounded-[14px] object-cover"
+                style={{ aspectRatio: "3/4", border: "1px solid rgba(199,154,62,.45)" }}
+              />
             ) : (
-              <div className="shrink-0 rounded-[8px]" style={{ width: 46, height: 62, background: "#EFEAE0" }} />
+              <div
+                className="rounded-[14px]"
+                style={{ aspectRatio: "3/4", background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)" }}
+              />
             )}
-            <div className="flex-1 min-w-0">
-              <div dir="rtl" lang="ar" className="font-arabic font-bold truncate" style={{ fontSize: 16, color: "#1C1A17" }}>
-                {b.title}
-              </div>
-              {b.subtitle && <div className="truncate" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</div>}
-              <div className="mt-0.5" style={{ fontSize: 11, color: "#8B857A" }}>
-                {b.kind === "grammar"
-                  ? `${b.courseCount} règle${b.courseCount > 1 ? "s" : ""}`
-                  : `${b.courseCount} cours`}
-              </div>
+            <div dir="rtl" lang="ar" className="font-arabic font-bold truncate mt-2" style={{ fontSize: 15, color: "var(--tk-ink-text)" }}>
+              {b.title}
+            </div>
+            <div className="mt-0.5" style={{ fontSize: 11.5, color: "var(--tk-muted-olive)" }}>
+              {b.kind === "grammar"
+                ? `auto · ${b.courseCount} règle${b.courseCount > 1 ? "s" : ""}`
+                : `${b.courseCount} cours`}
             </div>
           </Link>
         ))}
-      </div>
-
-      {/* Ajouter un livre */}
-      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 15 }}>Ajouter un livre</p>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre (arabe)" dir="rtl" className="font-arabic" style={inputStyle} />
-        <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Libellé français (ex. Récits des prophètes)" style={inputStyle} />
-
-        <div className="flex gap-2">
-          {(["courses", "grammar"] as const).map((k) => (
-            <button
-              key={k}
-              type="button"
-              onClick={() => setKind(k)}
-              className="flex-1 rounded-[11px] py-2 text-xs font-semibold transition-colors"
-              style={kind === k ? { background: "#0A553F", color: "#fff" } : { background: "#F7F4EE", color: "#8B857A", border: "1px solid #EFEAE0" }}
-            >
-              {k === "courses" ? "Livre de cours" : "Livre de grammaire (auto)"}
-            </button>
-          ))}
-        </div>
-
-        <label className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 cursor-pointer" style={{ background: "#F7F4EE", border: "1px dashed #D8D2C6" }}>
-          {coverPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={coverPreview} alt="" className="rounded-[6px] object-cover" style={{ width: 34, height: 46 }} />
-          ) : (
-            <span style={{ fontSize: 20 }}>📕</span>
-          )}
-          <span className="text-sm" style={{ color: "#8B857A" }}>{coverPreview ? "Changer la couverture" : "Couverture (image)"}</span>
-          <input
-            ref={coverRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              setCoverPreview(f ? URL.createObjectURL(f) : null);
-            }}
-          />
-        </label>
 
         <button
           type="button"
-          onClick={submitAdd}
-          disabled={busy || !title.trim()}
-          className="w-full rounded-[12px] py-3 font-semibold text-sm text-white transition-opacity hover:opacity-85 disabled:opacity-50"
-          style={{ background: GREEN }}
+          onClick={() => setShowForm((v) => !v)}
+          className="flex flex-col items-center justify-center gap-2 rounded-[14px]"
+          style={{
+            aspectRatio: "3/4",
+            border: "1.5px dashed rgba(199,154,62,.5)",
+            background: "rgba(199,154,62,.06)",
+            color: "var(--tk-gold-dark)",
+          }}
         >
-          {busy ? "Ajout…" : "Ajouter le livre"}
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-dark)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span className="font-semibold" style={{ fontSize: 12.5 }}>Ajouter</span>
         </button>
       </div>
+
+      {/* Ajouter un livre */}
+      {showForm && (
+        <div className="rounded-[16px] p-4 space-y-3" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+          <p className="font-semibold" style={{ color: "var(--tk-ink-text)", fontSize: 15 }}>Ajouter un livre</p>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre (arabe)" dir="rtl" className="font-arabic" style={inputStyle} />
+          <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Libellé français (ex. Récits des prophètes)" style={inputStyle} />
+
+          <div className="flex gap-2">
+            {(["courses", "grammar"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setKind(k)}
+                className="flex-1 rounded-[11px] py-2 text-xs font-semibold transition-colors"
+                style={
+                  kind === k
+                    ? { background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))", color: "var(--tk-cream-text)" }
+                    : { background: "var(--tk-parchment-field)", color: "var(--tk-muted-olive)", border: "1px solid var(--tk-parchment-border)" }
+                }
+              >
+                {k === "courses" ? "Livre de cours" : "Livre de grammaire (auto)"}
+              </button>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-3 rounded-[12px] px-3 py-2.5 cursor-pointer" style={{ background: "var(--tk-parchment-field)", border: "1px dashed var(--tk-parchment-border-alt)" }}>
+            {coverPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={coverPreview} alt="" className="rounded-[6px] object-cover" style={{ width: 34, height: 46 }} />
+            ) : (
+              <span style={{ fontSize: 20 }}>📕</span>
+            )}
+            <span className="text-sm" style={{ color: "var(--tk-muted-olive)" }}>{coverPreview ? "Changer la couverture" : "Couverture (image)"}</span>
+            <input
+              ref={coverRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setCoverPreview(f ? URL.createObjectURL(f) : null);
+              }}
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={submitAdd}
+            disabled={busy || !title.trim()}
+            className="w-full rounded-[12px] py-3 font-bold text-sm disabled:opacity-50"
+            style={{
+              background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))",
+              color: "var(--tk-ink-screen)",
+              boxShadow: "var(--tk-shadow-cta)",
+            }}
+          >
+            {busy ? "Ajout…" : "Ajouter le livre"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -41,11 +41,11 @@ export default async function TeacherBooksPage() {
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
         >
           Mes livres
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+        <p className="font-medium mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>
           Range tes cours par livre. La grammaire (livre « grammaire ») se remplit toute seule.
         </p>
       </div>

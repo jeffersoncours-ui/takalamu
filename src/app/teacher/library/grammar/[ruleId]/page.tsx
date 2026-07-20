@@ -72,20 +72,20 @@ export default async function LibraryGrammarRulePage({
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "var(--tk-ink-text)" }}
         >
           {rule.title}
         </h1>
-        <p className="mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+        <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>
           {format(new Date(date), "d MMMM yyyy", { locale: fr })}
         </p>
       </div>
 
-      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 11, letterSpacing: ".05em" }}>
+      <div className="rounded-[16px] p-4 space-y-3" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+        <p className="font-bold uppercase" style={{ color: "var(--tk-gold-dark)", fontSize: 11, letterSpacing: ".05em" }}>
           Contenu dupliqué
         </p>
-        <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "#1C1A17", fontSize: 14 }}>
+        <p className="leading-relaxed whitespace-pre-wrap" style={{ color: "var(--tk-ink-text)", fontSize: 14 }}>
           {rule.content}
         </p>
 
@@ -98,13 +98,13 @@ export default async function LibraryGrammarRulePage({
                 src={p.url}
                 alt={p.name}
                 className="rounded-[10px] object-cover"
-                style={{ width: "100%", aspectRatio: "1", border: "1px solid #EFEAE0" }}
+                style={{ width: "100%", aspectRatio: "1", border: "1px solid var(--tk-parchment-border)" }}
               />
             ))}
           </div>
         )}
 
-        <p style={{ color: "#A8A29E", fontSize: 11.5 }}>
+        <p style={{ color: "var(--tk-faint-olive)", fontSize: 11.5 }}>
           {photoUrls.length > 0
             ? `${photoUrls.length} photo${photoUrls.length > 1 ? "s" : ""} seront aussi copiées.`
             : "Aucune photo attachée à cette règle."}
@@ -133,7 +133,7 @@ async function BackLink() {
     <Link
       href={grammarBook ? `/teacher/books/${grammarBook.id}` : "/teacher/books"}
       className="inline-flex items-center gap-1 font-semibold"
-      style={{ color: "#8B857A", fontSize: 13 }}
+      style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}
     >
       ← Livre de grammaire
     </Link>
