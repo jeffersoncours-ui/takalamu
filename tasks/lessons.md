@@ -1,5 +1,50 @@
 # Lessons
 
+## Session 34 (suite) — Régression tiroir de nav (CSS Cascade Layers) + audit code mort
+
+- **Une règle CSS custom posée hors de tout `@layer` bat TOUJOURS une classe utilitaire
+  Tailwind, même une classe comme `.fixed`/`.sticky`, quel que soit l'ordre ou la
+  spécificité.** `@import "tailwindcss"` (v4) déclare `@layer theme, base, components,
+  utilities;` en interne — toutes les classes Tailwind vivent dans ces layers. Une règle
+  écrite après l'import mais SANS `@layer` explicite est traitée comme "non-layered", et
+  par la spec CSS Cascading and Layering, le non-layered bat systématiquement TOUT layer
+  (sauf `!important`, qui inverse la règle). Le correctif précédent de la texture
+  hachurée (`.hachure-ink { position: relative; }`, ajouté hors layer) écrasait donc
+  silencieusement `position: fixed` du tiroir de navigation enseignant partout où les
+  deux classes étaient combinées — le tiroir sortait du flux `fixed` et se rendait en
+  position statique dans la page, décalant tout le contenu. Remonté par le propriétaire
+  via captures d'écran floues/décalées ("mon compte bug, pas sur internet") sans lien
+  évident avec du CSS — la vraie cause n'était trouvable qu'en lisant le code du tiroir
+  ET en connaissant ce point précis des cascade layers. **Réflexe à généraliser** :
+  toute règle custom ajoutée après `@import "tailwindcss"` qui touche une propriété
+  qu'une classe Tailwind peut aussi définir (position, display, etc.) doit être posée
+  dans `@layer base` (ou un layer explicite antérieur à `utilities`) — jamais en dehors
+  de tout layer, même pour un simple fallback "par défaut".
+- **Un bug utilisateur décrit en langage flou ("ça bug", "pas sur internet") mérite
+  d'abord une lecture des captures d'écran fournies avant toute hypothèse.** Deux
+  captures superposant un fragment du tiroir avec le contenu de la page en dessous ont
+  suffi à identifier "position fixed cassée" sans avoir besoin de reproduire sur
+  téléphone — la forme du bug (bande étroite à gauche, reste de l'écran assombri mais
+  pas totalement scrimmé, motif qui se répète à l'identique entre deux captures prises à
+  des positions de scroll différentes) pointait directement vers un élément `fixed` qui
+  ne l'était plus.
+- **Absence de service worker/cache offline dans l'app** (confirmé par grep : aucun
+  `next-pwa`, `workbox`, ni fichier `sw.js`) — élimine d'office l'hypothèse "cache
+  périmé" pour tout rapport de bug ressemblant à du contenu obsolète/cassé après ajout à
+  l'écran d'accueil. Utile pour trancher vite entre "vraiment hors-ligne" et "juste un
+  rendu cassé qui y ressemble".
+- **`knip` (zéro config) fonctionne directement sur ce projet Next.js/Tailwind sans
+  configuration** pour un audit de code mort ponctuel — a confirmé 3 fichiers de
+  primitives UI (posées en Phase 1 de la refonte comme socle partagé, jamais adoptées
+  par aucun écran qui a fini par styler en inline) sans faux positif, re-vérifié par
+  grep avant suppression. Le reste des "unused exports" qu'il remonte (constantes
+  internes du moteur de conjugaison exportées sans être consommées ailleurs, types
+  TypeScript jamais importés, fichier `database.types.ts` généré) n'est PAS du code
+  mort au sens utile : coût runtime nul (les types s'effacent à la compilation) ou
+  risque de toucher un fichier métier critique pour un gain cosmétique — non traité,
+  cohérent avec l'audit code-mort déjà mené en session 31 qui avait posé la même
+  distinction.
+
 ## Session 34 — Refonte visuelle « Maktab Émeraude » (Phases 1-3 complètes)
 
 - **Préserver les noms de variable CSS de police (`--font-spectral`, `--font-inter`) en changeant
