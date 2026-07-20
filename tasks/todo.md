@@ -56,17 +56,31 @@
 - [x] **Checkpoint : captures envoyées au propriétaire avant Phase 2**
 - [ ] Retour du propriétaire sur la direction avant de lancer Phase 2
 
-### Plan d'exécution — Phase 2 (à lancer après validation du checkpoint)
-- [ ] Espace élève (10 routes) : Accueil, Mes cours, Leçon, Révision, Évaluations (+ quiz/résultat),
-      Mon glossaire, Règles de grammaire, Mes formulations, Mes devoirs, Messages, Mon compte/Plus,
-      Mon profil, Règlement intérieur
+### Plan d'exécution — Phase 2 (checkpoint validé par le propriétaire, suite immédiate)
+- [x] Espace élève (10 routes), livré en 4 lots commit+push distincts :
+      - Accueil, Mes cours, Leçon, Révision (+ `MenuCardLink` partagé)
+      - Mon glossaire, Règles de grammaire, Mes formulations (+ `AccordionGroup` partagé)
+      - Mes devoirs, Messages (+ `ChatBox`/`AvatarUpload`/`ChangePasswordForm` partagés), Plus,
+        Mon profil, Règlement intérieur
+      - Évaluations + quiz langue/conjugaison (le plus riche : anneau de score SVG plein écran,
+        chiffres arabo-indiens — correctif bidi `unicode-bidi:bidi-override` nécessaire)
+- [x] Build + lint verts après chaque lot ; rendu réel vérifié au navigateur (harnais jetable,
+      fixtures `generate`/`submit` injectées en props pour `QuizPlayer`/`ConjugationQuizPlayer`
+      — composants purement client, testables sans backend)
 - [ ] Espace enseignant (16 routes) : Cockpit, Mes élèves, Fiche élève, **Fiche de fin de cours**
-      (< 30 s préservé), File de correction, Conjugaison, Mes livres, Dupliquer un cours, Messages,
-      Conversation, Mon profil, Enseignants (admin)
-- [ ] Build + lint + test navigateur (flux élève complet, flux enseignant + chrono fiche fin de
-      cours, RTL arabe)
+      (< 30 s préservé — à faire personnellement, pas en délégué), File de correction, Conjugaison,
+      Mes livres, Dupliquer un cours, Messages, Conversation, Mon profil, Enseignants (admin)
+- [ ] Build + lint + test navigateur (flux enseignant + chrono fiche fin de cours, RTL arabe)
 - [ ] `tasks/todo.md` (Review) + `tasks/lessons.md`
 - [ ] Commit + push preview par lot — pas de merge prod sans confirmation explicite
+
+### Incident agents parallèles (noté pour mémoire)
+4 agents lancés en parallèle pour le lot élève ont tous échoué immédiatement (rate limit de
+session API, avant toute écriture — `git status` vérifié propre après coup, aucun dégât). Reste du
+Phase 2 fait directement, séquentiellement, sans délégation. Détail additionnel découvert en
+reprenant : le brief donné aux agents pointait vers `scratchpad/screens/` et `scratchpad/shots/`
+alors que ces dossiers étaient en réalité sous `scratchpad/handoff/screens/` et
+`scratchpad/handoff/shots/` — un chemin à corriger si des agents sont redélégués plus tard.
 
 ---
 
