@@ -64,7 +64,7 @@ export default async function LoginPage({
                 style={{ height: 88, width: "auto", filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }}
               />
             </div>
-            <Wordmark size={64} />
+            <Wordmark size={64} className="relative z-10" />
           </Link>
         </div>
 
