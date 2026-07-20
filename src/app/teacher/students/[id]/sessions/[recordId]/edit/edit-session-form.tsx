@@ -14,21 +14,22 @@ type FormulationRow = { id: string; arabic_text: string; french_text: string; au
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  borderRadius: 13,
-  border: "1.5px solid #E9E3D8",
-  background: "#fff",
+  borderRadius: 12,
+  border: "1px solid var(--tk-parchment-border)",
+  background: "var(--tk-parchment-card)",
   padding: "11px 14px",
-  fontSize: 14,
-  color: "#1C1A17",
+  fontSize: 13.5,
+  color: "var(--tk-ink-text)",
   outline: "none",
 };
 
 const sectionLabel: React.CSSProperties = {
+  fontFamily: "var(--font-spectral)",
   fontSize: 11,
   fontWeight: 700,
-  color: "#8B857A",
+  color: "var(--tk-gold)",
   textTransform: "uppercase",
-  letterSpacing: ".06em",
+  letterSpacing: ".18em",
 };
 
 /** Valeur datetime-local (heure locale du navigateur) depuis un ISO. */
@@ -120,7 +121,7 @@ export function EditSessionForm({
       {/* Élève (fixe — l'édition ne change jamais l'élève d'une séance) */}
       <div className="space-y-1.5">
         <span style={sectionLabel}>Élève</span>
-        <div style={{ ...inputStyle, background: "#F7F4EE", color: "#4A463F" }}>{studentName}</div>
+        <div style={{ ...inputStyle, background: "var(--tk-parchment-field)", color: "var(--tk-ink-text-soft)" }}>{studentName}</div>
       </div>
 
       {/* Date de séance */}
@@ -154,7 +155,7 @@ export function EditSessionForm({
       <div className="space-y-2">
         <span style={sectionLabel}>Livre</span>
         <input type="hidden" name="book_id" value={bookId} />
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2">
           {books.map((b) => {
             const active = bookId === b.id;
             return (
@@ -162,30 +163,19 @@ export function EditSessionForm({
                 key={b.id}
                 type="button"
                 onClick={() => setBookId(b.id)}
-                className="flex items-center gap-2.5 rounded-[13px] px-3.5 py-3 text-left transition-colors"
-                style={{
-                  border: `1.5px solid ${active ? "#9FE3C8" : "#E9E3D8"}`,
-                  background: active ? "#ECFAF4" : "#fff",
-                }}
+                className="flex-1 text-center transition-colors"
+                style={
+                  active
+                    ? { minWidth: 130, border: "1.5px solid var(--tk-emerald-btn-from)", background: "linear-gradient(180deg, rgba(14,74,56,.1), rgba(12,58,44,.07))", borderRadius: 12, padding: 11 }
+                    : { minWidth: 130, border: "1px solid var(--tk-parchment-border)", background: "var(--tk-parchment-card)", borderRadius: 12, padding: 11 }
+                }
               >
-                <span
-                  className="rounded-full shrink-0"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    border: `2px solid ${active ? "#0F9D6E" : "#C7C0B4"}`,
-                    background: active ? "#0F9D6E" : "#fff",
-                    boxShadow: active ? "inset 0 0 0 2px #fff" : "none",
-                  }}
-                />
-                <span className="min-w-0">
-                  <span dir="rtl" lang="ar" className="block font-arabic font-bold" style={{ fontSize: 16, color: "#1C1A17" }}>
-                    {b.title}
-                  </span>
-                  {b.subtitle && (
-                    <span className="block" style={{ fontSize: 12, color: "#8B857A" }}>{b.subtitle}</span>
-                  )}
+                <span dir="rtl" lang="ar" className="block font-arabic font-bold" style={{ fontSize: 17, color: active ? "var(--tk-ink-hero-to)" : "var(--tk-ink-text-soft)" }}>
+                  {b.title}
                 </span>
+                {b.subtitle && (
+                  <span className="block mt-0.5" style={{ fontSize: 12, color: "var(--tk-muted-olive)" }}>{b.subtitle}</span>
+                )}
               </button>
             );
           })}
@@ -198,7 +188,7 @@ export function EditSessionForm({
           <label htmlFor="public_recap" style={sectionLabel}>Récap public</label>
           <span
             className="inline-flex items-center gap-1 rounded-full"
-            style={{ padding: "2px 8px", background: "#EAEFFD", border: "1px solid #AEBEF2", color: "#2C49B8", fontSize: 10, fontWeight: 700 }}
+            style={{ padding: "2px 8px", background: "rgba(46,90,138,.12)", border: "1px solid rgba(46,90,138,.35)", color: "var(--tk-info)", fontSize: 10, fontWeight: 700 }}
           >
             Vu par l&apos;élève
           </span>
@@ -213,10 +203,23 @@ export function EditSessionForm({
       </div>
 
       {/* Vocabulaire */}
-      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <span style={sectionLabel}>Vocabulaire</span>
+      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+        <div className="flex items-center justify-between">
+          <span style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 16, color: "var(--tk-ink-text)" }}>Vocabulaire</span>
+          <button
+            type="button"
+            onClick={() => {
+              setVocabRows((rows) => [...rows, { id: String(nextId), arabic_word: "", french_definition: "" }]);
+              setNextId((n) => n - 1);
+            }}
+            className="font-bold"
+            style={{ color: "var(--tk-green-active)", fontSize: 11 }}
+          >
+            + Mot
+          </button>
+        </div>
         {vocabRows.map((row) => (
-          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "var(--tk-parchment-field)" }}>
             <div className="grid grid-cols-2 gap-2">
               <input
                 name="vocab_arabic"
@@ -236,28 +239,17 @@ export function EditSessionForm({
             <button
               type="button"
               onClick={() => setVocabRows((rows) => rows.filter((r) => r.id !== row.id))}
-              style={{ color: "#A8A29E", fontSize: 12 }}
+              style={{ color: "var(--tk-faint-olive)", fontSize: 12 }}
             >
               Retirer
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={() => {
-            setVocabRows((rows) => [...rows, { id: String(nextId), arabic_word: "", french_definition: "" }]);
-            setNextId((n) => n - 1);
-          }}
-          className="font-bold"
-          style={{ color: "#0F9D6E", fontSize: 13 }}
-        >
-          + Mot
-        </button>
       </div>
 
       {/* Grammaire */}
-      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <span style={sectionLabel}>Règles de grammaire</span>
+      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+        <span className="block" style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 16, color: "var(--tk-ink-text)" }}>Règles de grammaire</span>
         {grammarRows.map((row, idx) => (
           <GrammarRuleRow
             key={row.id}
@@ -273,17 +265,17 @@ export function EditSessionForm({
             setNextId((n) => n - 1);
           }}
           className="font-bold"
-          style={{ color: "#0F9D6E", fontSize: 13 }}
+          style={{ color: "var(--tk-green-active)", fontSize: 13 }}
         >
           + Règle
         </button>
       </div>
 
       {/* Formulation (expressions ar ↔ fr) */}
-      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "#fff", border: "1px solid #EFEAE0" }}>
-        <span style={sectionLabel}>Formulation (expressions)</span>
+      <div className="space-y-2.5 rounded-[16px] p-4" style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}>
+        <span className="block" style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 16, color: "var(--tk-ink-text)" }}>Formulation (expressions)</span>
         {formRows.map((row) => (
-          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+          <div key={row.id} className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "var(--tk-parchment-field)" }}>
             <input
               name="form_arabic"
               placeholder="expression (ar)"
@@ -307,7 +299,7 @@ export function EditSessionForm({
               <button
                 type="button"
                 onClick={() => setFormRows((rows) => rows.filter((r) => r.id !== row.id))}
-                style={{ color: "#A8A29E", fontSize: 12 }}
+                style={{ color: "var(--tk-faint-olive)", fontSize: 12 }}
               >
                 Retirer
               </button>
@@ -324,7 +316,7 @@ export function EditSessionForm({
             setNextId((n) => n - 1);
           }}
           className="font-bold"
-          style={{ color: "#0F9D6E", fontSize: 13 }}
+          style={{ color: "var(--tk-green-active)", fontSize: 13 }}
         >
           + Formulation
         </button>
@@ -342,7 +334,7 @@ export function EditSessionForm({
           style={{ ...inputStyle, resize: "none" }}
         />
         {homeworkTouched && (
-          <p style={{ color: "#8B857A", fontSize: 11 }}>
+          <p style={{ color: "var(--tk-faint-olive)", fontSize: 11 }}>
             L&apos;élève a déjà rendu ou reçu une correction pour ce devoir : le texte peut être
             corrigé, mais vider ce champ ne le supprimera pas.
           </p>
@@ -350,9 +342,9 @@ export function EditSessionForm({
       </div>
 
       {/* Note privée */}
-      <div className="space-y-1.5 rounded-[16px] p-4" style={{ background: "#FFFBF2", border: "1px solid #F2E3C2" }}>
-        <label htmlFor="private_note" className="flex items-center gap-1.5" style={{ fontSize: 11, fontWeight: 700, color: "#9A6206", textTransform: "uppercase", letterSpacing: ".05em" }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A6206" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+      <div className="space-y-1.5 rounded-[16px] p-4" style={{ background: "rgba(184,120,42,.08)", border: "1px solid rgba(184,120,42,.3)" }}>
+        <label htmlFor="private_note" className="flex items-center gap-1.5" style={{ fontSize: 10.5, fontWeight: 700, color: "var(--tk-gold-darker)", textTransform: "uppercase", letterSpacing: ".14em" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tk-warning)" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
@@ -363,7 +355,7 @@ export function EditSessionForm({
           name="private_note"
           rows={2}
           defaultValue={privateNote}
-          style={{ ...inputStyle, background: "#fff", border: "1.5px solid #F2E3C2", resize: "none" }}
+          style={{ ...inputStyle, background: "rgba(255,255,255,.5)", border: "1px solid rgba(184,120,42,.25)", resize: "none" }}
         />
       </div>
 
@@ -376,7 +368,7 @@ export function EditSessionForm({
               <label
                 key={f.path}
                 className="flex items-center gap-2 rounded-[12px] px-3 py-2.5"
-                style={{ background: "#FBF9F5", border: "1px solid #E9E3D8", fontSize: 13, color: "#4A463F" }}
+                style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)", fontSize: 13, color: "var(--tk-ink-text-soft)" }}
               >
                 <input
                   type="checkbox"
@@ -384,7 +376,7 @@ export function EditSessionForm({
                   onChange={() => toggleFile(f.path)}
                 />
                 <span className="flex-1 truncate">{f.name}</span>
-                <span style={{ color: keptFiles.has(f.path) ? "#0F9D6E" : "#B4292E", fontSize: 11, fontWeight: 700 }}>
+                <span style={{ color: keptFiles.has(f.path) ? "var(--tk-green-active)" : "var(--tk-danger)", fontSize: 11, fontWeight: 700 }}>
                   {keptFiles.has(f.path) ? "conservé" : "sera retiré"}
                 </span>
               </label>
@@ -405,15 +397,15 @@ export function EditSessionForm({
           multiple
           accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.mp3,.mp4"
           className="block w-full text-sm file:mr-3 file:rounded-[10px] file:border-0 file:px-3 file:py-1.5 file:font-semibold file:cursor-pointer"
-          style={{ color: "#4A463F" }}
+          style={{ color: "var(--tk-ink-text-soft)" }}
         />
-        <p style={{ color: "#A8A29E", fontSize: 11 }}>
+        <p style={{ color: "var(--tk-faint-olive)", fontSize: 11 }}>
           PDF, Word, image ou audio — max 10 Mo par fichier
         </p>
       </div>
 
       {state?.error ? (
-        <p style={{ color: "#B4292E", fontSize: 14 }} role="alert">
+        <p style={{ color: "var(--tk-danger)", fontSize: 14 }} role="alert">
           {state.error}
         </p>
       ) : null}
@@ -421,24 +413,29 @@ export function EditSessionForm({
       {/* Barre d'enregistrement collante */}
       <div
         className="fixed bottom-0 left-0 right-0 z-30 px-4 pt-3 pb-5"
-        style={{ background: "linear-gradient(to top, #F7F4EE 70%, rgba(247,244,238,0))" }}
+        style={{ background: "linear-gradient(to top, var(--tk-parchment) 70%, rgba(239,230,210,0))" }}
       >
-        <div className="mx-auto flex max-w-lg items-center gap-3">
-          <button
-            type="submit"
-            disabled={pending || !bookId}
-            className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] font-bold text-white disabled:opacity-60"
-            style={{ background: "#0F9D6E", fontSize: 15, boxShadow: "0 10px 22px rgba(15,157,110,.30)" }}
-          >
-            {pending ? "Enregistrement…" : "Enregistrer les modifications"}
-          </button>
+        <div className="mx-auto flex max-w-lg items-center gap-2.5">
           <Link
             href={`/teacher/students/${studentId}/sessions/${recordId}`}
-            className="flex h-[52px] items-center justify-center rounded-[16px] px-4 font-semibold"
-            style={{ color: "#6B6459", fontSize: 14, border: "1.5px solid #E9E3D8", background: "#fff" }}
+            className="flex h-[52px] items-center justify-center rounded-[14px] px-5 font-semibold"
+            style={{ color: "var(--tk-ink-text-soft)", fontSize: 14, border: "1px solid var(--tk-parchment-border)", background: "var(--tk-parchment-card)" }}
           >
             Annuler
           </Link>
+          <button
+            type="submit"
+            disabled={pending || !bookId}
+            className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[14px] font-bold disabled:opacity-60"
+            style={{
+              background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))",
+              color: "var(--tk-ink-screen)",
+              fontSize: 14.5,
+              boxShadow: "0 14px 26px -12px rgba(199,154,62,.55)",
+            }}
+          >
+            {pending ? "Enregistrement…" : "Enregistrer les modifications"}
+          </button>
         </div>
       </div>
     </form>
@@ -465,7 +462,7 @@ function GrammarRuleRow({
   };
 
   return (
-    <div className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "#FBF9F5" }}>
+    <div className="space-y-1.5 rounded-[12px] p-2.5" style={{ background: "var(--tk-parchment-field)" }}>
       <input name="grammar_title" placeholder="titre" defaultValue={row.title} style={inputStyle} />
       <textarea
         name="grammar_content"
@@ -486,13 +483,13 @@ function GrammarRuleRow({
 
       {row.photos.length > 0 && (
         <div className="space-y-1">
-          <span style={{ fontSize: 11, color: "#8B857A" }}>Photos déjà attachées</span>
+          <span style={{ fontSize: 11, color: "var(--tk-muted-olive)" }}>Photos déjà attachées</span>
           <div className="space-y-1">
             {row.photos.map((p) => (
               <label
                 key={p.path}
                 className="flex items-center gap-2 rounded-[10px] px-2.5 py-2 cursor-pointer"
-                style={{ background: "#fff", border: "1px solid #E9E3D8", fontSize: 12, color: "#4A463F" }}
+                style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", fontSize: 12, color: "var(--tk-ink-text-soft)" }}
               >
                 <input
                   type="checkbox"
@@ -500,7 +497,7 @@ function GrammarRuleRow({
                   onChange={() => togglePhoto(p.path)}
                 />
                 <span className="flex-1 truncate">{p.name}</span>
-                <span style={{ color: keptPhotos.has(p.path) ? "#0F9D6E" : "#B4292E", fontSize: 10, fontWeight: 700 }}>
+                <span style={{ color: keptPhotos.has(p.path) ? "var(--tk-green-active)" : "var(--tk-danger)", fontSize: 10, fontWeight: 700 }}>
                   {keptPhotos.has(p.path) ? "conservée" : "sera retirée"}
                 </span>
               </label>
@@ -510,21 +507,21 @@ function GrammarRuleRow({
       )}
 
       <div className="space-y-1">
-        <span style={{ fontSize: 11, color: "#8B857A" }}>Ajouter des photos</span>
+        <span style={{ fontSize: 11, color: "var(--tk-muted-olive)" }}>Ajouter des photos</span>
         <input
           name={`grammar_photos_${idx}`}
           type="file"
           accept="image/*"
           multiple
           className="block w-full text-xs file:mr-2 file:rounded-[8px] file:border-0 file:px-2.5 file:py-1 file:font-semibold file:cursor-pointer"
-          style={{ color: "#4A463F" }}
+          style={{ color: "var(--tk-ink-text-soft)" }}
         />
       </div>
 
       <button
         type="button"
         onClick={onRemove}
-        style={{ color: "#A8A29E", fontSize: 12 }}
+        style={{ color: "var(--tk-faint-olive)", fontSize: 12 }}
       >
         Retirer
       </button>

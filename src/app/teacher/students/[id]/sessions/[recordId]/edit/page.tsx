@@ -71,7 +71,7 @@ export default async function EditSessionPage({
       <Link
         href={`/teacher/students/${id}/sessions/${recordId}`}
         className="inline-flex items-center gap-1 font-semibold"
-        style={{ color: "#8B857A", fontSize: 13 }}
+        style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}
       >
         ← Annuler
       </Link>
@@ -79,11 +79,11 @@ export default async function EditSessionPage({
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "var(--tk-ink-text)" }}
         >
           Modifier le cours
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+        <p className="font-medium mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>
           {studentName}
         </p>
       </div>
