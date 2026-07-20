@@ -47,7 +47,10 @@ export default async function LoginPage({
       <div className="relative w-full max-w-sm space-y-7">
         <div className="relative flex flex-col items-center text-center">
           <Link href="/" className="relative flex flex-col items-center gap-[22px]">
-            <div className="relative flex items-center justify-center" style={{ width: 150, height: 150 }}>
+            <div
+              className="relative flex items-center justify-center"
+              style={{ width: 150, height: 150, transform: "translateY(54px)" }}
+            >
               <KhatamOrnament
                 size={150}
                 circle
@@ -61,7 +64,7 @@ export default async function LoginPage({
                 style={{ height: 88, width: "auto", filter: "drop-shadow(0 8px 20px rgba(0,0,0,.4))" }}
               />
             </div>
-            <Wordmark size={54} />
+            <Wordmark size={64} />
           </Link>
         </div>
 
