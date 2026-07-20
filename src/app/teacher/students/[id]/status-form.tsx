@@ -10,9 +10,9 @@ const STATUS_OPTIONS: { value: StudentStatus; label: string }[] = [
   { value: "suspended_absences", label: "Suspendu" },
 ];
 
-const STATUS_COLOR: Record<StudentStatus, string> = {
-  active: "text-emerald-700 border-emerald-200 bg-emerald-50",
-  suspended_absences: "text-red-700 border-red-200 bg-red-50",
+const STATUS_STYLE: Record<StudentStatus, React.CSSProperties> = {
+  active: { color: "var(--tk-green-active)", background: "rgba(12,107,78,.10)", borderColor: "rgba(12,107,78,.3)" },
+  suspended_absences: { color: "var(--tk-danger)", background: "rgba(163,52,42,.10)", borderColor: "rgba(163,52,42,.3)" },
 };
 
 export function StatusForm({
@@ -26,14 +26,15 @@ export function StatusForm({
   const [state, formAction, pending] = useActionState(boundAction, {});
 
   return (
-    <form action={formAction} className="flex items-center gap-2">
+    <form action={formAction} className="flex-1 flex items-center gap-2">
       {state.error && (
-        <p className="text-xs text-red-600">{state.error}</p>
+        <p className="text-xs" style={{ color: "var(--tk-danger)" }}>{state.error}</p>
       )}
       <select
         name="status"
         defaultValue={currentStatus}
-        className={`rounded-full border px-2.5 py-1 text-xs font-medium outline-none cursor-pointer ${STATUS_COLOR[currentStatus]}`}
+        className="flex-1 rounded-[12px] border px-3 py-2.5 text-sm font-semibold outline-none cursor-pointer"
+        style={STATUS_STYLE[currentStatus]}
       >
         {STATUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -44,7 +45,8 @@ export function StatusForm({
       <button
         type="submit"
         disabled={pending}
-        className="text-xs text-slate-500 hover:text-slate-700 disabled:opacity-50"
+        className="text-xs font-semibold disabled:opacity-50"
+        style={{ color: "var(--tk-muted-olive)" }}
       >
         {pending ? "…" : "✓"}
       </button>

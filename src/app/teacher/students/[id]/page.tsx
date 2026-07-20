@@ -7,6 +7,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { AccordionGroup } from "@/components/accordion-group";
 import { groupByLesson } from "@/lib/group-by-lesson";
+import { toArabicIndicDigits } from "@/lib/arabic-numerals";
 import { ProfileNoteForm } from "./profile-note-form";
 import { StatusForm } from "./status-form";
 
@@ -112,277 +113,296 @@ export default async function StudentCardPage({
   const name = profile?.full_name ?? "—";
 
   return (
-    <div className="space-y-5">
-      {/* Retour */}
-      <Link
-        href="/teacher/students"
-        className="inline-flex items-center gap-1 font-semibold"
-        style={{ color: "#8B857A", fontSize: 13 }}
+    <div className="-mx-4 -mt-5">
+      {/* Héros encre */}
+      <div
+        className="hachure-ink relative overflow-hidden px-[22px] pb-9 pt-6"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
       >
-        ← Mes élèves
-      </Link>
+        <Link href="/teacher/students" className="relative inline-flex items-center gap-2.5">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span style={{ fontFamily: "var(--font-spectral)", fontStyle: "italic", fontSize: 16, color: "var(--tk-sage)" }}>
+            Mes élèves
+          </span>
+        </Link>
 
-      {/* En-tête */}
-      <div className="flex items-center gap-[14px]">
-        <span
-          className="flex shrink-0 items-center justify-center rounded-[17px] text-white font-bold"
-          style={{ width: 58, height: 58, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 23 }}
-        >
-          {name[0]?.toUpperCase() ?? "?"}
-        </span>
-        <div className="flex-1 min-w-0">
-          <h1
-            className="leading-tight"
-            style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "#1C1A17" }}
+        <div className="relative mt-6 flex items-center gap-3.5">
+          <span
+            className="flex shrink-0 items-center justify-center rounded-[16px] font-bold"
+            style={{
+              width: 56,
+              height: 56,
+              background: "rgba(255,255,255,.08)",
+              border: "1px solid rgba(199,154,62,.4)",
+              color: "var(--tk-gold-light)",
+              fontFamily: "var(--font-spectral)",
+              fontSize: 28,
+            }}
           >
-            {name}
-          </h1>
-          {profile?.email && (
-            <p className="truncate" style={{ color: "#8B857A", fontSize: 13 }}>{profile.email}</p>
-          )}
+            {name[0]?.toUpperCase() ?? "?"}
+          </span>
+          <div className="flex-1 min-w-0">
+            <h1
+              className="leading-tight"
+              style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 24, color: "var(--tk-cream-text)" }}
+            >
+              {name}
+            </h1>
+            {profile?.email && (
+              <p className="truncate mt-0.5" style={{ color: "var(--tk-sage)", fontSize: 12 }}>{profile.email}</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        <Link
-          href={`/teacher/messages/${id}`}
-          className="flex-1 text-center font-semibold rounded-[12px] py-2.5"
-          style={{ color: "#1C1A17", fontSize: 13, border: "1.5px solid #E9E3D8", background: "#fff" }}
-        >
-          Chat
-        </Link>
-        <StatusForm studentId={id} currentStatus={student.status} />
-      </div>
-
-      {/* Stats — cliquables, ancrent vers la section correspondante */}
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          { label: "séances", value: totalRecords, anchor: "#historique" },
-          { label: "mots", value: vocabCount, anchor: "#vocabulaire" },
-          { label: "règles", value: grammarCount, anchor: "#grammaire" },
-        ].map(({ label, value, anchor }) => {
-          const content = (
-            <>
-              <p style={{ fontWeight: 800, fontSize: 22, color: "#1C1A17", lineHeight: 1 }}>{value}</p>
-              <p className="mt-1 font-semibold" style={{ color: "#8B857A", fontSize: 11 }}>{label}</p>
-            </>
-          );
-          const cardStyle: React.CSSProperties = { background: "#fff", border: "1px solid #EFEAE0" };
-          return anchor ? (
-            <Link key={label} href={anchor} className="block rounded-[16px] p-3 text-center" style={cardStyle}>
-              {content}
-            </Link>
-          ) : (
-            <div key={label} className="rounded-[16px] p-3 text-center" style={cardStyle}>
-              {content}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Note privée épinglée */}
-      <ProfileNoteForm studentId={id} initialContent={noteContent} />
-
-      {/* CTA nouvelle fiche */}
-      <Link
-        href={`/teacher/session/new?student_id=${id}`}
-        className="flex items-center gap-3 rounded-[16px] p-[15px]"
-        style={{ background: "#0F9D6E", boxShadow: "0 8px 18px rgba(15,157,110,.26)" }}
-      >
-        <span
-          className="flex shrink-0 items-center justify-center rounded-[12px]"
-          style={{ width: 40, height: 40, background: "rgba(255,255,255,.20)" }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-          </svg>
-        </span>
-        <span className="flex-1 font-bold text-white" style={{ fontSize: 15 }}>
-          Nouvelle fiche de fin de cours
-        </span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </Link>
-
-      {/* Devoirs en attente */}
-      {pendingHw.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-amber-900">
-              Devoirs à corriger ({pendingHw.length})
-            </p>
+      {/* Stats — cliquables, superposées entre héros et corps */}
+      <div className="relative px-[22px]" style={{ marginTop: -32 }}>
+        <div className="flex gap-2.5">
+          {[
+            { label: "Séances", value: totalRecords, anchor: "#historique" },
+            { label: "Mots", value: vocabCount, anchor: "#vocabulaire" },
+            { label: "Règles", value: grammarCount, anchor: "#grammaire" },
+          ].map(({ label, value, anchor }) => (
             <Link
-              href="/teacher/homework"
-              className="text-xs text-amber-700 hover:underline"
+              key={label}
+              href={anchor}
+              className="flex-1 rounded-[14px] text-center"
+              style={{
+                background: "#F7F0DF",
+                border: "1px solid var(--tk-parchment-border-alt)",
+                boxShadow: "0 16px 28px -18px rgba(10,20,15,.5)",
+                padding: "12px 6px",
+              }}
             >
-              Corriger →
+              <p style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 24, color: "var(--tk-ink-hero-to)", lineHeight: 1 }}>
+                {value}
+              </p>
+              <p className="mt-1.5" style={{ color: "var(--tk-muted-olive)", fontSize: 10 }}>{label}</p>
             </Link>
-          </div>
-          {pendingHw.map((hw) => (
-            <div key={hw.id} className="text-sm text-amber-800">
-              • {hw.instructions ?? "Devoir sans instructions"}{" "}
-              <span className="text-xs text-amber-600">
-                ({format(new Date(hw.assigned_at), "d MMM", { locale: fr })})
-              </span>
-            </div>
           ))}
         </div>
-      )}
-
-      {/* Historique des séances */}
-      <div id="historique" className="space-y-2 scroll-mt-20">
-        <div className="flex items-center justify-between px-0.5">
-          <p className="font-bold uppercase" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-            Cours ({totalRecords})
-          </p>
-          {showAllRecords ? (
-            <Link href={`/teacher/students/${id}`} className="font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
-              Voir moins
-            </Link>
-          ) : totalRecords > 8 ? (
-            <Link href={`/teacher/students/${id}?all=true`} className="font-semibold" style={{ color: "#0F9D6E", fontSize: 12 }}>
-              Voir tout ({totalRecords})
-            </Link>
-          ) : null}
-        </div>
-        {records.length === 0 && (
-          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune séance enregistrée.</p>
-        )}
-        {records.map((r) => (
-          <Link
-            key={r.id}
-            href={`/teacher/students/${id}/sessions/${r.id}`}
-            className="block rounded-[14px] p-[13px] space-y-1 transition-opacity hover:opacity-80"
-            style={{ background: "#fff", border: "1px solid #EFEAE0" }}
-          >
-            <p className="font-bold" style={{ color: "#1C1A17", fontSize: 14 }}>
-              {r.custom_title || `Cours ${courseNumber.get(r.id)}`}
-            </p>
-            <p style={{ color: "#A8A29E", fontSize: 11 }}>
-              {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
-            </p>
-            {r.public_recap && (
-              <p className="leading-relaxed" style={{ color: "#4A463F", fontSize: 13 }}>
-                {r.public_recap}
-              </p>
-            )}
-          </Link>
-        ))}
       </div>
 
-      {/* Vocabulaire par cours */}
-      <div id="vocabulaire" className="space-y-2 scroll-mt-20">
-        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-          Vocabulaire ({vocabCount})
-        </p>
-        {vocabGroups.length === 0 && (
-          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun mot enregistré.</p>
-        )}
-        {vocabGroups.map((group) => (
-          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
-            {group.key !== "none" && (
-              <Link
-                href={`/teacher/students/${id}/sessions/${group.key}`}
-                className="inline-flex items-center gap-1 font-semibold"
-                style={{ color: "#0F9D6E", fontSize: 12 }}
-              >
-                Voir le cours →
+      <div className="px-[22px] pt-5 pb-2 space-y-3.5">
+        {/* Actions */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            href={`/teacher/messages/${id}`}
+            className="flex-1 flex items-center justify-center gap-1.5 text-center font-semibold rounded-[12px] py-2.5"
+            style={{ color: "var(--tk-ink-hero-to)", fontSize: 13, border: "1px solid rgba(14,74,56,.3)", background: "rgba(14,74,56,.1)" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-ink-hero-to)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
+            </svg>
+            Chat
+          </Link>
+          <StatusForm studentId={id} currentStatus={student.status} />
+        </div>
+
+        {/* Note privée épinglée */}
+        <ProfileNoteForm studentId={id} initialContent={noteContent} />
+
+        {/* CTA nouvelle fiche */}
+        <Link
+          href={`/teacher/session/new?student_id=${id}`}
+          className="flex items-center justify-center gap-2.5 rounded-[14px] p-[14px] font-bold"
+          style={{
+            background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+            border: "1px solid rgba(199,154,62,.3)",
+            color: "var(--tk-cream-text)",
+            fontSize: 14,
+          }}
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold-light)" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+          Nouvelle fiche de fin de cours
+        </Link>
+
+        {/* Devoirs en attente */}
+        {pendingHw.length > 0 && (
+          <div
+            className="rounded-[14px] p-4 space-y-2"
+            style={{ background: "rgba(184,120,42,.09)", border: "1px solid rgba(184,120,42,.32)" }}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium" style={{ color: "var(--tk-gold-darker)" }}>
+                Devoirs à corriger ({pendingHw.length})
+              </p>
+              <Link href="/teacher/homework" className="text-xs" style={{ color: "var(--tk-warning)" }}>
+                Corriger →
               </Link>
-            )}
-            {group.items.map((v) => (
-              <div
-                key={v.id}
-                className="rounded-[12px] px-3 py-2.5 space-y-1.5"
-                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm" style={{ color: "#4A463F" }}>{v.french_definition}</span>
-                  <span dir="rtl" lang="ar" className="font-arabic shrink-0" style={{ fontSize: 18, fontWeight: 700, color: "#0A553F" }}>
-                    {v.arabic_word}
-                  </span>
-                </div>
-                <Link
-                  href={`/teacher/students/${id}/vocabulary/${v.id}`}
-                  className="inline-flex items-center gap-1 font-semibold"
-                  style={{ color: conjVocabIds.has(v.id) ? "#0A6B4E" : "#8B857A", fontSize: 11.5 }}
-                >
-                  {conjVocabIds.has(v.id) ? "Conjugaison ✓ — modifier" : "Conjuguer ce verbe →"}
-                </Link>
+            </div>
+            {pendingHw.map((hw) => (
+              <div key={hw.id} className="text-sm" style={{ color: "#7A5714" }}>
+                • {hw.instructions ?? "Devoir sans instructions"}{" "}
+                <span className="text-xs" style={{ color: "var(--tk-warning)" }}>
+                  ({format(new Date(hw.assigned_at), "d MMM", { locale: fr })})
+                </span>
               </div>
             ))}
-          </AccordionGroup>
-        ))}
-      </div>
-
-      {/* Grammaire — chaque règle porte son propre nom, indépendant du cours */}
-      <div id="grammaire" className="space-y-2 scroll-mt-20">
-        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-          Règles de grammaire ({grammarCount})
-        </p>
-        {grammarGroups.length === 0 && (
-          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune règle enregistrée.</p>
+          </div>
         )}
-        {grammarGroups.flatMap((group) =>
-          group.items.map((g) => (
-            <div
-              key={g.id}
-              className="rounded-[14px] px-3.5 py-3 space-y-1"
-              style={{ background: "#fff", border: "1px solid #EFEAE0" }}
+
+        {/* Historique des séances */}
+        <div id="historique" className="space-y-2.5 scroll-mt-20">
+          <div className="flex items-center gap-2.5">
+            <span style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 11, letterSpacing: ".16em", color: "var(--tk-gold)", textTransform: "uppercase" }}>
+              Historique ({totalRecords})
+            </span>
+            <span className="flex-1" style={{ height: 1, background: "linear-gradient(90deg,#D8C79E,transparent)" }} />
+            {showAllRecords ? (
+              <Link href={`/teacher/students/${id}`} className="font-semibold shrink-0" style={{ color: "var(--tk-ink-hero-to)", fontSize: 12 }}>
+                Voir moins
+              </Link>
+            ) : totalRecords > 8 ? (
+              <Link href={`/teacher/students/${id}?all=true`} className="font-semibold shrink-0" style={{ color: "var(--tk-ink-hero-to)", fontSize: 12 }}>
+                Voir tout
+              </Link>
+            ) : null}
+          </div>
+          {records.length === 0 && (
+            <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucune séance enregistrée.</p>
+          )}
+          {records.map((r) => (
+            <Link
+              key={r.id}
+              href={`/teacher/students/${id}/sessions/${r.id}`}
+              className="flex items-center gap-3 rounded-[14px] p-[13px_15px] transition-opacity hover:opacity-80"
+              style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}
             >
-              <p className="font-semibold" style={{ color: "#1C1A17", fontSize: 14 }}>{g.title}</p>
-              <p className="text-xs line-clamp-2" style={{ color: "#8B857A" }}>{g.content}</p>
+              <span style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 22, color: "var(--tk-gold)" }}>
+                {toArabicIndicDigits(courseNumber.get(r.id) ?? 0)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold" style={{ color: "var(--tk-ink-hero-to)", fontSize: 15 }}>
+                  {r.custom_title || `Cours ${courseNumber.get(r.id)}`}
+                </p>
+                <p className="mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 11 }}>
+                  {format(new Date(r.session_date), "d MMMM yyyy", { locale: fr })}
+                  {r.public_recap ? ` · ${r.public_recap}` : ""}
+                </p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-gold)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+
+        {/* Vocabulaire par cours */}
+        <div id="vocabulaire" className="space-y-2 scroll-mt-20">
+          <p className="font-bold uppercase px-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12, letterSpacing: ".06em" }}>
+            Vocabulaire ({vocabCount})
+          </p>
+          {vocabGroups.length === 0 && (
+            <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun mot enregistré.</p>
+          )}
+          {vocabGroups.map((group) => (
+            <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
               {group.key !== "none" && (
                 <Link
                   href={`/teacher/students/${id}/sessions/${group.key}`}
                   className="inline-flex items-center gap-1 font-semibold"
-                  style={{ color: "#0F9D6E", fontSize: 12 }}
+                  style={{ color: "var(--tk-ink-hero-to)", fontSize: 12 }}
                 >
-                  {group.label} →
+                  Voir le cours →
                 </Link>
               )}
-            </div>
-          )),
-        )}
-      </div>
+              {group.items.map((v) => (
+                <div
+                  key={v.id}
+                  className="rounded-[12px] px-3 py-2.5 space-y-1.5"
+                  style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)" }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm" style={{ color: "var(--tk-ink-text-soft)" }}>{v.french_definition}</span>
+                    <span dir="rtl" lang="ar" className="font-arabic shrink-0" style={{ fontSize: 18, fontWeight: 700, color: "var(--tk-ink-hero-to)" }}>
+                      {v.arabic_word}
+                    </span>
+                  </div>
+                  <Link
+                    href={`/teacher/students/${id}/vocabulary/${v.id}`}
+                    className="inline-flex items-center gap-1 font-semibold"
+                    style={{ color: conjVocabIds.has(v.id) ? "var(--tk-green-active)" : "var(--tk-muted-olive)", fontSize: 11.5 }}
+                  >
+                    {conjVocabIds.has(v.id) ? "Conjugaison ✓ — modifier" : "Conjuguer ce verbe →"}
+                  </Link>
+                </div>
+              ))}
+            </AccordionGroup>
+          ))}
+        </div>
 
-      {/* Formulations par cours */}
-      <div id="formulations" className="space-y-2 scroll-mt-20">
-        <p className="font-bold uppercase px-0.5" style={{ color: "#8B857A", fontSize: 12, letterSpacing: ".06em" }}>
-          Formulations ({formCount})
-        </p>
-        {formGroups.length === 0 && (
-          <p style={{ color: "#8B857A", fontSize: 14 }}>Aucune formulation enregistrée.</p>
-        )}
-        {formGroups.map((group) => (
-          <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
-            {group.key !== "none" && (
-              <Link
-                href={`/teacher/students/${id}/sessions/${group.key}`}
-                className="inline-flex items-center gap-1 font-semibold"
-                style={{ color: "#0F9D6E", fontSize: 12 }}
-              >
-                Voir le cours →
-              </Link>
-            )}
-            {group.items.map((f) => (
+        {/* Grammaire — chaque règle porte son propre nom, indépendant du cours */}
+        <div id="grammaire" className="space-y-2 scroll-mt-20">
+          <p className="font-bold uppercase px-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12, letterSpacing: ".06em" }}>
+            Règles de grammaire ({grammarCount})
+          </p>
+          {grammarGroups.length === 0 && (
+            <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucune règle enregistrée.</p>
+          )}
+          {grammarGroups.flatMap((group) =>
+            group.items.map((g) => (
               <div
-                key={f.id}
-                className="rounded-[12px] px-3 py-2.5 space-y-1"
-                style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+                key={g.id}
+                className="rounded-[14px] px-3.5 py-3 space-y-1"
+                style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}
               >
-                <p dir="rtl" lang="ar" className="font-arabic" style={{ fontSize: 16, fontWeight: 700, color: "#0A553F" }}>
-                  {f.arabic_text}
-                </p>
-                <p className="text-sm" style={{ color: "#4A463F" }}>{f.french_text}</p>
+                <p className="font-semibold" style={{ color: "var(--tk-ink-text)", fontSize: 14 }}>{g.title}</p>
+                <p className="text-xs line-clamp-2" style={{ color: "var(--tk-muted-olive)" }}>{g.content}</p>
+                {group.key !== "none" && (
+                  <Link
+                    href={`/teacher/students/${id}/sessions/${group.key}`}
+                    className="inline-flex items-center gap-1 font-semibold"
+                    style={{ color: "var(--tk-ink-hero-to)", fontSize: 12 }}
+                  >
+                    {group.label} →
+                  </Link>
+                )}
               </div>
-            ))}
-          </AccordionGroup>
-        ))}
-      </div>
+            )),
+          )}
+        </div>
 
+        {/* Formulations par cours */}
+        <div id="formulations" className="space-y-2 scroll-mt-20">
+          <p className="font-bold uppercase px-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 12, letterSpacing: ".06em" }}>
+            Formulations ({formCount})
+          </p>
+          {formGroups.length === 0 && (
+            <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucune formulation enregistrée.</p>
+          )}
+          {formGroups.map((group) => (
+            <AccordionGroup key={group.key} label={group.label} count={group.items.length} forceOpen={false}>
+              {group.key !== "none" && (
+                <Link
+                  href={`/teacher/students/${id}/sessions/${group.key}`}
+                  className="inline-flex items-center gap-1 font-semibold"
+                  style={{ color: "var(--tk-ink-hero-to)", fontSize: 12 }}
+                >
+                  Voir le cours →
+                </Link>
+              )}
+              {group.items.map((f) => (
+                <div
+                  key={f.id}
+                  className="rounded-[12px] px-3 py-2.5 space-y-1"
+                  style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)" }}
+                >
+                  <p dir="rtl" lang="ar" className="font-arabic" style={{ fontSize: 16, fontWeight: 700, color: "var(--tk-ink-hero-to)" }}>
+                    {f.arabic_text}
+                  </p>
+                  <p className="text-sm" style={{ color: "var(--tk-ink-text-soft)" }}>{f.french_text}</p>
+                </div>
+              ))}
+            </AccordionGroup>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

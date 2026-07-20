@@ -51,7 +51,7 @@ export default async function StudentsPage() {
     <div className="space-y-5">
       <h1
         className="px-0.5 leading-tight"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
       >
         Mes élèves
       </h1>
@@ -59,7 +59,7 @@ export default async function StudentsPage() {
       <NewStudentForm teachers={isAdmin ? teachers : undefined} />
 
       {list.length === 0 ? (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun élève rattaché pour le moment.</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun élève rattaché pour le moment.</p>
       ) : (
         <StudentsList students={list} />
       )}

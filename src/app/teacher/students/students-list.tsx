@@ -42,10 +42,10 @@ export function StudentsList({ students }: { students: Student[] }) {
     <div className="space-y-4">
       {/* Recherche */}
       <div
-        className="flex items-center gap-[10px] rounded-[14px] px-[14px]"
-        style={{ height: 48, border: "1.5px solid #E9E3D8", background: "#fff" }}
+        className="flex items-center gap-[10px] rounded-[12px] px-[14px]"
+        style={{ height: 44, border: "1px solid var(--tk-parchment-border)", background: "var(--tk-parchment-card)" }}
       >
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tk-muted-olive)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="7" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
@@ -54,7 +54,7 @@ export function StudentsList({ students }: { students: Student[] }) {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher un élève…"
           className="flex-1 border-none bg-transparent outline-none"
-          style={{ fontSize: 15, fontWeight: 600, color: "#1C1A17" }}
+          style={{ fontSize: 13.5, fontWeight: 500, color: "var(--tk-ink-text)" }}
         />
       </div>
 
@@ -66,13 +66,13 @@ export function StudentsList({ students }: { students: Student[] }) {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className="rounded-full font-bold transition-colors"
+              className="rounded-full font-semibold transition-colors"
               style={{
-                padding: "8px 16px",
-                fontSize: 13,
-                background: active ? "#1C1A17" : "#fff",
-                color: active ? "#fff" : "#6B6459",
-                border: active ? "1px solid #1C1A17" : "1px solid #E9E3D8",
+                padding: "7px 15px",
+                fontSize: 12,
+                background: active ? "var(--tk-ink-text)" : "transparent",
+                color: active ? "var(--tk-parchment)" : "var(--tk-ink-text-soft)",
+                border: active ? "1px solid var(--tk-ink-text)" : "1px solid #D8C79E",
               }}
             >
               {f.label}
@@ -83,21 +83,28 @@ export function StudentsList({ students }: { students: Student[] }) {
 
       {/* Liste */}
       {filtered.length === 0 ? (
-        <p style={{ color: "#8B857A", fontSize: 14 }}>Aucun élève.</p>
+        <p style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>Aucun élève.</p>
       ) : (
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-[11px]">
           {filtered.map((s) => {
             const meta = STATUS_META[s.status];
             return (
               <Link
                 key={s.id}
                 href={`/teacher/students/${s.id}`}
-                className="flex items-center gap-[13px] rounded-[16px] p-[14px]"
-                style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 5px 14px rgba(28,26,23,.03)" }}
+                className="flex items-center gap-[13px] rounded-[16px] p-[13px_15px]"
+                style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 10px 22px -16px rgba(10,20,15,.4)" }}
               >
                 <span
-                  className="flex shrink-0 items-center justify-center overflow-hidden rounded-[14px] text-white font-bold"
-                  style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+                  className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] font-bold"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+                    color: "var(--tk-gold-light)",
+                    fontFamily: "var(--font-spectral)",
+                    fontSize: 22,
+                  }}
                 >
                   {s.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -107,7 +114,7 @@ export function StudentsList({ students }: { students: Student[] }) {
                   )}
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block font-bold truncate" style={{ color: "#1C1A17", fontSize: 16 }}>{s.name}</span>
+                  <span className="block font-semibold truncate" style={{ color: "var(--tk-ink-text)", fontSize: 15 }}>{s.name}</span>
                 </span>
                 <StatusBadge hue={meta.hue} label={meta.label} />
               </Link>
