@@ -113,9 +113,17 @@
    background-image direct : la plupart des surfaces encre posent AUSSI un
    dégradé via `style={{ background: ... }}` en inline, et le raccourci
    `background` réinitialise `background-image` à `none`, ce qui écraserait
-   silencieusement la texture (l'inline gagne toujours sur la classe). */
-.hachure-ink {
-  position: relative;
+   silencieusement la texture (l'inline gagne toujours sur la classe).
+   Le `position: relative` de repli est posé dans `@layer base` : Tailwind
+   place ses propres utilitaires (`.fixed`, `.sticky`, etc.) dans
+   `@layer utilities`, déclarée APRÈS `base` — sans ce layer, cette règle
+   sort du système de layers de Tailwind et bat alors `.fixed`/`.sticky`
+   sur les éléments qui les combinent avec `hachure-ink` (tiroir de nav,
+   en-têtes), quel que soit l'ordre des classes. */
+@layer base {
+  .hachure-ink {
+    position: relative;
+  }
 }
 .hachure-ink::before {
   content: "";
