@@ -133,7 +133,7 @@ export function ChatBox({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto flex flex-col gap-3 pb-2">
         {optimisticMessages.length === 0 && (
-          <p className="text-center py-8" style={{ color: "#A8A29E", fontSize: 14 }}>
+          <p className="text-center py-8" style={{ color: "var(--tk-faint-olive)", fontSize: 14 }}>
             Aucun message pour l&apos;instant.
           </p>
         )}
@@ -146,24 +146,27 @@ export function ChatBox({
               className="max-w-[78%]"
               style={{
                 alignSelf: isMine ? "flex-end" : "flex-start",
-                background: isMine ? "#0F9D6E" : "#fff",
-                border: isMine ? "none" : "1px solid #EFEAE0",
-                borderRadius: isMine ? "18px 18px 5px 18px" : "18px 18px 18px 5px",
-                padding: "12px 15px",
+                background: isMine
+                  ? "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))"
+                  : "var(--tk-parchment-card)",
+                border: isMine ? "none" : "1px solid var(--tk-parchment-border)",
+                borderRadius: isMine ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                padding: "11px 14px",
+                boxShadow: "0 8px 18px -12px rgba(10,20,15,.4)",
                 opacity: isOptimistic ? 0.7 : 1,
                 transition: "opacity 0.15s",
               }}
             >
               <p
                 className="whitespace-pre-wrap break-words"
-                style={{ color: isMine ? "#fff" : "#1C1A17", fontSize: 14, lineHeight: 1.45 }}
+                style={{ color: isMine ? "var(--tk-cream-text)" : "var(--tk-ink-text)", fontSize: 14, lineHeight: 1.45 }}
               >
                 {msg.body}
               </p>
               <p
                 className="mt-1.5"
                 style={{
-                  color: isMine ? "#CFF0E2" : "#B7B0A2",
+                  color: isMine ? "rgba(243,234,214,.65)" : "var(--tk-faint-olive)",
                   fontSize: 10,
                   fontWeight: 600,
                   textAlign: isMine ? "right" : "left",
@@ -185,9 +188,9 @@ export function ChatBox({
       </div>
 
       {/* Saisie */}
-      <div className="pt-3" style={{ borderTop: "1px solid #EDE7DC" }}>
+      <div className="pt-3" style={{ borderTop: "1px solid var(--tk-parchment-border)" }}>
         {error && (
-          <p className="mb-2" style={{ color: "#B4292E", fontSize: 12 }}>{error}</p>
+          <p className="mb-2" style={{ color: "var(--tk-danger)", fontSize: 12 }}>{error}</p>
         )}
         <form ref={formRef} onSubmit={handleSubmit} className="flex gap-2.5 items-center">
           <input
@@ -197,29 +200,27 @@ export function ChatBox({
             autoComplete="off"
             className="flex-1 outline-none"
             style={{
-              height: 48,
-              borderRadius: 15,
-              border: "1.5px solid #E9E3D8",
-              background: "#fff",
+              height: 46,
+              borderRadius: 23,
+              border: "1px solid var(--tk-parchment-border)",
+              background: "var(--tk-parchment-card)",
               padding: "0 16px",
               fontSize: 14,
-              color: "#1C1A17",
+              color: "var(--tk-ink-text)",
             }}
           />
           <button
             type="submit"
             disabled={isPending}
             aria-label="Envoyer"
-            className="flex shrink-0 items-center justify-center disabled:opacity-50"
+            className="flex shrink-0 items-center justify-center disabled:opacity-50 rounded-full"
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 15,
-              background: "#0F9D6E",
-              boxShadow: "0 6px 14px rgba(15,157,110,.26)",
+              width: 46,
+              height: 46,
+              background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))",
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tk-ink-hero-to)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>

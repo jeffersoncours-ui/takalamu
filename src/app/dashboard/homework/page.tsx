@@ -87,7 +87,7 @@ export default async function DevoirsPage({
     <div className="space-y-5">
       <h1
         className="px-0.5 leading-tight"
-        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+        style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
       >
         Mes devoirs
       </h1>

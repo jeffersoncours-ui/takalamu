@@ -7,8 +7,8 @@ import { uploadFilesToBucket, removeFilesFromBucket, type UploadedFile } from "@
 import { compressImage } from "@/lib/compress-image";
 import { saveHomeworkSubmission } from "./actions";
 
-const GREEN = "#0F9D6E";
-const RED = "#B4292E";
+const GREEN = "var(--tk-emerald-btn-from)";
+const RED = "var(--tk-danger)";
 const BUCKET = "homework-submissions";
 
 type Mode = "photo" | "audio";
@@ -161,14 +161,14 @@ export function HwSubmitForm({
   };
 
   return (
-    <div className="mt-3 pt-3" style={{ borderTop: "1px solid #F4F0E8" }}>
+    <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--tk-parchment-border)" }}>
       {error && (
         <p className="mb-2 text-xs font-medium" style={{ color: RED }}>
           {error}
         </p>
       )}
 
-      <p className="font-semibold mb-2" style={{ color: "#1C1A17", fontSize: 13 }}>
+      <p className="font-semibold mb-2" style={{ color: "var(--tk-ink-text)", fontSize: 13 }}>
         {hasSubmitted ? "Modifier mon devoir" : "Rendre mon devoir"}
       </p>
 
@@ -179,12 +179,12 @@ export function HwSubmitForm({
             <div
               key={it.kind === "new" ? `n${it.id}` : `e${it.path}`}
               className="flex items-center gap-2.5 rounded-[12px] p-2"
-              style={{ background: "#F7F4EE", border: "1px solid #EFEAE0" }}
+              style={{ background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)" }}
             >
               {it.isAudio ? (
                 <span
                   className="shrink-0 inline-flex items-center justify-center rounded-[8px]"
-                  style={{ width: 38, height: 38, background: "#EAEFFD", fontSize: 18 }}
+                  style={{ width: 38, height: 38, background: "rgba(46,90,138,.14)", fontSize: 18 }}
                 >
                   🎙
                 </span>
@@ -194,15 +194,15 @@ export function HwSubmitForm({
               ) : (
                 <span
                   className="shrink-0 inline-flex items-center justify-center rounded-[8px]"
-                  style={{ width: 38, height: 38, background: "#EAEFFD", fontSize: 18 }}
+                  style={{ width: 38, height: 38, background: "rgba(46,90,138,.14)", fontSize: 18 }}
                 >
                   🖼
                 </span>
               )}
-              <span className="flex-1 min-w-0 truncate text-sm" style={{ color: "#1C1A17" }}>
+              <span className="flex-1 min-w-0 truncate text-sm" style={{ color: "var(--tk-ink-text)" }}>
                 {it.name}
                 {it.kind === "existing" && (
-                  <span className="ml-1.5 text-xs" style={{ color: "#8B857A" }}>(déjà déposé)</span>
+                  <span className="ml-1.5 text-xs" style={{ color: "var(--tk-muted-olive)" }}>(déjà déposé)</span>
                 )}
               </span>
               <button
@@ -210,7 +210,7 @@ export function HwSubmitForm({
                 onClick={() => removeItem(it)}
                 disabled={pending}
                 className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold disabled:opacity-50"
-                style={{ background: "#fff", color: "#8B857A", border: "1px solid #E9E3D8" }}
+                style={{ background: "var(--tk-parchment-card)", color: "var(--tk-muted-olive)", border: "1px solid var(--tk-parchment-border)" }}
                 aria-label={`Retirer ${it.name}`}
               >
                 Retirer
@@ -233,8 +233,8 @@ export function HwSubmitForm({
             className="flex-1 rounded-[10px] py-2 text-xs font-semibold transition-colors"
             style={
               mode === m
-                ? { background: "#0A553F", color: "#fff" }
-                : { background: "#F7F4EE", color: "#8B857A", border: "1px solid #EFEAE0" }
+                ? { background: "var(--tk-ink-hero-to)", color: "#fff" }
+                : { background: "var(--tk-parchment-field)", color: "var(--tk-muted-olive)", border: "1px solid var(--tk-parchment-border)" }
             }
           >
             {m === "photo" ? "📷 Photo(s)" : "🎙 Audio"}
@@ -245,13 +245,13 @@ export function HwSubmitForm({
       {mode === "photo" && (
         <label
           className="flex items-center gap-2 rounded-[12px] px-3 py-3 cursor-pointer transition-opacity hover:opacity-80"
-          style={{ background: "#F7F4EE", border: "1px dashed #D8D2C6" }}
+          style={{ background: "var(--tk-parchment-field)", border: "1.6px dashed #CFC6B5" }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B857A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--tk-muted-olive)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
             <circle cx="12" cy="13" r="3" />
           </svg>
-          <span className="text-sm" style={{ color: "#8B857A" }}>Ajouter une ou plusieurs photos</span>
+          <span className="text-sm" style={{ color: "var(--tk-muted-olive)" }}>Ajouter une ou plusieurs photos</span>
           <input
             ref={photoRef}
             type="file"
@@ -281,7 +281,7 @@ export function HwSubmitForm({
               type="button"
               onClick={stopRecording}
               className="flex items-center justify-center gap-2 rounded-[12px] py-3.5 font-semibold text-sm transition-opacity hover:opacity-85"
-              style={{ background: "#FDECEC", color: RED, border: `1.5px solid ${RED}` }}
+              style={{ background: "rgba(163,52,42,.10)", color: RED, border: `1.5px solid ${RED}` }}
             >
               <span className="animate-pulse">● Enregistrement… Appuyer pour arrêter</span>
             </button>

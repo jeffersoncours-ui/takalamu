@@ -15,8 +15,8 @@ const MENU_ITEMS = [
         <circle cx="12" cy="7" r="4" />
       </svg>
     ),
-    color: "#B45309",
-    bg: "#FEF3C7",
+    color: "var(--tk-warning)",
+    bg: "rgba(184,120,42,.12)",
   },
   {
     href: "/dashboard/reglement",
@@ -30,8 +30,8 @@ const MENU_ITEMS = [
         <line x1="9" y1="17" x2="15" y2="17" />
       </svg>
     ),
-    color: "#0A553F",
-    bg: "#ECFAF4",
+    color: "var(--tk-green-active)",
+    bg: "rgba(12,107,78,.12)",
   },
 ];
 
@@ -51,12 +51,22 @@ export default async function MorePage() {
     <div className="space-y-6">
       {/* Hero profil */}
       <div
-        className="rounded-2xl p-5 flex items-center gap-4"
-        style={{ background: "#0A553F", boxShadow: "0 16px 32px rgba(10,85,63,.32)" }}
+        className="hachure-ink rounded-2xl p-5 flex items-center gap-4"
+        style={{
+          background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))",
+          boxShadow: "var(--tk-shadow-hero)",
+        }}
       >
         <div
-          className="flex items-center justify-center overflow-hidden rounded-full text-white font-semibold text-xl shrink-0"
-          style={{ width: 58, height: 58, background: "rgba(255,255,255,.18)", fontFamily: "var(--font-spectral)" }}
+          className="flex items-center justify-center overflow-hidden rounded-full font-semibold text-xl shrink-0"
+          style={{
+            width: 58,
+            height: 58,
+            background: "rgba(255,255,255,.1)",
+            border: "1.5px solid rgba(199,154,62,.5)",
+            color: "var(--tk-cream-text)",
+            fontFamily: "var(--font-spectral)",
+          }}
         >
           {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -66,10 +76,10 @@ export default async function MorePage() {
           )}
         </div>
         <div>
-          <p className="text-white font-semibold text-lg leading-tight" style={{ fontFamily: "var(--font-spectral)" }}>
+          <p className="font-bold text-lg leading-tight" style={{ fontFamily: "var(--font-spectral)", color: "var(--tk-cream-text)" }}>
             {profile.full_name ?? "—"}
           </p>
-          <p className="text-sm mt-0.5" style={{ color: "#9FE3C8" }}>Élève</p>
+          <p className="text-sm mt-0.5" style={{ color: "var(--tk-sage-bright)" }}>Élève</p>
         </div>
       </div>
 
@@ -87,7 +97,7 @@ export default async function MorePage() {
         <button
           type="submit"
           className="w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-4 text-sm font-semibold transition-opacity hover:opacity-80"
-          style={{ background: "#FDECEC", color: "#B4292E", border: "1px solid #F3B0B2" }}
+          style={{ background: "rgba(163,52,42,.10)", color: "var(--tk-danger)", border: "1px solid rgba(163,52,42,.3)" }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

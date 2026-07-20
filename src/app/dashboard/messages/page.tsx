@@ -16,7 +16,7 @@ export default async function StudentMessagesPage() {
 
   if (!student?.teacher_id) {
     return (
-      <p className="text-sm text-slate-500">Profil élève introuvable.</p>
+      <p className="text-sm" style={{ color: "var(--tk-muted-olive)" }}>Profil élève introuvable.</p>
     );
   }
 
@@ -57,7 +57,7 @@ export default async function StudentMessagesPage() {
 
   if (!conv) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm" style={{ color: "var(--tk-muted-olive)" }}>
         Impossible d&apos;ouvrir la conversation.
       </p>
     );
@@ -75,12 +75,24 @@ export default async function StudentMessagesPage() {
   const markReadAction = markMessagesRead.bind(null, conv.id);
 
   return (
-    <div className="space-y-4">
-      {/* En-tête prof */}
-      <div className="flex items-center gap-3 px-0.5">
+    <div className="-mx-4 -mt-5 flex flex-col" style={{ minHeight: "calc(100vh - 200px)" }}>
+      {/* En-tête prof, encre */}
+      <div
+        className="hachure-ink flex items-center gap-3 px-[22px] py-5"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
+      >
         <div
-          className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-semibold"
-          style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+          className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full"
+          style={{
+            width: 40,
+            height: 40,
+            background: "rgba(255,255,255,.1)",
+            border: "1px solid rgba(199,154,62,.4)",
+            color: "var(--tk-gold-light)",
+            fontFamily: "var(--font-spectral)",
+            fontSize: 18,
+            fontWeight: 700,
+          }}
         >
           {teacherAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -90,15 +102,14 @@ export default async function StudentMessagesPage() {
           )}
         </div>
         <div>
-          <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{teacherName}</div>
-          <div style={{ color: "#8B857A", fontSize: 12 }}>Enseignant</div>
+          <div style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 18, color: "var(--tk-cream-text)" }}>
+            {teacherName}
+          </div>
+          <div className="mt-0.5" style={{ color: "var(--tk-sage-bright)", fontSize: 11 }}>Enseignant</div>
         </div>
       </div>
 
-      <div
-        className="rounded-[20px] p-4"
-        style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
-      >
+      <div className="flex-1 px-[18px] py-4" style={{ background: "#E7EDE4" }}>
         <ChatBox
           conversationId={conv.id}
           initialMessages={messages ?? []}

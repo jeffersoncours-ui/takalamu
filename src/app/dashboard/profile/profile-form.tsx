@@ -2,22 +2,14 @@
 
 import { useActionState } from "react";
 import { updateProfile } from "./actions";
+import { fieldStyles } from "@/components/ui/field";
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  borderRadius: 13,
-  border: "1.5px solid #E9E3D8",
-  background: "#fff",
-  padding: "11px 14px",
-  fontSize: 14,
-  color: "#1C1A17",
-  outline: "none",
-};
+const inputStyle = fieldStyles("parchment").input;
 
 const labelStyle: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#8B857A",
+  color: "var(--tk-muted-olive)",
   marginBottom: 4,
   display: "block",
 };
@@ -37,7 +29,7 @@ export function ProfileForm({ fullName, gender, address, birthDate, schoolBackgr
     <form
       action={formAction}
       className="space-y-4 rounded-2xl p-4"
-      style={{ background: "#fff", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+      style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "var(--tk-shadow-card)" }}
     >
       <div>
         <label style={labelStyle}>Prénom et nom</label>
@@ -74,16 +66,16 @@ export function ProfileForm({ fullName, gender, address, birthDate, schoolBackgr
         />
       </div>
 
-      {state.error && <p style={{ color: "#B4292E", fontSize: 13 }}>{state.error}</p>}
+      {state.error && <p style={{ color: "var(--tk-danger)", fontSize: 13 }}>{state.error}</p>}
       {state.success && (
-        <p style={{ color: "#0A6B4E", fontSize: 13 }}>Profil mis à jour.</p>
+        <p style={{ color: "var(--tk-green-active)", fontSize: 13 }}>Profil mis à jour.</p>
       )}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-[12px] py-2.5 font-bold text-white text-sm disabled:opacity-50"
-        style={{ background: "#0F9D6E" }}
+        className="w-full rounded-[12px] py-2.5 font-bold text-sm disabled:opacity-60"
+        style={{ background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-hero-to)" }}
       >
         {pending ? "Enregistrement…" : "Enregistrer"}
       </button>

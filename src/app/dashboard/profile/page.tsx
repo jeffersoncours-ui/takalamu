@@ -22,37 +22,39 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="px-0.5">
+    <div className="-mx-4 -mt-5">
+      <div
+        className="hachure-ink relative overflow-hidden px-[22px] pb-6 pt-6"
+        style={{ background: "linear-gradient(160deg, var(--tk-ink-hero-from), var(--tk-ink-hero-to))" }}
+      >
         <h1
-          className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+          className="relative leading-tight"
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-cream-text)" }}
         >
           Mon profil
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+        <p className="relative font-medium mt-0.5" style={{ color: "var(--tk-sage)", fontSize: 14 }}>
           Tes informations personnelles.
         </p>
+
+        <div className="relative mt-5">
+          <AvatarUpload
+            currentUrl={avatarUrl}
+            fallbackLetter={profile.full_name?.[0]?.toUpperCase() ?? "?"}
+          />
+        </div>
       </div>
 
-      <div
-        className="rounded-2xl p-4"
-        style={{ background: "#fff", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
-      >
-        <AvatarUpload
-          currentUrl={avatarUrl}
-          fallbackLetter={profile.full_name?.[0]?.toUpperCase() ?? "?"}
+      <div className="px-[22px] pt-6 pb-2">
+        <ProfileForm
+          key={userId}
+          fullName={profile.full_name ?? ""}
+          gender={profile.gender}
+          address={student?.address ?? ""}
+          birthDate={student?.birth_date ?? ""}
+          schoolBackground={student?.school_background ?? ""}
         />
       </div>
-
-      <ProfileForm
-        key={userId}
-        fullName={profile.full_name ?? ""}
-        gender={profile.gender}
-        address={student?.address ?? ""}
-        birthDate={student?.birth_date ?? ""}
-        schoolBackground={student?.school_background ?? ""}
-      />
     </div>
   );
 }
