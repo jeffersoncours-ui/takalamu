@@ -45,11 +45,11 @@ export default async function AdminTeachersPage() {
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
         >
           Enseignants
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+        <p className="font-medium mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>
           {items.length} compte{items.length > 1 ? "s" : ""} · administration
         </p>
       </div>
@@ -60,11 +60,18 @@ export default async function AdminTeachersPage() {
           <div
             key={t.id}
             className="flex items-center gap-3 rounded-[18px] p-4"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 10px 22px -16px rgba(10,20,15,.4)" }}
           >
             <div
-              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
-              style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] font-bold"
+              style={{
+                width: 46,
+                height: 46,
+                background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+                color: "var(--tk-gold-light)",
+                fontFamily: "var(--font-spectral)",
+                fontSize: 17,
+              }}
             >
               {t.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -77,25 +84,25 @@ export default async function AdminTeachersPage() {
               <div className="flex items-center gap-2">
                 <span
                   className="font-bold truncate"
-                  style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}
+                  style={{ color: "var(--tk-ink-text)", fontSize: 15, fontFamily: "var(--font-spectral)" }}
                 >
                   {t.name}
                 </span>
                 {t.isAdmin && (
                   <span
                     className="shrink-0 rounded-full font-bold"
-                    style={{ padding: "2px 8px", background: "#EAEFFD", border: "1px solid #AEBEF2", color: "#2C49B8", fontSize: 10 }}
+                    style={{ padding: "2px 8px", background: "rgba(46,90,138,.10)", border: "1px solid rgba(46,90,138,.32)", color: "var(--tk-info)", fontSize: 10 }}
                   >
                     Admin
                   </span>
                 )}
               </div>
-              <p className="truncate" style={{ color: "#8B857A", fontSize: 13 }}>{t.email}</p>
+              <p className="truncate" style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>{t.email}</p>
             </div>
             {t.gender && (
               <span
                 className="shrink-0 rounded-full font-semibold"
-                style={{ padding: "3px 10px", background: "#FBF9F5", border: "1px solid #EFEAE0", color: "#6B6459", fontSize: 11 }}
+                style={{ padding: "3px 10px", background: "var(--tk-parchment-field)", border: "1px solid var(--tk-parchment-border)", color: "var(--tk-ink-text-soft)", fontSize: 11 }}
               >
                 {t.gender === "m" ? "Hommes" : "Femmes"}
               </span>
@@ -108,11 +115,11 @@ export default async function AdminTeachersPage() {
       <div className="space-y-3">
         <h2
           className="px-0.5"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 19, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 19, color: "var(--tk-ink-text)" }}
         >
           Inviter un enseignant
         </h2>
-        <p className="px-0.5" style={{ color: "#8B857A", fontSize: 13 }}>
+        <p className="px-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 13 }}>
           Un e-mail d&apos;invitation est envoyé : l&apos;enseignant choisit son mot de passe et accède
           directement à son espace.
         </p>

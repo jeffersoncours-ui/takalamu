@@ -15,7 +15,7 @@ export default async function TeacherMessagesListPage() {
     .eq("profile_id", userId)
     .maybeSingle();
 
-  if (!teacher) return <p style={{ color: "#8B857A" }}>Profil enseignant introuvable.</p>;
+  if (!teacher) return <p style={{ color: "var(--tk-muted-olive)" }}>Profil enseignant introuvable.</p>;
 
   // Tous les élèves de ce teacher (pas seulement ceux ayant déjà une ligne
   // `conversations`) — sinon un élève jamais contacté disparaît purement et
@@ -80,11 +80,11 @@ export default async function TeacherMessagesListPage() {
       <div className="px-0.5">
         <h1
           className="leading-tight"
-          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "#1C1A17" }}
+          style={{ fontFamily: "var(--font-spectral)", fontWeight: 700, fontSize: 27, color: "var(--tk-ink-text)" }}
         >
           Messages
         </h1>
-        <p className="font-medium mt-0.5" style={{ color: "#8B857A", fontSize: 14 }}>
+        <p className="font-medium mt-0.5" style={{ color: "var(--tk-muted-olive)", fontSize: 14 }}>
           {items.length} élève{items.length > 1 ? "s" : ""}
         </p>
       </div>
@@ -92,7 +92,7 @@ export default async function TeacherMessagesListPage() {
       {items.length === 0 && (
         <p
           className="rounded-[16px] p-4"
-          style={{ background: "#FBF9F5", border: "1px solid #EFEAE0", color: "#8B857A", fontSize: 14 }}
+          style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", color: "var(--tk-muted-olive)", fontSize: 14 }}
         >
           Aucun élève pour le moment.
         </p>
@@ -104,12 +104,19 @@ export default async function TeacherMessagesListPage() {
             key={studentId}
             href={`/teacher/messages/${studentId}`}
             className="flex items-center gap-3 rounded-[18px] p-4 transition-opacity hover:opacity-80"
-            style={{ background: "#fff", border: "1px solid #EFEAE0", boxShadow: "0 6px 16px rgba(28,26,23,.04)" }}
+            style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)", boxShadow: "0 10px 22px -16px rgba(10,20,15,.4)" }}
           >
             {/* Avatar */}
             <div
-              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
-              style={{ width: 46, height: 46, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+              className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] font-bold"
+              style={{
+                width: 46,
+                height: 46,
+                background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+                color: "var(--tk-gold-light)",
+                fontFamily: "var(--font-spectral)",
+                fontSize: 17,
+              }}
             >
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -124,14 +131,14 @@ export default async function TeacherMessagesListPage() {
               <div className="flex items-center justify-between gap-2">
                 <span
                   className="font-bold truncate"
-                  style={{ color: "#1C1A17", fontSize: 15, fontFamily: "var(--font-spectral)" }}
+                  style={{ color: "var(--tk-ink-text)", fontSize: 15, fontFamily: "var(--font-spectral)" }}
                 >
                   {name}
                 </span>
                 {lastMsg && (
                   <span
                     className="shrink-0 text-xs font-medium"
-                    style={{ color: "#A8A29E" }}
+                    style={{ color: "var(--tk-faint-olive)" }}
                     suppressHydrationWarning
                   >
                     {formatDistanceToNow(new Date(lastMsg.sent_at), { addSuffix: true, locale: fr })}
@@ -141,14 +148,14 @@ export default async function TeacherMessagesListPage() {
               <div className="flex items-center justify-between gap-2 mt-0.5">
                 <span
                   className="truncate text-sm"
-                  style={{ color: unreadCount > 0 ? "#1C1A17" : "#8B857A", fontWeight: unreadCount > 0 ? 600 : 400 }}
+                  style={{ color: unreadCount > 0 ? "var(--tk-ink-text)" : "var(--tk-muted-olive)", fontWeight: unreadCount > 0 ? 600 : 400 }}
                 >
                   {lastMsg ? lastMsg.body : "Démarrer la conversation →"}
                 </span>
                 {unreadCount > 0 && (
                   <span
-                    className="shrink-0 flex items-center justify-center rounded-full text-white font-bold"
-                    style={{ minWidth: 20, height: 20, background: "#0F9D6E", fontSize: 11, padding: "0 5px" }}
+                    className="shrink-0 flex items-center justify-center rounded-full font-bold"
+                    style={{ minWidth: 20, height: 20, background: "linear-gradient(180deg, var(--tk-gold-light), var(--tk-gold))", color: "var(--tk-ink-screen)", fontSize: 11, padding: "0 5px" }}
                   >
                     {unreadCount}
                   </span>
@@ -157,7 +164,7 @@ export default async function TeacherMessagesListPage() {
             </div>
 
             {/* Chevron */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C7C0B4" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tk-faint-olive)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </Link>

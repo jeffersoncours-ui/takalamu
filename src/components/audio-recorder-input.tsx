@@ -153,9 +153,9 @@ export function AudioRecorderInput({
           type="button"
           onClick={start}
           className="inline-flex items-center gap-1.5 font-semibold"
-          style={{ color: "#0F9D6E", fontSize: 12 }}
+          style={{ color: "var(--tk-green-active)", fontSize: 12 }}
         >
-          <MicIcon color="#0F9D6E" />
+          <MicIcon color="var(--tk-green-active)" />
           Enregistrer l&apos;audio (ar)
         </button>
       )}
@@ -164,16 +164,16 @@ export function AudioRecorderInput({
         <div className="flex items-center gap-2.5">
           <span
             className="rounded-full animate-pulse shrink-0"
-            style={{ width: 9, height: 9, background: "#E5484D" }}
+            style={{ width: 9, height: 9, background: "var(--tk-danger)" }}
           />
-          <span style={{ color: "#B4292E", fontSize: 12, fontWeight: 600 }}>
+          <span style={{ color: "var(--tk-danger)", fontSize: 12, fontWeight: 600 }}>
             {seconds}s
           </span>
           <button
             type="button"
             onClick={stop}
             className="rounded-full font-bold"
-            style={{ background: "#E5484D", color: "#fff", fontSize: 12, padding: "4px 14px" }}
+            style={{ background: "var(--tk-danger)", color: "#fff", fontSize: 12, padding: "4px 14px" }}
           >
             Stop
           </button>
@@ -183,10 +183,10 @@ export function AudioRecorderInput({
       {state === "recorded" && previewUrl && (
         <div className="flex items-center gap-2 flex-wrap">
           <audio src={previewUrl} controls preload="metadata" style={{ height: 32, maxWidth: 190 }} />
-          <button type="button" onClick={start} style={{ color: "#0F9D6E", fontSize: 12, fontWeight: 600 }}>
+          <button type="button" onClick={start} style={{ color: "var(--tk-green-active)", fontSize: 12, fontWeight: 600 }}>
             Refaire
           </button>
-          <button type="button" onClick={remove} style={{ color: "#A8A29E", fontSize: 12 }}>
+          <button type="button" onClick={remove} style={{ color: "var(--tk-faint-olive)", fontSize: 12 }}>
             Retirer
           </button>
         </div>
@@ -194,21 +194,21 @@ export function AudioRecorderInput({
 
       {state === "existing" && (
         <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="inline-flex items-center gap-1.5" style={{ color: "#0A6B4E", fontSize: 12, fontWeight: 600 }}>
-            <MicIcon color="#0A6B4E" />
+          <span className="inline-flex items-center gap-1.5" style={{ color: "var(--tk-green-active)", fontSize: 12, fontWeight: 600 }}>
+            <MicIcon color="var(--tk-green-active)" />
             Audio enregistré
           </span>
-          <button type="button" onClick={start} style={{ color: "#0F9D6E", fontSize: 12, fontWeight: 600 }}>
+          <button type="button" onClick={start} style={{ color: "var(--tk-green-active)", fontSize: 12, fontWeight: 600 }}>
             Réenregistrer
           </button>
-          <button type="button" onClick={remove} style={{ color: "#A8A29E", fontSize: 12 }}>
+          <button type="button" onClick={remove} style={{ color: "var(--tk-faint-olive)", fontSize: 12 }}>
             Retirer
           </button>
         </div>
       )}
 
       {error && (
-        <p style={{ color: "#B4292E", fontSize: 11 }} role="alert">
+        <p style={{ color: "var(--tk-danger)", fontSize: 11 }} role="alert">
           {error}
         </p>
       )}

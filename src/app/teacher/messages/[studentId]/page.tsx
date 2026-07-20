@@ -72,8 +72,15 @@ export default async function TeacherMessagesPage({
     <div className="space-y-4">
       <div className="flex items-center gap-3 px-0.5">
         <div
-          className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] text-white font-bold"
-          style={{ width: 44, height: 44, background: "#0A553F", fontFamily: "var(--font-spectral)", fontSize: 17 }}
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-[13px] font-bold"
+          style={{
+            width: 44,
+            height: 44,
+            background: "linear-gradient(180deg, var(--tk-emerald-btn-from), var(--tk-emerald-btn-to))",
+            color: "var(--tk-gold-light)",
+            fontFamily: "var(--font-spectral)",
+            fontSize: 17,
+          }}
         >
           {studentAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -83,13 +90,13 @@ export default async function TeacherMessagesPage({
           )}
         </div>
         <div>
-          <div className="font-bold" style={{ color: "#1C1A17", fontSize: 16 }}>{name}</div>
-          <div style={{ color: "#8B857A", fontSize: 12 }}>Élève</div>
+          <div className="font-bold" style={{ color: "var(--tk-ink-text)", fontSize: 16 }}>{name}</div>
+          <div style={{ color: "var(--tk-muted-olive)", fontSize: 12 }}>Élève</div>
         </div>
       </div>
       <div
         className="rounded-[20px] p-4"
-        style={{ background: "#FBF9F5", border: "1px solid #EFEAE0" }}
+        style={{ background: "var(--tk-parchment-card)", border: "1px solid var(--tk-parchment-border)" }}
       >
         <ChatBox
           conversationId={conv.id}
