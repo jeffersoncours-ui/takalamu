@@ -38,6 +38,7 @@ export function NotifBell({
 }) {
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
   const [open, setOpen] = useState(false);
+  const [showRead, setShowRead] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   // Client unique pour la durée de vie du composant (même pattern que chat-box)
   const supabaseRef = useRef(createClient());
@@ -91,10 +92,65 @@ export function NotifBell({
     setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   }
 
+  // Les lues restent consultables mais repliées derrière un menu déroulant —
+  // seules les non lues s'affichent directement (voir tasks/lessons.md session 35).
+  const unreadList = notifs.filter((n) => !n.read).slice(0, 8);
+  const readList = notifs.filter((n) => n.read).slice(0, 8);
+
+  function renderItem(n: Notif) {
+    const payload = n.payload as NotifPayload | null;
+    const url = payload?.url;
+    const { title, body } = getNotifCopy(n.type, n.payload);
+    const priority = isPriorityNotif(n.type);
+    const style: React.CSSProperties = {
+      borderBottom: "1px solid var(--tk-parchment-border)",
+      borderLeft: priority && !n.read ? "3px solid var(--tk-gold)" : "3px solid transparent",
+      background: !n.read ? "rgba(199,154,62,.06)" : undefined,
+    };
+
+    const inner = (
+      <>
+        <p className="text-sm" style={{ color: "var(--tk-ink-text)", fontWeight: n.read ? 400 : 600 }}>
+          {title}
+        </p>
+        {body && (
+          <p className="mt-0.5 text-xs line-clamp-2" style={{ color: "var(--tk-muted-olive)" }}>
+            {body}
+          </p>
+        )}
+        <p className="text-xs mt-1" style={{ color: "var(--tk-faint-olive)" }} suppressHydrationWarning>
+          {new Date(n.created_at).toLocaleString("fr-FR", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </>
+    );
+
+    return (
+      <li key={n.id}>
+        {url ? (
+          <Link href={url} className="block px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
+            {inner}
+          </Link>
+        ) : (
+          <div className="px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
+            {inner}
+          </div>
+        )}
+      </li>
+    );
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          setOpen((o) => !o);
+          setShowRead(false);
+        }}
         className="relative flex items-center justify-center rounded-full transition"
         style={{
           width: 40,
@@ -129,8 +185,9 @@ export function NotifBell({
 
       {open && (
         <div
-          className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-xl"
+          className="absolute right-0 top-11 z-50 overflow-hidden rounded-xl"
           style={{
+            width: "min(320px, calc(100vw - 32px))",
             background: "var(--tk-parchment-card)",
             border: "1px solid var(--tk-parchment-border)",
             boxShadow: "var(--tk-shadow-card-raised)",
@@ -161,57 +218,38 @@ export function NotifBell({
               Aucune notification.
             </p>
           ) : (
-            <ul className="max-h-80 overflow-y-auto">
-              {notifs.slice(0, 8).map((n) => {
-                const payload = n.payload as NotifPayload | null;
-                const url = payload?.url;
-                const { title, body } = getNotifCopy(n.type, n.payload);
-                const priority = isPriorityNotif(n.type);
-                const style: React.CSSProperties = {
-                  borderBottom: "1px solid var(--tk-parchment-border)",
-                  borderLeft: priority && !n.read ? "3px solid var(--tk-gold)" : "3px solid transparent",
-                  background: !n.read ? "rgba(199,154,62,.06)" : undefined,
-                };
+            <div className="max-h-96 overflow-y-auto">
+              {unreadList.length === 0 && (
+                <p className="px-4 py-4 text-sm" style={{ color: "var(--tk-faint-olive)" }}>
+                  Rien de nouveau.
+                </p>
+              )}
+              <ul>{unreadList.map((n) => renderItem(n))}</ul>
 
-                const inner = (
-                  <>
-                    <p
-                      className="text-sm"
-                      style={{ color: "var(--tk-ink-text)", fontWeight: n.read ? 400 : 600 }}
+              {readList.length > 0 && (
+                <>
+                  <button
+                    onClick={() => setShowRead((s) => !s)}
+                    className="flex w-full items-center justify-between px-4 py-2.5 text-xs font-semibold"
+                    style={{
+                      color: "var(--tk-muted-olive)",
+                      borderTop: "1px solid var(--tk-parchment-border)",
+                      borderBottom: showRead ? "1px solid var(--tk-parchment-border)" : undefined,
+                    }}
+                  >
+                    <span>Notifications lues ({readList.length})</span>
+                    <svg
+                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tk-muted-olive)" strokeWidth={2.2}
+                      strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: showRead ? "rotate(180deg)" : "none", transition: "transform .15s" }}
                     >
-                      {title}
-                    </p>
-                    {body && (
-                      <p className="mt-0.5 text-xs line-clamp-2" style={{ color: "var(--tk-muted-olive)" }}>
-                        {body}
-                      </p>
-                    )}
-                    <p className="text-xs mt-1" style={{ color: "var(--tk-faint-olive)" }} suppressHydrationWarning>
-                      {new Date(n.created_at).toLocaleString("fr-FR", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </>
-                );
-
-                return (
-                  <li key={n.id}>
-                    {url ? (
-                      <Link href={url} className="block px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
-                        {inner}
-                      </Link>
-                    ) : (
-                      <div className="px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
-                        {inner}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                  {showRead && <ul>{readList.map((n) => renderItem(n))}</ul>}
+                </>
+              )}
+            </div>
           )}
           <Link
             href={`${basePath}/notifications`}
