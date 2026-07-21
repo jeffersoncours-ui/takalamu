@@ -133,6 +133,70 @@ La refonte visuelle « Maktab Émeraude » est terminée sur les 29 écrans du h
 
 ---
 
+## Session 34 (suite 2) — Déploiement prod + itérations login + régression tiroir + audit
+
+> Le propriétaire a validé la refonte et demandé le déploiement complet (« envoyer tout sur main
+> et en prod »). Suite à ça : plusieurs allers-retours visuels sur l'écran de connexion, un bug
+> réel remonté par capture d'écran (tiroir de nav enseignant cassé sur téléphone), et une demande
+> d'audit code mort/lag.
+
+- [x] **Déploiement production** : fast-forward de `main` ET de la branche de prod Vercel
+      (`claude/new-project-setup-1jcgwf`) depuis `claude/resume-dev-preview-oupecz` — vérifié
+      `READY` sur `www.tatakalamu.fr` via l'outil Vercel après chaque déploiement (plusieurs
+      allers-retours dans cette suite, chacun redéployé et reconfirmé `READY`).
+- [x] Login : médaillon khatam centré + calligraphie superposée légèrement en chevauchement du
+      cercle (repère photo fourni par le propriétaire) — puis retiré sur demande, puis **remis**
+      (le propriétaire a préféré la version avec médaillon après coup) — calligraphie mise au
+      premier plan devant le médaillon (bug de z-index : le médaillon a un `transform`
+      → contexte d'empilement → passait devant le texte non-positionné malgré son ordre DOM
+      postérieur ; fix : `position: relative; z-index` sur le wordmark).
+- [x] Favicons régénérés une 2ᵉ fois : fond crème → **vert émeraude foncé** (`#0C3A2C`, même ton
+      que les héros/en-têtes) sur demande explicite ("favicon de couleur émeraude à la place du
+      blanc"). Bug rencontré et corrigé : `favicon.ico` généré en RGB (sans alpha) faisait
+      planter le décodeur d'image de Turbopack ("The PNG is not in RGBA format") — recréé en
+      RGBA opaque ; bug de filtrage de tailles Pillow (l'image de base doit être la PLUS GRANDE
+      des 3 résolutions, sinon le plugin ICO élimine les tailles supérieures à la base).
+- [x] **Régression critique trouvée et corrigée** : le correctif précédent de la texture hachurée
+      (`.hachure-ink { position: relative }`, posé hors de tout `@layer` Tailwind) cassait
+      silencieusement `position: fixed`/`sticky` partout où `hachure-ink` était combiné avec ces
+      classes (CSS Cascade Layers : le non-layered bat toujours le layered). Le tiroir de
+      navigation enseignant en particulier sortait du flux fixed et se rendait en position
+      statique, décalant tout le contenu — remonté par le propriétaire via 2 captures d'écran
+      (« mon compte bug, pas sur internet »). Fix : règle déplacée dans `@layer base` (précède
+      `utilities` dans l'ordre Tailwind v4). Vérifié au navigateur : `position: fixed` confirmé
+      avant/après ouverture, tiroir resté épinglé après scroll. Détail complet dans
+      `tasks/lessons.md`.
+- [x] Audit code mort (demandé par le propriétaire) : `knip` exécuté sans config, confirmé par
+      grep — 3 fichiers de primitives UI jamais adoptées supprimés (`elevated-card.tsx`,
+      `emerald-button.tsx`, `parchment-card.tsx`, posés en Phase 1, jamais importés nulle part).
+      Le reste des "unused exports" remontés par knip (constantes internes du moteur de
+      conjugaison, types TypeScript, fichier `database.types.ts` généré) n'est pas du code mort
+      au sens utile — non touché, cohérent avec l'audit déjà mené en session 31.
+- [x] Audit lag (demandé par le propriétaire) : pas de nouvelle source de lag identifiée
+      introduite par cette session (changements CSS/visuels purs). Confirmé : pas de service
+      worker/cache offline dans l'app (élimine l'hypothèse "cache périmé"). Chat/notifications
+      déjà audités et corrigés en sessions antérieures (10, 31) — non re-traités.
+- [x] Build + lint verts après chaque correctif de cette suite ; chaque déploiement prod reconfirmé
+      `READY` via l'outil Vercel avant de passer au suivant.
+- [x] `tasks/lessons.md` mis à jour (règle CSS cascade layers + audit code mort).
+- [ ] `tasks/todo.md` Review de fin de suite (ci-dessous, complétée) + **session en cours de
+      clôture** : le propriétaire migre vers une nouvelle conversation, prompt de reprise fourni
+      en réponse plutôt que dans ce fichier.
+
+### Review (suite 2)
+
+Tout le travail de la refonte + ces correctifs post-déploiement est **en production**
+(`main` + branche Vercel de prod, `www.tatakalamu.fr`), confirmé `READY` à chaque étape.
+Point le plus important de cette suite : une régression que j'ai moi-même introduite (texture
+hachurée cassant `position: fixed` du tiroir de nav) a atteint la production avant d'être
+détectée — trouvée uniquement grâce aux captures d'écran envoyées par le propriétaire, jamais
+via un test automatisé. Leçon actée dans `lessons.md` : toute règle CSS custom touchant une
+propriété que Tailwind peut aussi définir (position, display...) doit systématiquement être
+posée dans un `@layer` explicite, jamais laissée "hors layer" même pour un simple fallback.
+Aucune autre régression fonctionnelle détectée par l'audit code mort/lag demandé en fin de suite.
+
+---
+
 ## Session 33 (suite 7) — Identité visuelle : wordmark + logo
 
 > **Demande propriétaire** (deux allers-retours) : (1) remplacer la calligraphie du
