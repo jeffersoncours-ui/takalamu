@@ -54,6 +54,7 @@ export async function sendMessage(
         student_id: studentId,
         url: `/teacher/messages/${studentId}`,
         sender_name: profile.full_name ?? "Élève",
+        body_preview: body.length > 80 ? `${body.slice(0, 80)}…` : body,
       },
     });
   }

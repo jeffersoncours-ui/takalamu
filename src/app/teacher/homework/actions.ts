@@ -22,7 +22,7 @@ export async function correctHomework(
   // Récupérer le student_id et profile_id avant la mise à jour
   const { data: hw } = await supabase
     .from("homework")
-    .select("id, student_id, students(profile_id)")
+    .select("id, student_id, instructions, students(profile_id)")
     .eq("id", homeworkId)
     .maybeSingle();
 
@@ -56,10 +56,17 @@ export async function correctHomework(
   // Notifier l'élève via RPC SECURITY DEFINER
   const student = Array.isArray(hw.students) ? hw.students[0] : hw.students;
   if (student?.profile_id) {
+    const instructions = hw.instructions ?? "";
     await supabase.rpc("insert_notification", {
       p_user_id: student.profile_id,
       p_type: "homework_corrected",
-      p_payload: { url: "/dashboard/homework" },
+      p_payload: {
+        url: "/dashboard/homework",
+        ...(grade ? { grade } : {}),
+        ...(instructions
+          ? { instructions_preview: instructions.length > 100 ? `${instructions.slice(0, 100)}…` : instructions }
+          : {}),
+      },
     });
   }
 

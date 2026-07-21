@@ -5,6 +5,7 @@ import { fr } from "date-fns/locale";
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { KhatamOrnament } from "@/components/khatam-ornament";
+import { PriorityPin } from "@/components/priority-pin";
 
 export default async function CoursPage() {
   const { profile } = await requireStudent();
@@ -17,6 +18,7 @@ export default async function CoursPage() {
     { count: grammarCount },
     { data: lastAttempt },
     { data: books, error: booksError },
+    { data: priorityNotifs },
   ] = await Promise.all([
     supabase.from("lesson_records").select("id, session_date, book_id, course_group_id"),
     supabase.from("vocabulary").select("id", { count: "exact", head: true }),
@@ -28,6 +30,12 @@ export default async function CoursPage() {
       .order("taken_at", { ascending: false })
       .limit(1),
     supabase.from("course_books").select("id, title, subtitle, cover_url, kind, order_index").order("order_index"),
+    supabase
+      .from("notifications")
+      .select("id, payload, created_at")
+      .eq("type", "homework_due")
+      .eq("read", false)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (recordsError) console.error("lesson_records query failed:", recordsError.message);
@@ -114,6 +122,8 @@ export default async function CoursPage() {
           <StatCell value={lastGrade ?? "—"} label="Note" accent />
         </div>
       </div>
+
+      <PriorityPin notifs={priorityNotifs ?? []} />
 
       {/* Reprendre mes cours */}
       <div className="px-[22px] pt-7 pb-4">

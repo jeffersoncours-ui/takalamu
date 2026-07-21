@@ -3,22 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getNotifCopy, isPriorityNotif, type NotifPayload } from "@/lib/notif-copy";
 
 type Notif = {
   id: string;
   type: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: any;
+  payload: unknown;
   read: boolean;
   created_at: string;
-};
-
-const TYPE_LABEL: Record<string, string> = {
-  new_message: "Nouveau message",
-  homework_due: "Devoir à rendre",
-  homework_submitted: "Devoir soumis",
-  homework_corrected: "Devoir corrigé",
-  house_rules: "Règlement intérieur à valider",
 };
 
 async function markAllRead(userId: string) {
@@ -30,12 +22,19 @@ async function markAllRead(userId: string) {
     .eq("read", false);
 }
 
+async function markOneRead(id: string) {
+  const supabase = createClient();
+  await supabase.from("notifications").update({ read: true }).eq("id", id);
+}
+
 export function NotifBell({
   userId,
   initialNotifs,
+  basePath,
 }: {
   userId: string;
   initialNotifs: Notif[];
+  basePath: "/dashboard" | "/teacher";
 }) {
   const [notifs, setNotifs] = useState<Notif[]>(initialNotifs);
   const [open, setOpen] = useState(false);
@@ -81,22 +80,21 @@ export function NotifBell({
     };
   }, [userId]);
 
-  function handleOpen() {
-    setOpen((o) => !o);
-    if (!open && unread > 0) {
-      markAllRead(userId);
-      setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
-    }
+  function handleMarkAllRead() {
+    markAllRead(userId);
+    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
   }
 
-  function handleItemClick() {
+  function handleItemClick(id: string) {
     setOpen(false);
+    markOneRead(id);
+    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   }
 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={handleOpen}
+        onClick={() => setOpen((o) => !o)}
         className="relative flex items-center justify-center rounded-full transition"
         style={{
           width: 40,
@@ -131,20 +129,32 @@ export function NotifBell({
 
       {open && (
         <div
-          className="absolute right-0 top-11 z-50 w-72 overflow-hidden rounded-xl"
+          className="absolute right-0 top-11 z-50 w-80 overflow-hidden rounded-xl"
           style={{
             background: "var(--tk-parchment-card)",
             border: "1px solid var(--tk-parchment-border)",
             boxShadow: "var(--tk-shadow-card-raised)",
           }}
         >
-          <div className="px-4 py-2" style={{ borderBottom: "1px solid var(--tk-parchment-border)" }}>
+          <div
+            className="flex items-center justify-between px-4 py-2"
+            style={{ borderBottom: "1px solid var(--tk-parchment-border)" }}
+          >
             <p
               className="text-xs font-semibold uppercase tracking-wide"
               style={{ color: "var(--tk-muted-olive)" }}
             >
               Notifications
             </p>
+            {unread > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="text-xs font-semibold"
+                style={{ color: "var(--tk-ink-hero-to)" }}
+              >
+                Tout marquer lu
+              </button>
+            )}
           </div>
           {notifs.length === 0 ? (
             <p className="px-4 py-4 text-sm" style={{ color: "var(--tk-faint-olive)" }}>
@@ -152,20 +162,31 @@ export function NotifBell({
             </p>
           ) : (
             <ul className="max-h-80 overflow-y-auto">
-              {notifs.slice(0, 20).map((n) => {
-                const url = n.payload?.url as string | undefined;
-                const senderName = n.payload?.sender_name as string | undefined;
-                const label = TYPE_LABEL[n.type] ?? n.type;
+              {notifs.slice(0, 8).map((n) => {
+                const payload = n.payload as NotifPayload | null;
+                const url = payload?.url;
+                const { title, body } = getNotifCopy(n.type, n.payload);
+                const priority = isPriorityNotif(n.type);
                 const style: React.CSSProperties = {
                   borderBottom: "1px solid var(--tk-parchment-border)",
-                  color: n.read ? "var(--tk-muted-olive)" : "var(--tk-ink-text)",
-                  fontWeight: n.read ? 400 : 600,
+                  borderLeft: priority && !n.read ? "3px solid var(--tk-gold)" : "3px solid transparent",
+                  background: !n.read ? "rgba(199,154,62,.06)" : undefined,
                 };
 
                 const inner = (
                   <>
-                    <p className="text-sm">{senderName ? `${label} · ${senderName}` : label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--tk-faint-olive)" }} suppressHydrationWarning>
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--tk-ink-text)", fontWeight: n.read ? 400 : 600 }}
+                    >
+                      {title}
+                    </p>
+                    {body && (
+                      <p className="mt-0.5 text-xs line-clamp-2" style={{ color: "var(--tk-muted-olive)" }}>
+                        {body}
+                      </p>
+                    )}
+                    <p className="text-xs mt-1" style={{ color: "var(--tk-faint-olive)" }} suppressHydrationWarning>
                       {new Date(n.created_at).toLocaleString("fr-FR", {
                         day: "numeric",
                         month: "short",
@@ -179,17 +200,27 @@ export function NotifBell({
                 return (
                   <li key={n.id}>
                     {url ? (
-                      <Link href={url} className="block px-4 py-3" style={style} onClick={handleItemClick}>
+                      <Link href={url} className="block px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
                         {inner}
                       </Link>
                     ) : (
-                      <div className="px-4 py-3" style={style}>{inner}</div>
+                      <div className="px-4 py-3" style={style} onClick={() => handleItemClick(n.id)}>
+                        {inner}
+                      </div>
                     )}
                   </li>
                 );
               })}
             </ul>
           )}
+          <Link
+            href={`${basePath}/notifications`}
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2.5 text-center text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "var(--tk-ink-hero-to)", borderTop: "1px solid var(--tk-parchment-border)" }}
+          >
+            Tout voir →
+          </Link>
         </div>
       )}
     </div>

@@ -1,5 +1,49 @@
 # Lessons
 
+## Session 35 — Refonte cloche notifications (filtres, priorité devoirs, écriture)
+
+- **Discuter avant de coder a évité une colonne inutile.** Le propriétaire voulait "prioritaire"
+  comme concept général ; en creusant avec lui la vraie source (le prof écrit un devoir dans la
+  fiche de fin de cours), la réponse s'est réduite à "dériver du type `homework_due`" — vérifié par
+  grep qu'il n'existe que 2 points d'insertion, tous deux conditionnés à la présence d'un devoir.
+  Zéro migration de schéma pour la fonctionnalité qui semblait la plus lourde de la demande.
+  Toujours vérifier les points d'insertion RÉELS d'un type avant de supposer qu'un flag manuel ou
+  une colonne est nécessaire.
+- **Un `grep` exhaustif des points d'insertion d'un enum PostgreSQL révèle des valeurs mortes
+  invisibles à la lecture du schéma seul.** 3 des 8 `notification_type` (`eval_due`,
+  `session_reminder`, `trial_request`) ne sont plus jamais insérées — leurs tables/fonctions
+  sources ont été supprimées en sessions antérieures (33, 39) sans jamais retirer la valeur
+  d'enum (`ALTER TYPE ... DROP VALUE` n'existe pas nativement en Postgres, donc ces valeurs
+  restent "vivantes" dans le type mais mortes dans les faits). Sans ce grep, j'aurais pu leur
+  écrire une copie enrichie pour rien, ou pire, supposer à tort qu'elles pouvaient encore
+  apparaître et complexifier le rendu pour un cas impossible.
+- **Le mark-all-read automatique à l'ouverture d'un popover est incompatible avec tout filtre
+  "non lu" en aval.** La cloche existante marquait tout comme lu dès l'ouverture — en ajoutant une
+  page dédiée avec un filtre "Non lus", ce comportement aurait rendu le filtre vide en permanence
+  dès qu'un utilisateur avait ne serait-ce qu'entrouvert la cloche une fois. Corrigé en passant à
+  un mark-read individuel au clic + bouton explicite "Tout marquer lu" sur les 3 surfaces
+  (popover, page dédiée, épingle). À vérifier systématiquement : toute fonctionnalité de filtre
+  "lu/non lu" doit d'abord auditer CE QUI marque déjà lu ailleurs dans le flux, sous peine de
+  livrer un filtre qui ne sert jamais à rien.
+- **Un helper de rendu partagé (`getNotifCopy`) entre 2 surfaces qui affichent la même donnée
+  (popover + page dédiée) a évité une divergence de copie dès la conception**, plutôt que de la
+  découvrir après coup lors d'une future modification d'un seul des deux endroits. Justifié ici
+  (vraie duplication, pas préventif) car les 2 usages existaient déjà dans le même plan.
+  Cohérent avec le principe anti-sur-ingénierie : un seul fichier, pas un système de template.
+- **Tester une RPC `SECURITY DEFINER` enrichie (nouvelles clés jsonb, jointure `profiles`
+  ajoutée) avec le pattern transaction + `ROLLBACK`** reste fiable même pour 2 signatures
+  surchargées (`submit_homework(uuid,jsonb)` et `submit_homework(uuid,text)`) — chaque signature
+  testée séparément avec impersonation (`set_config('request.jwt.claims', ...)`), y compris le
+  cas négatif (élève A sur le devoir de B → doit lever "Accès refusé" et n'insérer aucune ligne,
+  vérifié par un `count(*) = 0` après l'échec attendu). Un appel `execute_sql` qui déclenche une
+  exception avorte silencieusement la transaction ouverte dans le MÊME appel — pas besoin de
+  `ROLLBACK` explicite après une erreur, mais vérifier quand même l'absence de ligne orpheline si
+  un appel précédent avait un `BEGIN` sans `COMMIT`/`ROLLBACK` explicite en fin d'appel (chaque
+  appel `execute_sql` semble être une connexion/session séparée — un `BEGIN` resté ouvert en fin
+  d'un appel ne fuite pas vers l'appel suivant, confirmé par un comptage à zéro après coup, mais
+  le réflexe le plus sûr reste de toujours fermer explicitement chaque transaction de test dans le
+  MÊME appel qui l'ouvre).
+
 ## Session 34 (suite) — Régression tiroir de nav (CSS Cascade Layers) + audit code mort
 
 - **Une règle CSS custom posée hors de tout `@layer` bat TOUJOURS une classe utilitaire

@@ -53,6 +53,7 @@ export async function sendMessageAsTeacher(
         conversation_id: conversationId,
         url: "/dashboard/messages",
         sender_name: profile?.full_name ?? "Enseignant",
+        body_preview: body.length > 80 ? `${body.slice(0, 80)}…` : body,
       },
     });
   }

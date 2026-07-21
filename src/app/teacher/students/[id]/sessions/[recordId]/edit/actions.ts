@@ -184,7 +184,10 @@ export async function updateSession(
       await supabase.rpc("insert_notification", {
         p_user_id: student.profile_id,
         p_type: "homework_due",
-        p_payload: { url: "/dashboard/homework" },
+        p_payload: {
+          url: "/dashboard/homework",
+          instructions_preview: homework.length > 100 ? `${homework.slice(0, 100)}…` : homework,
+        },
       });
     }
   }

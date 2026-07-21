@@ -2,6 +2,100 @@
 
 ---
 
+## Session 35 — Refonte cloche notifications (filtres, priorité devoirs, écriture)
+
+> **Demande propriétaire** (discutée avant tout code) : la cloche est trop basique (liste plate,
+> tout marqué lu à l'ouverture, écriture générique). Décisions validées :
+> 1. Filtres Lu/Non lu/Prioritaire → page dédiée (pas dans le popover 288px), popover devient
+>    aperçu court + lien "Tout voir".
+> 2. "Prioritaire" = uniquement `homework_due`, dérivé du type (pas de flag manuel, pas de colonne
+>    — le prof le déclenche déjà en écrivant un devoir dans la fiche de fin de cours).
+> 3. Épingle sur le dashboard élève (entre le ruban stats et "Reprendre mes cours") : empile
+>    TOUTES les notifs `homework_due` non lues (pas de plafond).
+> 4. Écriture de toutes les alertes retravaillée avec du vrai contenu (aperçu message/devoir, nom
+>    élève, note), pas juste le libellé de type.
+> Types réellement actifs (vérifié par grep de tous les points d'insertion) : `new_message`,
+> `homework_due`, `homework_corrected`, `homework_submitted`, `house_rules`. `eval_due`,
+> `session_reminder`, `trial_request` sont des vestiges d'enum jamais insérés (fonctions/tables
+> sources déjà supprimées en sessions antérieures) — non traités spécifiquement, fallback générique
+> conservé.
+
+### Plan
+- [x] Migration 71 : enrichit le payload `homework_submitted` (nom élève + aperçu instructions) dans
+      les 2 signatures `submit_homework` (jsonb et text, migration 53) — `CREATE OR REPLACE`,
+      signatures inchangées, aucun risque de casse client.
+- [x] `src/lib/notif-copy.ts` (NEW) : helper partagé `getNotifCopy(type, payload)` → `{title, body,
+      priority}` réutilisé par la cloche ET la page dédiée (évite de dupliquer le rendu par type).
+- [x] TS — enrichi les payloads existants (aucune migration requise, tous en app code) :
+      - `dashboard/messages/actions.ts` + `teacher/messages/actions.ts` : `body_preview`
+      - `teacher/session/actions.ts` + `.../edit/actions.ts` : `instructions_preview` sur
+        `homework_due`
+      - `teacher/homework/actions.ts` (`correctHomework`) : `grade` + `instructions_preview` sur
+        `homework_corrected`
+- [x] `notif-bell.tsx` : retiré le mark-all-read automatique à l'ouverture (sinon "non lu" perd tout
+      son sens) ; marque une notif lue individuellement au clic ; utilise `getNotifCopy` ; tague
+      visuellement les prioritaires (`homework_due`) ; footer "Tout marquer lu" + "Tout voir →" ;
+      nouvelle prop `basePath` ("/dashboard" | "/teacher") pour le lien "Tout voir".
+- [x] `src/app/dashboard/notifications/page.tsx` + `src/app/teacher/notifications/page.tsx` (NEW) :
+      fetch complet (pas de limite 20), passent à un composant client partagé
+      `notifications-list.tsx` (chips Tous/Non lus/Prioritaires, clic = marque lu + navigue,
+      bouton "Tout marquer lu").
+- [x] `dashboard/page.tsx` : fetch des `homework_due` non lues, nouvelle section empilée entre le
+      ruban stats et "Reprendre mes cours" (composant client `priority-pin.tsx`, clic = marque lu +
+      navigue vers `/dashboard/homework`).
+- [x] `dashboard/layout.tsx` / `teacher/layout.tsx` : passent `basePath` à `NotifBell`.
+- [x] `database.types.ts` : pas de régénération nécessaire (aucun changement de schéma/colonne,
+      seulement le contenu jsonb `payload` + signatures `submit_homework` déjà couvertes par
+      `Json`) — confirmé, build TypeScript vert sans régénération.
+- [x] Tests via MCP Supabase (`execute_sql`, impersonation, transactions annulées) AVANT toute
+      présentation :
+      - `submit_homework` (2 signatures, jsonb ET text) insère bien `student_name` +
+        `instructions_preview` dans le payload teacher — vérifié sur Anthony et Bilel
+      - négatif : un élève ne peut pas soumettre le devoir d'un autre élève (`Accès refusé`,
+        42501, logique de garde intacte après `CREATE OR REPLACE`) — vérifié aucune ligne
+        orpheline après l'échec attendu
+      - `get_advisors` (security) : aucune alerte nouvelle, les warnings pré-existants sur les RPC
+        SECURITY DEFINER sont inchangés (pattern volontaire du projet)
+- [x] Build + lint verts.
+- [x] Test navigateur réel (Playwright, harnais jetable `preview-harness-tmp` + `.env.local`
+      temporaire, supprimés après capture) : popover élève (badge reste à 3 après
+      fermeture/réouverture — confirmé plus de mark-all-read auto), popover enseignant
+      (`homework_submitted`/`new_message` avec vrai contenu), page dédiée (3 chips avec compteurs
+      exacts, filtre "Prioritaires" fonctionnel), épingle dashboard élève (2 devoirs non lus
+      empilés, style or/émeraude).
+- [x] `tasks/todo.md` (Review) + `tasks/lessons.md`.
+- [x] Commit + push sur la branche de session (pas de merge prod — aucune confirmation explicite
+      du propriétaire en ce sens à ce stade).
+
+### Review
+
+Refonte de la cloche livrée sur les 4 axes discutés avant codage, sans aucune migration de schéma
+(seule migration : `CREATE OR REPLACE` sur `submit_homework`, signatures inchangées) :
+
+- **Priorité sans colonne** : `homework_due` est prioritaire par construction — vérifié par grep
+  qu'il n'existe que 2 points d'insertion, tous deux uniquement quand un devoir est écrit dans la
+  fiche de fin de cours. Zéro flag manuel, zéro nouveau champ pour le prof.
+- **Découverte utile en cours de route** : 3 des 8 valeurs de `notification_type` (`eval_due`,
+  `session_reminder`, `trial_request`) sont des vestiges d'enum totalement morts — les
+  tables/fonctions qui les alimentaient ont déjà été supprimées en sessions antérieures (33, 39).
+  Confirmé par grep exhaustif avant de décider de ne pas leur écrire de copie dédiée (fallback
+  générique suffisant, ils ne peuvent jamais s'afficher).
+- **Mark-all-read à l'ouverture supprimé** : c'était la faille qui rendait tout filtre "non lu"
+  inutile (tout redevenait lu dès qu'on jetait un œil à la cloche). Remplacé par un mark-read
+  individuel au clic + un bouton explicite "Tout marquer lu", cohérent sur les 3 surfaces (popover,
+  page dédiée, épingle dashboard).
+- **Un seul point de rendu par type** (`src/lib/notif-copy.ts`) partagé par la cloche et la page
+  dédiée — évite de dupliquer la logique d'écriture à 2 endroits qui auraient pu diverger.
+- **Testé empiriquement avant présentation** : migration validée par impersonation MCP (payload
+  enrichi confirmé sur les 2 signatures + cas négatif "élève A ne peut pas soumettre le devoir de
+  B" toujours refusé), `get_advisors` sans nouvelle alerte, build/lint verts, rendu réel Playwright
+  sur les 4 nouvelles surfaces (popover élève/enseignant, page dédiée avec filtres, épingle
+  empilée) — harnais + `.env.local` temporaires supprimés avant tout commit.
+- **Reste hors périmètre** : pas de merge prod (aucune demande explicite en ce sens dans cette
+  session) — tout reste sur `claude/takalamu-resumption-3n9dev`.
+
+---
+
 ## Session 34 — Refonte visuelle « Maktab Émeraude »
 
 > **Demande propriétaire** : refonte complète de l'UI (29 écrans, élève + enseignant) à partir

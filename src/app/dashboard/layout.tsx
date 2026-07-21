@@ -32,7 +32,7 @@ export default async function DashboardLayout({
             <img src="/logo.png" alt="" style={{ height: 30, width: "auto" }} />
             <Wordmark size={22} />
           </div>
-          <NotifBell userId={userId} initialNotifs={notifs ?? []} />
+          <NotifBell userId={userId} initialNotifs={notifs ?? []} basePath="/dashboard" />
         </div>
       </header>
 

@@ -43,7 +43,7 @@ export default async function TeacherLayout({
             avatarUrl={avatarUrl}
           />
           <div className="ml-auto">
-            <NotifBell userId={userId} initialNotifs={notifs ?? []} />
+            <NotifBell userId={userId} initialNotifs={notifs ?? []} basePath="/teacher" />
           </div>
         </div>
       </header>
