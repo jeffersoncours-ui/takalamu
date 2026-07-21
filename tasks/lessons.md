@@ -1,5 +1,33 @@
 # Lessons
 
+## Session 35 (suite) — Retours sur capture réelle + déploiement prod
+
+- **Une capture d'écran prise sur le vrai device révèle des problèmes qu'un harnais Playwright à
+  largeur fixe ne montre pas forcément.** Le popover "collé à gauche" ne se voyait pas dans mes
+  captures de test (prises à 420px puis 375px, mais avec un fond de page assez large) — c'est la
+  capture réelle du propriétaire, prise sur SON téléphone dans le vrai conteneur (Vercel toolbar +
+  webview), qui a montré le popover toucher le bord gauche de l'écran. Réflexe : une largeur fixe
+  en `px` (`w-80`) sur un composant positionné `right-0` peut sembler correcte sur un viewport de
+  test choisi arbitrairement, mais se comporte différemment sur le vrai viewport de l'utilisateur.
+  Une largeur responsive (`min(Npx, calc(100vw - marge))`) élimine la classe entière de problème
+  plutôt que de deviner la bonne largeur fixe.
+- **"Barre déroulante" (dans le langage du propriétaire) = un menu déroulant/accordéon replié par
+  défaut**, pas une simple zone de défilement (`overflow-y-auto` seul ne suffisait pas — le
+  contenu était scrollable mais restait immédiatement visible, ce qui ne répondait pas à
+  "j'en ai rien à faire des anciens lus"). Une fois reformulé ainsi, la solution (séparer
+  non-lues/lues, replier les lues derrière un bouton toggle) était directe.
+- **Design minimaliste validé une fois ("Rien de nouveau.")** peut redevenir "à supprimer" après
+  usage réel — un état vide qui semblait utile en abstrait (rassurer l'utilisateur qu'il n'y a
+  rien à voir) s'est révélé être juste un espace mort inutile en usage réel avec liste vide au
+  quotidien. Pas de discussion nécessaire, retrait direct sur design mineur déjà en prod.
+- **Vérifier la vraie branche de prod Vercel avant CHAQUE fast-forward, pas seulement la première
+  fois.** Repris le réflexe de session 32 (`list_deployments`, champ `target: "production"`) même
+  si une session précédente avait déjà établi que c'était `claude/new-project-setup-1jcgwf` — les
+  deux branches (`main` et la branche de prod) étaient au même commit avant cette session, donc
+  une supposition aurait "marché par chance" comme documenté en session 32, mais la vérification
+  explicite reste le seul moyen de le savoir avec certitude plutôt que de produire une bonne
+  réponse par coïncidence.
+
 ## Session 35 — Refonte cloche notifications (filtres, priorité devoirs, écriture)
 
 - **Discuter avant de coder a évité une colonne inutile.** Le propriétaire voulait "prioritaire"

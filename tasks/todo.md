@@ -91,8 +91,32 @@ Refonte de la cloche livrée sur les 4 axes discutés avant codage, sans aucune 
   B" toujours refusé), `get_advisors` sans nouvelle alerte, build/lint verts, rendu réel Playwright
   sur les 4 nouvelles surfaces (popover élève/enseignant, page dédiée avec filtres, épingle
   empilée) — harnais + `.env.local` temporaires supprimés avant tout commit.
-- **Reste hors périmètre** : pas de merge prod (aucune demande explicite en ce sens dans cette
-  session) — tout reste sur `claude/takalamu-resumption-3n9dev`.
+
+### Suite — retours propriétaire sur capture réelle + déploiement prod
+- [x] Retour capture #1 : anciens messages (même lus) toujours affichés en vrac dans le popover,
+      pas de repli ; popover perçu "collé à gauche" plutôt qu'ancré sous la cloche. Corrigé :
+      notifications lues repliées derrière un menu déroulant fermé par défaut ("Notifications
+      lues (N)"), seules les non lues s'affichent directement ; largeur du popover rendue
+      responsive (`min(320px, calc(100vw - 32px))`) pour garder une marge visible à gauche sur
+      petit écran. Vérifié Playwright à 375px de large (capture avant/après).
+- [x] Retour capture #2 : retrait du message "Rien de nouveau." (jugé inutile par le propriétaire
+      quand tout est déjà lu) — simple suppression, build/lint reverifiés.
+- [x] **Déploiement production** : branche de prod Vercel confirmée via `list_deployments`
+      (`target: "production"`) = `claude/new-project-setup-1jcgwf`, **pas `main`** (les deux
+      suivaient le même commit avant cette session — vérifié avant de fast-forward). `main` et
+      `claude/new-project-setup-1jcgwf` fast-forwardés depuis `claude/takalamu-resumption-3n9dev`
+      (3811206 → c4bd3d6), déploiement prod confirmé `READY` sur `www.tatakalamu.fr` via l'outil
+      Vercel. Aucune migration à séquencer (migration 71 déjà appliquée et testée en cours de
+      session, non destructive).
+- [x] `tasks/todo.md` (cette section) + `tasks/lessons.md`.
+
+### Review
+
+Session complète : refonte de la cloche (4 axes) + 2 itérations sur retour utilisateur réel (repli
+des notifs lues, largeur responsive, retrait d'un message jugé inutile) + déploiement en
+production confirmé `READY`. Point notable : la branche de prod Vercel réelle
+(`claude/new-project-setup-1jcgwf`) a de nouveau été vérifiée avant de fast-forward plutôt que
+supposée être `main` — cohérent avec la leçon de session 32 sur ce point précis.
 
 ---
 
