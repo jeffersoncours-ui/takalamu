@@ -219,11 +219,6 @@ export function NotifBell({
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
-              {unreadList.length === 0 && (
-                <p className="px-4 py-4 text-sm" style={{ color: "var(--tk-faint-olive)" }}>
-                  Rien de nouveau.
-                </p>
-              )}
               <ul>{unreadList.map((n) => renderItem(n))}</ul>
 
               {readList.length > 0 && (
